@@ -1,0 +1,58 @@
+/* Print & PDF-preview output rules.
+   @page itself is intentionally NOT declared here — it's generated
+   dynamically by applyPaperSize() in state.js (paper size + margins only)
+   and injected into the #pageSizeCSS <style> tag, so there's a single
+   source of truth for it.
+
+   The footer is switched to a normal in-flow block (position:static) for
+   print — deliberately NOT position:fixed, NOT position:absolute, and NOT
+   CSS @page margin boxes. All three were tried and all three broke when
+   actually tested against a real generated multi-page PDF:
+     - @page margin-box content (@bottom-left/@bottom-right) isn't
+       implemented in Firefox at all.
+     - position:fixed doesn't reliably repeat across pages in Chrome's own
+       print engine (only rendered on page 1 of a 2-page invoice).
+     - position:absolute (anchored to .invoice, matching the on-screen
+       behavior) breaks once .invoice's real height spans multiple printed
+       pages: the browm engine can't reliably resolve "9mm from the bottom
+       of a box that's taller than one physical page", and it visibly
+       overlapped the Payment/Terms section instead of landing at the page
+       bottom.
+   A plain flowing block can't overlap or mis-place anything — it simply
+   renders after Payment/Terms, wherever that lands. It won't always sit
+   flush against the physical bottom edge of the page the way the on-screen
+   preview does, but it will always be readable, in one piece, and never
+   overlapping other content — which matters more for a real deliverable. */
+@media print{
+  html,body{background:#fff}
+  .sidebar,.sidebar-resizer,.canvasbar{display:none!important}
+  .mobileview-toggle,.mobile-drawer,.drawer-overlay,.fullscreen-exit,.sidebar-toggle,.actions{display:none!important}
+  .invoice-toolbar,.page-break-line,.page-break-chip{display:none!important}
+  .app{display:block}
+  .workspace{padding:0;overflow:visible}
+  .canvaswrap{max-width:none;width:auto;height:auto!important}
+  /* width intentionally NOT overridden to auto here — it inherits the base
+     .invoice rule's width:var(--page-w), which is the actual physical page
+     width in mm. "auto" resolves against the browser's internal print-layout
+     viewport (which is not reliably the same as the physical page width),
+     and was pushing the last table column off the printed page. */
+  .invoice{box-shadow:none;margin:0!important;max-width:none;min-height:0;overflow:visible;transform:none!important}
+  .invtable{border-collapse:collapse}
+  .invtable thead{display:table-header-group}
+  .invtable tfoot{display:table-footer-group}
+  .invtable tr,.invtable td,.invtable th{break-inside:avoid;page-break-inside:avoid}
+  .inv-header,.billrow,.statusbalance,.balance,.bottomgrid,.notebox,.summary,.paymentgrid,.footer{break-inside:avoid;page-break-inside:avoid}
+  .invoice .footer:not(.section-hidden){
+    position:static!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    margin-top:8mm;
+    padding-top:6px;
+    border-top:1px solid #e4e7ec;
+  }
+  /* Force background colors/fills to print consistently across Chrome, Edge,
+     Firefox and Safari without relying on the browser's own "Background
+     graphics" checkbox. */
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
+}
