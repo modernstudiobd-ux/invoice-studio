@@ -71,34 +71,24 @@ const TEMPLATE_PADDING_MM = {
   dark: { top: 14, right: 14, bottom: 14, left: 14 }
 };
 
-// The footer's left/right inset always matches the template's own left/right
+// The footer's left/right inset (on-screen, and reused for the print
+// margin-box insets below) always matches the template's own left/right
 // padding, and its distance from the bottom edge is the template's own
-// bottom padding minus 2mm (leaving a small gap above the physical page/paper
-// edge) — the exact relationship "Modern Professional" already used
-// (padding-bottom 11mm → footer 9mm from the bottom), now applied to every
-// template instead of one hardcoded 12mm/9mm pair for all of them. Used for
-// both the on-screen footer and the print footer (see print.css), which both
-// read the same --footer-left/--footer-right custom properties.
+// bottom padding minus 2mm (leaving a small gap above the physical
+// page/paper edge) — the exact relationship "Modern Professional" already
+// used (padding-bottom 11mm → footer 9mm from the bottom), now applied to
+// every template instead of one hardcoded 12mm/9mm pair for all of them.
 export function templateFooterInsetMm(tpl) {
   const p = TEMPLATE_PADDING_MM[tpl] || TEMPLATE_PADDING_MM.modern;
   return { left: p.left, right: p.right, bottom: Math.max(0, p.bottom - 2) };
 }
 
-// Printed/PDF pages after the first get a top margin so a multi-page invoice
-// doesn't look like it just abruptly continues flush against the page edge.
-// The first page keeps margin 0 (matches the on-screen design, which already
-// accounts for its own internal spacing).
-export const PRINT_PAGE_TOP_MARGIN_MM = 14;
-
-// Reserved space at the bottom of every printed page for the footer. The
-// footer itself is the real ".footer" DOM element (already used for the
-// on-screen preview), switched to position:fixed for print so it repeats on
-// every page — see print.css. It used to be rendered via native CSS @page
-// margin boxes (@bottom-left/@bottom-right) instead, but Firefox has
-// essentially no support for margin-box content, which was silently
-// dropping the entire footer there.
-const PRINT_PAGE_BOTTOM_MARGIN_MM = 12;
-
+// @page margin is always 0 — the repeating footer lives as real in-flow
+// content instead (a native HTML <table>'s repeating <tfoot>, applied at
+// print time in preview.js's applyPrintTableWrap) rather than in a @page
+// margin, so there's no reserved margin band here for it to need. See the
+// comment on applyPrintTableWrap for the full reasoning and the two other
+// designs that came before it.
 function cssStringEscape(s) {
   return String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[\r\n]+/g, " ").trim();
 }
@@ -111,9 +101,7 @@ export function applyPaperSize() {
   // has no @page rule of its own, to avoid two separate @page declarations
   // (which Firefox's paged-media engine handles less predictably than
   // Chrome's) ever disagreeing with each other.
-  $("pageSizeCSS").textContent =
-    `@page{size:${p.page};margin:0;margin-top:${PRINT_PAGE_TOP_MARGIN_MM}mm;margin-bottom:${PRINT_PAGE_BOTTOM_MARGIN_MM}mm}` +
-    `@page:first{margin-top:0}`;
+  $("pageSizeCSS").textContent = `@page{size:${p.page};margin:0}`;
 }
 
 // Snapshot everything needed to fully reconstruct the current invoice

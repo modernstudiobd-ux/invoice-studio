@@ -1,28 +1,43 @@
 /* Print & PDF-preview output rules.
    @page itself is intentionally NOT declared here — it's generated
-   dynamically by applyPaperSize() in state.js (paper size + margins only)
-   and injected into the #pageSizeCSS <style> tag, so there's a single
-   source of truth for it.
+   dynamically by applyPaperSize() in state.js (paper size only; margin is
+   always 0) and injected into the #pageSizeCSS <style> tag, so there's a
+   single source of truth for it.
 
-   The footer is switched to a normal in-flow block (position:static) for
-   print — deliberately NOT position:fixed, NOT position:absolute, and NOT
-   CSS @page margin boxes. All three were tried and all three broke when
-   actually tested against a real generated multi-page PDF:
-     - @page margin-box content (@bottom-left/@bottom-right) isn't
-       implemented in Firefox at all.
-     - position:fixed doesn't reliably repeat across pages in Chrome's own
-       print engine (only rendered on page 1 of a 2-page invoice).
-     - position:absolute (anchored to .invoice, matching the on-screen
-       behavior) breaks once .invoice's real height spans multiple printed
-       pages: the browm engine can't reliably resolve "9mm from the bottom
-       of a box that's taller than one physical page", and it visibly
-       overlapped the Payment/Terms section instead of landing at the page
-       bottom.
-   A plain flowing block can't overlap or mis-place anything — it simply
-   renders after Payment/Terms, wherever that lands. It won't always sit
-   flush against the physical bottom edge of the page the way the on-screen
-   preview does, but it will always be readable, in one piece, and never
-   overlapping other content — which matters more for a real deliverable. */
+   The repeating footer, and the background fully painting every page
+   (including whatever's left over past the end of the real content on the
+   last page), both come from applyPrintTableWrap() in preview.js, which
+   restructures .invoice's children at print time into a plain HTML table
+   with a repeating <tfoot> — table-footer-group is well-supported CSS2.1
+   table layout, the same mechanism already used for the items table's own
+   <thead> repeating on every page, so the browser reserves its space on
+   every page itself, guaranteed, as part of laying the table out — no
+   custom pagination logic needed, and it works the same in every browser
+   including Firefox.
+
+   Two other designs came before this one, each with a real correctness
+   problem:
+     - Predicting page breaks in JS before printing (to force real breaks
+       and add colored in-flow padding at the predicted spots) doesn't hold
+       up: that measurement runs under normal screen layout, before print
+       media is actually active, and on two separate templates it didn't
+       match the real print layout closely enough — once undercounting
+       pages outright (an orphan near-empty page), once letting real
+       content run past its predicted spot straight into the footer's
+       reserved space and overlap it.
+     - A real @page margin + @page margin box avoids both of those (the
+       browser reserves that space itself, guaranteed, no prediction
+       involved) but a real @page margin is physically outside the content
+       box, so no element's background can ever be painted into it, in any
+       browser — every template that isn't literally white printed with a
+       plain white band there.
+   The table/tfoot approach has neither problem: the reserved space is both
+   guaranteed *and* real in-flow content. The trade-off this time is a live
+   per-page "Page X of Y" counter isn't possible — a repeating <tfoot> is
+   one DOM node the browser repeats verbatim, so unlike a @page margin
+   box's counter(page)/counter(pages) it can't show a different number on
+   each page — the footer instead shows the invoice number and a
+   best-effort total page count. */
 @media print{
   html,body{background:#fff}
   .sidebar,.sidebar-resizer,.canvasbar{display:none!important}
@@ -41,16 +56,21 @@
   .invtable thead{display:table-header-group}
   .invtable tfoot{display:table-footer-group}
   .invtable tr,.invtable td,.invtable th{break-inside:avoid;page-break-inside:avoid}
-  .inv-header,.billrow,.statusbalance,.balance,.bottomgrid,.notebox,.summary,.paymentgrid,.footer{break-inside:avoid;page-break-inside:avoid}
-  .invoice .footer:not(.section-hidden){
-    position:static!important;
-    left:auto!important;
-    right:auto!important;
-    bottom:auto!important;
-    margin-top:8mm;
-    padding-top:6px;
-    border-top:1px solid #e4e7ec;
-  }
+  .inv-header,.billrow,.statusbalance,.balance,.bottomgrid,.notebox,.summary,.paymentgrid{break-inside:avoid;page-break-inside:avoid}
+  /* The outer print-time wrapper table itself (see applyPrintTableWrap in
+     preview.js) — plain, unstyled, and transparent, so .invoice's own
+     background/padding/pseudo-elements (the per-template look) show
+     through it exactly as if these were still .invoice's direct children. */
+  .print-pagewrap{width:100%;border-collapse:collapse;background:transparent}
+  .print-pagewrap>tbody>tr>td,.print-pagewrap>tfoot>tr>td{padding:0;border:0;background:transparent}
+  .print-fill-spacer{background:transparent}
+  /* The real footer is hidden for print — its content is cloned into the
+     table's <tfoot> instead (see applyPrintTableWrap). Overriding position
+     to static here matters: the base .footer rule (invoice.css) is
+     position:absolute for the on-screen preview, which would pull the
+     clone out of the tfoot's normal flow and defeat the whole point of it
+     repeating there. */
+  .footer-print-clone{position:static;left:auto;right:auto;bottom:auto;padding:8px 0 0;margin:0;border-top:1px solid #e4e7ec}
   /* Force background colors/fills to print consistently across Chrome, Edge,
      Firefox and Safari without relying on the browser's own "Background
      graphics" checkbox. */

@@ -72,7 +72,212 @@ export function renderPreview() {
   fitInvoiceCanvas();
 }
 
+// Print (see print.js) temporarily resizes .canvaswrap to its natural,
+// unscaled size right before calling window.print(). That resize is itself
+// observed by the ResizeObserver in main.js, which calls fitInvoiceCanvas()
+// again — and without this guard, that re-entrant call would immediately
+// re-apply the on-screen "shrink to fit the panel" transform, scaling the
+// invoice back down right as the print dialog opens. The physical page
+// still prints at full size, so the result is a full-size blank page with
+// the shrunk invoice floating in the top-left corner. print.js sets this
+// flag for the duration of the print flow so fitInvoiceCanvas() becomes a
+// no-op until it's done.
+let printGuard = false;
+export function setPrintGuard(v) { printGuard = v; }
+
+const MM_TO_PX = 96 / 25.4;
+
+let printWrapCtx = null;
+
+// Restructures .invoice's print output into a native HTML table with a
+// repeating <tfoot> for the footer. This is what actually guarantees
+// correctness (no overlap, no white gaps) — table-footer-group is a plain
+// CSS2.1 table-layout feature: the browser itself reserves the footer's
+// space on every single printed page as part of laying the table out, the
+// same well-supported way a <thead> already repeats on every page above
+// the items table. No prediction of any kind is involved, which matters
+// because two earlier versions of this file predicted page breaks in JS
+// before printing (to get a colored top margin and a footer that could
+// repeat without needing @page margin-box support) and neither prediction
+// held up under real printing — one undercounted pages outright, the other
+// let real content run into the footer's reserved space and overlap it.
+// A later version used a real @page margin + margin box instead, which
+// fixed the overlap but is always plain white — a real @page margin is
+// physically outside the content box, so no element's background can ever
+// reach into it, in any browser. This has neither problem: the reserved
+// space is both guaranteed *and* real in-flow content, so it's painted in
+// whatever background color the current template uses. The trade-off this
+// time is losing the live "Page X of Y" per-page counter — a repeating
+// <tfoot> is one DOM node the browser repeats verbatim, so unlike a
+// @page margin box's counter(page)/counter(pages) it can't show a
+// different number on each page. The footer instead shows the invoice
+// number and, for multi-page invoices, a best-effort total page count.
+// Works identically in every browser, including Firefox (this is much
+// older, better-supported CSS than @page margin boxes).
+// Call right before print/PDF export; undo with clearPrintTableWrap().
+export function applyPrintTableWrap() {
+  const inv = $("invoice");
+  if (!inv) return;
+  const footer = inv.querySelector(":scope > .footer");
+  const originalChildren = Array.from(inv.children);
+
+  const table = document.createElement("table");
+  table.className = "print-pagewrap";
+  const tbody = document.createElement("tbody");
+  const tbodyTr = document.createElement("tr");
+  const tbodyTd = document.createElement("td");
+  tbodyTr.appendChild(tbodyTd);
+  tbody.appendChild(tbodyTr);
+
+  const tfoot = document.createElement("tfoot");
+  const tfootTr = document.createElement("tr");
+  const tfootTd = document.createElement("td");
+  tfootTr.appendChild(tfootTd);
+  tfoot.appendChild(tfootTr);
+
+  // Move every real child except the footer into the tbody cell, in their
+  // original order — appendChild on a node already in the document moves
+  // it rather than duplicating it, so this is a true move, not a clone.
+  originalChildren.forEach(child => {
+    if (child !== footer) tbodyTd.appendChild(child);
+  });
+
+  // The footer itself is cloned into the tfoot cell — the original stays
+  // put in .invoice, just hidden, so restoring it in clearPrintTableWrap()
+  // is a matter of showing it again, not reconstructing it from scratch.
+  // The position/inset overrides below are set inline (redundant with the
+  // .footer-print-clone rule in print.css, which also sets them) rather
+  // than relying on that stylesheet rule alone, because this function runs
+  // under normal screen layout, before print media is actually active —
+  // without the inline overrides, the clone would keep the base .footer
+  // rule's position:absolute at the point offsetHeight is read below,
+  // which pulls it out of tfootTd's normal flow entirely and makes it
+  // measure as ~0, undercounting the real space the footer needs on every
+  // page by nearly its full height.
+  let footerClone = null;
+  if (footer && !footer.classList.contains("section-hidden")) {
+    footerClone = footer.cloneNode(true);
+    footerClone.removeAttribute("id");
+    footerClone.classList.add("footer-print-clone");
+    footerClone.style.position = "static";
+    footerClone.style.left = "auto";
+    footerClone.style.right = "auto";
+    footerClone.style.bottom = "auto";
+    footerClone.style.margin = "0";
+    footerClone.style.padding = "8px 0 0";
+    footerClone.style.borderTop = "1px solid #e4e7ec";
+    footerClone.style.boxSizing = "border-box";
+    tfootTd.appendChild(footerClone);
+  }
+  if (footer) footer.style.display = "none";
+
+  table.appendChild(tbody);
+  table.appendChild(tfoot);
+  inv.appendChild(table);
+
+  // Background fill: same goal as always (the last page's leftover space,
+  // past the end of the real content, should be painted in the template's
+  // background color rather than left blank) but the mechanism is simpler
+  // now the footer's own reserved space is handled natively above — this
+  // only needs a spacer sized so the total content lands on a page
+  // boundary.
+  //
+  // Two repeating elements eat into a page's usable content height: our
+  // own tfoot (measured directly above) on *every* page including the
+  // first, and the items table's own thead — but only on page 2 onward,
+  // since its first appearance is already counted as part of the real
+  // content height being measured below (it's the *repeat* on later pages
+  // that's "extra", the same way tfoot itself would be if it didn't
+  // already get subtracted from every page uniformly). Forgetting this
+  // thead cost was the exact source of a real regression here: without it
+  // the estimate is short by roughly one thead's height on every page
+  // after the first, and that shortfall compounds with page count instead
+  // of staying constant — fine-looking on a 2-page invoice, a very visible
+  // gap by 4 pages.
+  const p = currentPaper();
+  const pageHpx = p.h * MM_TO_PX;
+  const tfootHpx = tfootTd.offsetHeight;
+  const thead = tbodyTd.querySelector(".invtable thead");
+  const theadHpx = thead ? thead.offsetHeight : 0;
+  // Small safety margin on top of the real reserved space above: this is a
+  // plain continuous-flow measurement taken before print media is actually
+  // active, so it's a close estimate of the real print layout rather than
+  // a guarantee of it. Unlike in the predicted-page-breaks versions this
+  // replaced, getting this estimate wrong is now purely cosmetic — the
+  // real pagination doesn't depend on it — so erring short (a small gap at
+  // the end of content, worst case) is preferable to erring long (an
+  // extra, mostly-blank page). Applied as a flat per-page amount rather
+  // than a multiplier for the same reason the thead cost above needs to
+  // be: a multiplier's error compounds with page count instead of staying
+  // constant.
+  const safetyPx = 20 * MM_TO_PX;
+  const firstBudget = pageHpx - tfootHpx - safetyPx;
+  const laterBudget = pageHpx - tfootHpx - theadHpx - safetyPx;
+  const contentH = tbodyTd.scrollHeight;
+  const cumulative = [];
+  let acc = 0, n = 0;
+  while (acc < contentH - 0.5 || n === 0) {
+    acc += n === 0 ? firstBudget : laterBudget;
+    cumulative.push(acc);
+    n++;
+    if (n > 500) break;   // sane ceiling — guards against an infinite loop if something's off
+  }
+  const pageCount = cumulative.length;
+  const spacerPx = Math.max(0, cumulative[pageCount - 1] - contentH);
+  if (spacerPx > 0) {
+    const spacer = document.createElement("div");
+    spacer.className = "print-fill-spacer";
+    spacer.style.height = (spacerPx / MM_TO_PX) + "mm";
+    tbodyTd.appendChild(spacer);
+  }
+  // The spacer above is deliberately conservative (see safetyPx) to avoid
+  // overshooting into an extra, unplanned, mostly-blank page — but that
+  // means it can leave the *true* last page slightly short of full,
+  // exactly the "trailing white gap" this whole thing exists to prevent:
+  // .invoice's own rendered height is now just whatever height its one
+  // child (the wrapper table) ends up needing, so if the table ends a
+  // little short of a full page, .invoice's background stops right there
+  // too, and whatever's behind it (plain white) shows through for the
+  // rest of that page. Padding .invoice itself out to the same pageCount
+  // this function already settled on closes that gap without touching the
+  // real pagination at all — .invoice is a plain block box here (not
+  // participating in the table's own layout), so unlike the table cell
+  // sizing issues earlier in this function, min-height on it is entirely
+  // reliable, and it can't push the table into needing an additional page
+  // since the table's content and real page count are already fixed by
+  // this point regardless of how tall .invoice itself is stretched.
+  inv.style.minHeight = ((pageCount * pageHpx) / MM_TO_PX) + "mm";
+
+  // The footer clone's own text: a live per-page counter isn't possible
+  // (see the comment above), so this just shows the invoice number, plus a
+  // best-effort total page count for multi-page invoices — pageCount here
+  // is the same estimate used for the spacer above, good enough for a
+  // rough total even on the rare occasion it's not pixel-exact.
+  if (footerClone) {
+    const invNo = ($("invoiceNumber") && $("invoiceNumber").value.trim()) || "Untitled";
+    const invoiceSpan = footerClone.querySelector("#pFooterInvoice");
+    if (invoiceSpan) invoiceSpan.textContent = pageCount > 1 ? `Invoice #${invNo}  ·  ${pageCount} pages` : `Invoice #${invNo}`;
+  }
+
+  printWrapCtx = { table, footer, originalChildren };
+}
+
+export function clearPrintTableWrap() {
+  const inv = $("invoice");
+  if (!inv || !printWrapCtx) return;
+  inv.style.minHeight = "";
+  // Re-append every original child in its original order — appendChild on
+  // a node that's already in the document moves it back rather than
+  // duplicating it, so this fully undoes the move above with nothing left
+  // over to clean up on the moved nodes themselves.
+  printWrapCtx.originalChildren.forEach(child => inv.appendChild(child));
+  if (printWrapCtx.footer) printWrapCtx.footer.style.display = "";
+  printWrapCtx.table.remove();
+  printWrapCtx = null;
+}
+
 export function fitInvoiceCanvas() {
+  if (printGuard) return;
   const wrap = document.querySelector(".canvaswrap"), inv = $("invoice");
   if (!wrap || !inv) return;
   const p = currentPaper();
