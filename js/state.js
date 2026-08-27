@@ -83,6 +83,26 @@ export function templateFooterInsetMm(tpl) {
   return { left: p.left, right: p.right, bottom: Math.max(0, p.bottom - 2) };
 }
 
+// The template's raw top/bottom padding (mm), used by applyPrintTableWrap()
+// in preview.js to rebuild those two insets as *real, per-page-repeating*
+// table content (a spacer <thead> for the top inset, extra bottom padding
+// on the repeating <tfoot> cell for the bottom inset) instead of leaving
+// them as .invoice's own padding-top/padding-bottom.
+//
+// That distinction matters specifically for multi-page print output: when
+// a block box (.invoice) is split across printed pages, a plain CSS
+// padding-top/padding-bottom on it is only ever rendered once each — top
+// on the box's first fragment (page 1), bottom on its last fragment (the
+// final page) — never on the pages in between, and not on both ends of
+// every page the way a real per-page margin needs to. Left/right padding
+// doesn't have this problem (a box's inline-direction padding applies to
+// every fragment identically, since pages don't split horizontally), so
+// .invoice keeps using its own padding-left/padding-right for print
+// unchanged; only top/bottom are rebuilt as repeating table content.
+export function templatePaddingMm(tpl) {
+  return TEMPLATE_PADDING_MM[tpl] || TEMPLATE_PADDING_MM.modern;
+}
+
 // @page margin is always 0 — the repeating footer lives as real in-flow
 // content instead (a native HTML <table>'s repeating <tfoot>, applied at
 // print time in preview.js's applyPrintTableWrap) rather than in a @page

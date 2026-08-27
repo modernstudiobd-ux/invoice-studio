@@ -4,16 +4,23 @@
    always 0) and injected into the #pageSizeCSS <style> tag, so there's a
    single source of truth for it.
 
-   The repeating footer, and the background fully painting every page
-   (including whatever's left over past the end of the real content on the
-   last page), both come from applyPrintTableWrap() in preview.js, which
-   restructures .invoice's children at print time into a plain HTML table
-   with a repeating <tfoot> — table-footer-group is well-supported CSS2.1
-   table layout, the same mechanism already used for the items table's own
-   <thead> repeating on every page, so the browser reserves its space on
+   The repeating top margin, the repeating footer, and the background
+   fully painting every page (including whatever's left over past the end
+   of the real content on the last page) all come from
+   applyPrintTableWrap() in preview.js, which restructures .invoice's
+   children at print time into a plain HTML table with a repeating <thead>
+   (an empty top-margin spacer) and a repeating <tfoot> (the footer) —
+   table-header-group/table-footer-group are well-supported CSS2.1 table
+   layout, the same mechanism already used for the items table's own
+   <thead> repeating on every page, so the browser reserves their space on
    every page itself, guaranteed, as part of laying the table out — no
    custom pagination logic needed, and it works the same in every browser
-   including Firefox.
+   including Firefox. .invoice's own padding-top/padding-bottom are turned
+   off below for exactly this reason: a plain block box's padding-top and
+   padding-bottom don't repeat across printed pages the way this thead/
+   tfoot pair does — see templatePaddingMm()'s comment in state.js. Its
+   padding-left/padding-right are unaffected and stay on, since horizontal
+   padding has no such problem.
 
    Two other designs came before this one, each with a real correctness
    problem:
@@ -51,7 +58,13 @@
      width in mm. "auto" resolves against the browser's internal print-layout
      viewport (which is not reliably the same as the physical page width),
      and was pushing the last table column off the printed page. */
-  .invoice{box-shadow:none;margin:0!important;max-width:none;min-height:0;overflow:visible;transform:none!important}
+  /* padding-top/padding-bottom:0 — rebuilt as real per-page table content
+     instead (the print-pagewrap thead spacer + the tfoot's own extra
+     bottom padding, both set inline by applyPrintTableWrap in preview.js);
+     see the file comment above and templatePaddingMm() in state.js.
+     padding-left/padding-right are left exactly as the base .invoice rule
+     (invoice.css) already has them — unaffected, so unchanged. */
+  .invoice{box-shadow:none;margin:0!important;max-width:none;min-height:0;overflow:visible;padding-top:0!important;padding-bottom:0!important;transform:none!important}
   .invtable{border-collapse:collapse}
   .invtable thead{display:table-header-group}
   .invtable tfoot{display:table-footer-group}
@@ -62,7 +75,14 @@
      background/padding/pseudo-elements (the per-template look) show
      through it exactly as if these were still .invoice's direct children. */
   .print-pagewrap{width:100%;border-collapse:collapse;background:transparent}
-  .print-pagewrap>tbody>tr>td,.print-pagewrap>tfoot>tr>td{padding:0;border:0;background:transparent}
+  .print-pagewrap thead{display:table-header-group}
+  .print-pagewrap>thead>tr>td,.print-pagewrap>tbody>tr>td,.print-pagewrap>tfoot>tr>td{padding:0;border:0;background:transparent}
+  /* The top spacer's own height (set inline, per-template) must survive
+     the padding:0 reset just above — padding:0 doesn't touch height, so
+     nothing extra is needed here, but break-inside:avoid keeps it from
+     ever being split across a page boundary itself, which would shrink
+     the top inset on whichever page it got cut on. */
+  .print-pagewrap>thead>tr>td{break-inside:avoid;page-break-inside:avoid}
   /* The real footer is hidden for print — its content is cloned into the
      table's <tfoot> instead (see applyPrintTableWrap). Overriding position
      to static here matters: the base .footer rule (invoice.css) is

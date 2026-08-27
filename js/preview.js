@@ -1,7 +1,7 @@
 // preview.js — renders the live invoice document (the on-screen A4/Letter canvas).
 
 import { $, esc } from "./dom.js";
-import { state, currentPaper, applyPaperSize, templateFooterInsetMm } from "./state.js";
+import { state, currentPaper, applyPaperSize, templateFooterInsetMm, templatePaddingMm } from "./state.js";
 import { money, dateFmt, alignClass, fmtCell, num } from "./format.js";
 import { calc, itemValue } from "./calc.js";
 import { applyAllOptionalColors } from "./accent.js";
@@ -90,12 +90,30 @@ const MM_TO_PX = 96 / 25.4;
 let printWrapCtx = null;
 
 // Restructures .invoice's print output into a native HTML table with a
-// repeating <tfoot> for the footer. This is what actually guarantees
-// correctness (no overlap, no white gaps) — table-footer-group is a plain
-// CSS2.1 table-layout feature: the browser itself reserves the footer's
-// space on every single printed page as part of laying the table out, the
-// same well-supported way a <thead> already repeats on every page above
-// the items table. No prediction of any kind is involved, which matters
+// repeating <thead> (an empty top-margin spacer) and a repeating <tfoot>
+// (the footer). This is what actually guarantees correctness (no overlap,
+// no white gaps, and — as of the fix this comment describes — no missing
+// top margin or squished-looking footer on any page but the first/last)
+// — table-header-group/table-footer-group are plain CSS2.1 table-layout
+// features: the browser itself reserves both elements' space on every
+// single printed page as part of laying the table out, the same
+// well-supported way a <thead> already repeats on every page above the
+// items table. Both insets used to just be .invoice's own padding-top/
+// padding-bottom, which looks right for a single-page invoice but is
+// wrong for a multi-page one: a plain block box's own padding-top and
+// padding-bottom only ever render once each when that box is split across
+// printed pages — top on page 1, bottom on the final page — never
+// repeated on the pages between them, and (worse) not even both on the
+// *same* page unless that page happens to be both the first and the last.
+// That's exactly the bug this fixes: page 2+ had no top margin at all
+// (nothing repeated it there), and the footer had no reserved gap below
+// it down to the physical page edge on any page but the last (nothing
+// repeated .invoice's padding-bottom there either), making it look
+// squished flush against the paper edge. Moving both insets into the
+// table itself — a spacer thead and extra padding on the tfoot cell —
+// makes them real per-page-repeating content instead of a whole-box
+// padding, so every page gets an identical, correct top and bottom inset.
+// No prediction of any kind is involved, which matters
 // because two earlier versions of this file predicted page breaks in JS
 // before printing (to get a colored top margin and a footer that could
 // repeat without needing @page margin-box support) and neither prediction
@@ -120,9 +138,25 @@ export function applyPrintTableWrap() {
   if (!inv) return;
   const footer = inv.querySelector(":scope > .footer");
   const originalChildren = Array.from(inv.children);
+  const tpl = $("template") ? $("template").value : "modern";
+  const pad = templatePaddingMm(tpl);
 
   const table = document.createElement("table");
   table.className = "print-pagewrap";
+
+  // Repeating top-margin spacer: a <thead> with a single empty cell sized
+  // to this template's own top padding. table-header-group repeats it on
+  // every printed page — the same native, guaranteed mechanism the tfoot
+  // below uses for the bottom — which is what makes the top inset show up
+  // on page 2+ too, not just page 1. See templatePaddingMm() in state.js
+  // for why this can't just be .invoice's own padding-top.
+  const thead = document.createElement("thead");
+  const theadTr = document.createElement("tr");
+  const theadTd = document.createElement("td");
+  theadTd.style.height = pad.top + "mm";
+  theadTr.appendChild(theadTd);
+  thead.appendChild(theadTr);
+
   const tbody = document.createElement("tbody");
   const tbodyTr = document.createElement("tr");
   const tbodyTd = document.createElement("td");
@@ -132,6 +166,14 @@ export function applyPrintTableWrap() {
   const tfoot = document.createElement("tfoot");
   const tfootTr = document.createElement("tr");
   const tfootTd = document.createElement("td");
+  // Extra space *below* the footer clone, down to the physical page edge —
+  // the print equivalent of the on-screen footer's own "bottom: Xmm" inset
+  // (templateFooterInsetMm's .bottom value; that's exactly this template's
+  // bottom padding minus 2mm). Without this the footer clone would sit
+  // flush against the page's true bottom edge on every page, which is the
+  // "footer looks cut off" symptom — there was nothing reserving the small
+  // gap below it that the on-screen design always has.
+  tfootTd.style.paddingBottom = templateFooterInsetMm(tpl).bottom + "mm";
   tfootTr.appendChild(tfootTd);
   tfoot.appendChild(tfootTr);
 
@@ -171,6 +213,7 @@ export function applyPrintTableWrap() {
   }
   if (footer) footer.style.display = "none";
 
+  table.appendChild(thead);
   table.appendChild(tbody);
   table.appendChild(tfoot);
   inv.appendChild(table);
@@ -182,31 +225,37 @@ export function applyPrintTableWrap() {
   // only needs a spacer sized so the total content lands on a page
   // boundary.
   //
-  // Two repeating elements eat into a page's usable content height: our
-  // own tfoot (measured directly above) on *every* page including the
-  // first, and the items table's own thead — but only on page 2 onward,
-  // since its first appearance is already counted as part of the real
-  // content height being measured below (it's the *repeat* on later pages
-  // that's "extra", the same way tfoot itself would be if it didn't
-  // already get subtracted from every page uniformly). Forgetting this
-  // thead cost was the exact source of a real regression here: without it
-  // the estimate is short by roughly one thead's height on every page
-  // after the first, and that shortfall compounds with page count instead
-  // of staying constant — fine-looking on a 2-page invoice, a very visible
-  // gap by 4 pages.
+  // Three repeating elements eat into a page's usable content height: our
+  // own top spacer and tfoot (both measured directly above) on *every*
+  // page including the first, and the items table's own thead — but only
+  // on page 2 onward, since its first appearance is already counted as
+  // part of the real content height being measured below (it's the
+  // *repeat* on later pages that's "extra", the same way the top spacer or
+  // tfoot themselves would be if they weren't already subtracted from
+  // every page uniformly). Forgetting a repeating element's cost here is
+  // the exact source of a real regression this app has had before: without
+  // it the estimate is short by roughly that element's height on every
+  // page it repeats on, and that shortfall compounds with page count
+  // instead of staying constant — fine-looking on a 2-page invoice, a very
+  // visible gap by 4 pages.
   const p = currentPaper();
   const pageHpx = p.h * MM_TO_PX;
   const tfootHpx = tfootTd.offsetHeight;
-  const thead = tbodyTd.querySelector(".invtable thead");
-  const theadHpx = thead ? thead.offsetHeight : 0;
+  const topSpacerHpx = theadTd.offsetHeight;
+  const itemsThead = tbodyTd.querySelector(".invtable thead");
+  const theadHpx = itemsThead ? itemsThead.offsetHeight : 0;
   // pageCount: a best-effort estimate of how many pages the real content
   // needs, used only to size the min-height stretch below — not to
   // constrain real pagination in any way (that's 100% native: the
-  // browser's own break-inside:avoid plus the repeating tfoot above,
+  // browser's own break-inside:avoid plus the repeating thead/tfoot above,
   // neither of which reads anything computed here).
+  // Both budgets now subtract the top-margin spacer's own height too,
+  // since (unlike the old .invoice padding-top it replaces) it's real
+  // repeating table content that eats into every single page's usable
+  // height, page 1 included — not just pages 2+.
   const safetyPx = 20 * MM_TO_PX;
-  const firstBudget = pageHpx - tfootHpx - safetyPx;
-  const laterBudget = pageHpx - tfootHpx - theadHpx - safetyPx;
+  const firstBudget = pageHpx - topSpacerHpx - tfootHpx - safetyPx;
+  const laterBudget = pageHpx - topSpacerHpx - tfootHpx - theadHpx - safetyPx;
   const contentH = tbodyTd.scrollHeight;
   const cumulative = [];
   let acc = 0, n = 0;
