@@ -199,17 +199,11 @@ export function applyPrintTableWrap() {
   const tfootHpx = tfootTd.offsetHeight;
   const thead = tbodyTd.querySelector(".invtable thead");
   const theadHpx = thead ? thead.offsetHeight : 0;
-  // Small safety margin on top of the real reserved space above: this is a
-  // plain continuous-flow measurement taken before print media is actually
-  // active, so it's a close estimate of the real print layout rather than
-  // a guarantee of it. Unlike in the predicted-page-breaks versions this
-  // replaced, getting this estimate wrong is now purely cosmetic — the
-  // real pagination doesn't depend on it — so erring short (a small gap at
-  // the end of content, worst case) is preferable to erring long (an
-  // extra, mostly-blank page). Applied as a flat per-page amount rather
-  // than a multiplier for the same reason the thead cost above needs to
-  // be: a multiplier's error compounds with page count instead of staying
-  // constant.
+  // pageCount: a best-effort estimate of how many pages the real content
+  // needs, used only to size the min-height stretch below — not to
+  // constrain real pagination in any way (that's 100% native: the
+  // browser's own break-inside:avoid plus the repeating tfoot above,
+  // neither of which reads anything computed here).
   const safetyPx = 20 * MM_TO_PX;
   const firstBudget = pageHpx - tfootHpx - safetyPx;
   const laterBudget = pageHpx - tfootHpx - theadHpx - safetyPx;
@@ -223,29 +217,23 @@ export function applyPrintTableWrap() {
     if (n > 500) break;   // sane ceiling — guards against an infinite loop if something's off
   }
   const pageCount = cumulative.length;
-  const spacerPx = Math.max(0, cumulative[pageCount - 1] - contentH);
-  if (spacerPx > 0) {
-    const spacer = document.createElement("div");
-    spacer.className = "print-fill-spacer";
-    spacer.style.height = (spacerPx / MM_TO_PX) + "mm";
-    tbodyTd.appendChild(spacer);
-  }
-  // The spacer above is deliberately conservative (see safetyPx) to avoid
-  // overshooting into an extra, unplanned, mostly-blank page — but that
-  // means it can leave the *true* last page slightly short of full,
-  // exactly the "trailing white gap" this whole thing exists to prevent:
-  // .invoice's own rendered height is now just whatever height its one
-  // child (the wrapper table) ends up needing, so if the table ends a
-  // little short of a full page, .invoice's background stops right there
-  // too, and whatever's behind it (plain white) shows through for the
-  // rest of that page. Padding .invoice itself out to the same pageCount
-  // this function already settled on closes that gap without touching the
-  // real pagination at all — .invoice is a plain block box here (not
-  // participating in the table's own layout), so unlike the table cell
-  // sizing issues earlier in this function, min-height on it is entirely
-  // reliable, and it can't push the table into needing an additional page
-  // since the table's content and real page count are already fixed by
-  // this point regardless of how tall .invoice itself is stretched.
+  // Background fill for the trailing space past the end of real content on
+  // the last page: min-height directly on .invoice, nothing more. An
+  // earlier version of this also inserted a filler <div> *inside* the
+  // table body, sized to make the body's own content reach a full-page
+  // multiple on its own — which sounds equivalent but isn't: that div is
+  // real content, positioned *before* the tfoot in the table's flow (a
+  // repeating tfoot, by construction, always renders after whatever's in
+  // the body on a given page), so any error in its size — and given this
+  // is an estimate made under normal screen layout before print media is
+  // actually active, some error is expected — showed up as a visible gap
+  // of blank space *before* the footer instead of after it, on every
+  // multi-page invoice, not just an edge case. .invoice itself has no such
+  // problem: it's the table's plain block parent, not a participant in the
+  // table's own per-page layout, so padding it out with min-height can
+  // only ever add space after the table's last real fragment (i.e. after
+  // the last page's tfoot) — nowhere else, regardless of how far off the
+  // estimate is.
   inv.style.minHeight = ((pageCount * pageHpx) / MM_TO_PX) + "mm";
 
   // The footer clone's own text: a live per-page counter isn't possible

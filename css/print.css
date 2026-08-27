@@ -63,7 +63,6 @@
      through it exactly as if these were still .invoice's direct children. */
   .print-pagewrap{width:100%;border-collapse:collapse;background:transparent}
   .print-pagewrap>tbody>tr>td,.print-pagewrap>tfoot>tr>td{padding:0;border:0;background:transparent}
-  .print-fill-spacer{background:transparent}
   /* The real footer is hidden for print — its content is cloned into the
      table's <tfoot> instead (see applyPrintTableWrap). Overriding position
      to static here matters: the base .footer rule (invoice.css) is
