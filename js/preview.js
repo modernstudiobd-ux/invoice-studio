@@ -65,7 +65,8 @@ export function renderPreview() {
   setText($("pInvoiceNo"), "#" + no);
   setText($("pDate"), dateFmt($("invoiceDate").value));
   setText($("pDue"), dateFmt($("dueDate").value));
-  setText($("pReference"), $("reference").value.trim() || "—");
+  const referenceText = $("reference").value.trim();
+  setText($("pReference"), referenceText || "—");
   setText($("pClientName"), $("clientName").value.trim() || "Client company");
   setText($("pClientMeta"), metaClient());
   const notesText = $("notes").value.trim();
@@ -88,6 +89,8 @@ export function renderPreview() {
   const paymentSection = document.querySelector('[data-section="payment"]');
   const paymentText = $("paymentDetails").value.trim();
   if (paymentSection) paymentSection.classList.toggle("section-hidden", !state.sections.payment || !paymentText);
+  const referenceSection = document.querySelector('[data-section="reference"]');
+  if (referenceSection) referenceSection.classList.toggle("section-hidden", !state.sections.reference || !referenceText);
 
   let visible = state.columns.filter(c => c.visible);
   // A slim extra "delete row" column rides alongside the real data columns

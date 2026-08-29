@@ -82,13 +82,13 @@
   box-shadow: 0 0 0 2px currentColor;
 }
 
-.invoice [data-editable$=":date"] {
+.invoice [data-editable^="field:"][data-editable$=":date"] {
   cursor: pointer;
   display: inline-block;
   min-width: 2.5em;
 }
-.invoice [data-editable$=":date"]:hover,
-.invoice [data-editable$=":date"]:focus-visible {
+.invoice [data-editable^="field:"][data-editable$=":date"]:hover,
+.invoice [data-editable^="field:"][data-editable$=":date"]:focus-visible {
   box-shadow: 0 0 0 2px rgba(var(--accent-rgb), .35);
 }
 .invoice .inline-date-input {

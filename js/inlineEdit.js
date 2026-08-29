@@ -169,7 +169,7 @@ function commit(spec, el) {
 function onKeyDown(e) {
   if (e.key === "Enter" || e.key === " ") {
     if (e.target.closest('[data-editable="status"]')) { e.preventDefault(); cycleStatus(); return; }
-    const dateCell = e.target.closest('[data-editable$=":date"]');
+    const dateCell = e.target.closest('[data-editable^="field:"][data-editable$=":date"]');
     if (dateCell) { e.preventDefault(); openDateEditor(dateCell); return; }
     if (e.key === "Enter" && e.target.closest('[data-action="add-item"]')) { e.preventDefault(); addItem(); return; }
   }
@@ -254,7 +254,7 @@ function onClick(e) {
   const delBtn = e.target.closest('[data-action="delete-item"]');
   if (delBtn) { deleteItem(Number(delBtn.dataset.idx)); return; }
   if (e.target.closest('[data-editable="status"]')) { cycleStatus(); return; }
-  const dateCell = e.target.closest('[data-editable$=":date"]');
+  const dateCell = e.target.closest('[data-editable^="field:"][data-editable$=":date"]');
   if (dateCell) { openDateEditor(dateCell); return; }
   if (e.target.closest("#logoRemoveInline")) { removeLogo(); return; }
   if (e.target.closest("#logoPositionInline")) { toggleLogoPosition(); return; }
