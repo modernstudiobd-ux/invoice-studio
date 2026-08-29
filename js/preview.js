@@ -6,6 +6,29 @@ import { money, dateFmt, alignClass, fmtCell, num } from "./format.js";
 import { calc, itemValue } from "./calc.js";
 import { applyAllOptionalColors } from "./accent.js";
 
+// Writes text into a preview element unless that exact element is the one
+// currently being typed into (contenteditable + focused) — otherwise every
+// keystroke-triggered re-render would blow away the DOM node mid-edit and
+// throw the caret back to position 0. Non-editable / not-currently-focused
+// elements always update normally, so every other live preview element
+// (including a second element bound to the same field, e.g. the footer's
+// copy of the company name) still tracks changes in real time.
+function setText(el, text) {
+  if (!el) return;
+  if (el.isContentEditable && document.activeElement === el) return;
+  el.textContent = text;
+}
+
+// Same idea as setText(), for the two summary rows (Discount/Tax) whose
+// label rebuilds an embedded editable "12" inside "Discount (12%)" — skip
+// the innerHTML rebuild while that inner number is focused.
+function setEditableLabel(container, html) {
+  if (!container) return;
+  const active = document.activeElement;
+  if (active && container.contains(active) && active.isContentEditable) return;
+  container.innerHTML = html;
+}
+
 export function renderPreview() {
   let inv = $("invoice"), tpl = $("template").value;
   const logoPos = $("logoPosition").value;
@@ -24,27 +47,39 @@ export function renderPreview() {
   inv.style.setProperty("--footer-right", footerInset.right + "mm");
   inv.style.setProperty("--footer-bottom", footerInset.bottom + "mm");
   applyPaperSize();
-  const labels = { title: "INVOICE", bill: "Bill to", status: "Invoice status", balance: "Balance due", note: "Invoice note", payment: "Payment details", terms: "Terms", date: "Invoice date", due: "Due date", ref: "Reference" };
-  $("pInvoiceTitle").textContent = labels.title;
-  $("pBillToLabel").textContent = labels.bill;
-  $("pBalanceLabel").textContent = labels.balance;
-  $("pNoteLabel").textContent = labels.note;
-  $("pPaymentLabel").textContent = labels.payment;
-  $("pTermsLabel").textContent = labels.terms;
-  const metaLabels = document.querySelectorAll(".metatable td:first-child");
-  if (metaLabels[0]) metaLabels[0].textContent = labels.date;
-  if (metaLabels[1]) metaLabels[1].textContent = labels.due;
-  if (metaLabels[2]) metaLabels[2].textContent = labels.ref;
-  $("pCompanyName").textContent = $("companyName").value.trim() || "Your Company"; $("pCompanyMeta").textContent = metaCompany();
-  let no = $("invoiceNumber").value.trim() || "Untitled"; $("pInvoiceNo").textContent = "#" + no; $("pDate").textContent = dateFmt($("invoiceDate").value); $("pDue").textContent = dateFmt($("dueDate").value); $("pReference").textContent = $("reference").value.trim() || "—";
-  $("pClientName").textContent = $("clientName").value.trim() || "Client company"; $("pClientMeta").textContent = metaClient();
+  // Document labels ("INVOICE", "Bill to", ...) are user-renameable directly
+  // in the preview (see inlineEdit.js) and persisted in state.labels.
+  const labels = state.labels;
+  setText($("pInvoiceTitle"), labels.title);
+  setText($("pBillToLabel"), labels.bill);
+  setText($("pBalanceLabel"), labels.balance);
+  setText($("pNoteLabel"), labels.note);
+  setText($("pPaymentLabel"), labels.payment);
+  setText($("pTermsLabel"), labels.terms);
+  setText($("pDateLabel"), labels.date);
+  setText($("pDueLabel"), labels.due);
+  setText($("pReferenceLabel"), labels.ref);
+  setText($("pCompanyName"), $("companyName").value.trim() || "Your Company");
+  setText($("pCompanyMeta"), metaCompany());
+  let no = $("invoiceNumber").value.trim() || "Untitled";
+  setText($("pInvoiceNo"), "#" + no);
+  setText($("pDate"), dateFmt($("invoiceDate").value));
+  setText($("pDue"), dateFmt($("dueDate").value));
+  setText($("pReference"), $("reference").value.trim() || "—");
+  setText($("pClientName"), $("clientName").value.trim() || "Client company");
+  setText($("pClientMeta"), metaClient());
   const notesText = $("notes").value.trim();
   const termsText = $("terms").value.trim();
-  $("pNotes").textContent = notesText;
-  $("pPayment").textContent = $("paymentDetails").value.trim();
-  $("pTerms").textContent = termsText;
-  $("pFooterCompany").textContent = $("companyName").value.trim() || "Your Company"; $("pFooterInvoice").textContent = "Invoice #" + no;
-  let status = $("status").value, p = $("pStatus"), styles = { Draft: ["#475467", "#f2f4f7", "#d0d5dd"], Due: ["#18794e", "#ecfdf3", "#abefc6"], Paid: ["#175cd3", "#eff8ff", "#b2ddff"], "Partially Paid": ["#9a6700", "#fffaeb", "#fedf89"], Overdue: ["#b42318", "#fef3f2", "#fecdca"], Canceled: ["#667085", "#f2f4f7", "#d0d5dd"] }[status] || ["#475467", "#f2f4f7", "#d0d5dd"]; p.textContent = "● " + status; p.style.color = styles[0]; p.style.background = styles[1]; p.style.borderColor = styles[2];
+  setText($("pNotes"), notesText);
+  setText($("pPayment"), $("paymentDetails").value.trim());
+  setText($("pTerms"), termsText);
+  setText($("pFooterCompany"), $("companyName").value.trim() || "Your Company");
+  setText($("pFooterInvoice"), "Invoice #" + no);
+  let status = $("status").value, p = $("pStatus"), styles = { Draft: ["#475467", "#f2f4f7", "#d0d5dd"], Due: ["#18794e", "#ecfdf3", "#abefc6"], Paid: ["#175cd3", "#eff8ff", "#b2ddff"], "Partially Paid": ["#9a6700", "#fffaeb", "#fedf89"], Overdue: ["#b42318", "#fef3f2", "#fecdca"], Canceled: ["#667085", "#f2f4f7", "#d0d5dd"] }[status] || ["#475467", "#f2f4f7", "#d0d5dd"];
+  // Status is click-to-cycle (not a text edit), so it always updates —
+  // there's no caret to protect, and it should reflect a click immediately
+  // even though the badge keeps keyboard focus afterward.
+  p.textContent = "● " + status; p.style.color = styles[0]; p.style.background = styles[1]; p.style.borderColor = styles[2];
   document.querySelectorAll("[data-section]").forEach(e => e.classList.toggle("section-hidden", !state.sections[e.dataset.section]));
   const notesSection = document.querySelector('[data-section="notes"]');
   const termsSection = document.querySelector('[data-section="terms"]');
@@ -53,11 +88,51 @@ export function renderPreview() {
   const paymentSection = document.querySelector('[data-section="payment"]');
   const paymentText = $("paymentDetails").value.trim();
   if (paymentSection) paymentSection.classList.toggle("section-hidden", !state.sections.payment || !paymentText);
+
   let visible = state.columns.filter(c => c.visible);
-  { let raw = visible.map(c => Math.max(5, num(c.width))), sum = raw.reduce((a, b) => a + b, 0) || 1; $("pCols").innerHTML = raw.map(w => `<col style="width:${(w / sum * 100).toFixed(2)}%">`).join(""); }
-  $("pHeaders").innerHTML = visible.map(c => `<th class="${alignClass(c.align)}">${esc(c.label)}</th>`).join("");
-  let body = $("pItems"); body.innerHTML = ""; if (!state.items.length) body.innerHTML = `<tr><td class="empty" colspan="${Math.max(1, visible.length)}">No line items added.</td></tr>`; else state.items.forEach(item => { let tr = document.createElement("tr"); tr.innerHTML = visible.map(c => `<td class="${alignClass(c.align)}">${fmtCell(itemValue(item, c), c)}</td>`).join(""); body.appendChild(tr); });
-  let t = calc(); $("pSubtotal").textContent = money(t.subtotal); $("discountLabel").textContent = `Discount (${t.dr.toFixed(2).replace(/\.00$/, "")}%)`; $("pDiscount").textContent = "−" + money(t.disc); $("taxLabel").textContent = `Tax (${t.tr.toFixed(2).replace(/\.00$/, "")}%)`; $("pTax").textContent = money(t.tax); $("pShipping").textContent = money(t.ship); $("pTotal").textContent = $("pBalance").textContent = money(t.total);
+  // A slim extra "delete row" column rides alongside the real data columns
+  // on screen (see the per-row × button below) and is stripped out for
+  // print/PDF via the .del-col rules in print.css.
+  { let raw = visible.map(c => Math.max(5, num(c.width))), sum = raw.reduce((a, b) => a + b, 0) || 1; $("pCols").innerHTML = raw.map(w => `<col style="width:${(w / sum * 100).toFixed(2)}%">`).join("") + `<col class="del-col-width">`; }
+  $("pHeaders").innerHTML = visible.map((c, i) => {
+    const isLast = i === visible.length - 1;
+    const resizeHandle = isLast ? "" : `<span class="col-resize-handle" data-action="col-resize" data-col-id="${c.id}" role="separator" aria-orientation="vertical" aria-label="Resize ${esc(c.label)} column" tabindex="-1"></span>`;
+    return `<th class="${alignClass(c.align)}"><span class="col-label-text" contenteditable="true" data-editable="colhead:${c.id}" role="textbox" aria-label="Column heading" spellcheck="false">${esc(c.label)}</span>${resizeHandle}</th>`;
+  }).join("") + `<th class="del-col" aria-hidden="true"></th>`;
+
+  let body = $("pItems"); body.innerHTML = "";
+  if (!state.items.length) {
+    body.innerHTML = `<tr><td class="empty" colspan="${Math.max(1, visible.length)}">No line items added.</td><td class="del-col"></td></tr>`;
+  } else {
+    state.items.forEach((item, idx) => {
+      let tr = document.createElement("tr");
+      tr.className = "inv-item-row";
+      const cells = visible.map(c => {
+        const editable = c.role !== "amount";
+        const content = fmtCell(itemValue(item, c), c);
+        return editable
+          ? `<td class="${alignClass(c.align)}" contenteditable="true" data-editable="item:${idx}:${esc(c.key)}:${c.type}" role="textbox" aria-label="${esc(c.label)}, item ${idx + 1}" spellcheck="false">${content}</td>`
+          : `<td class="${alignClass(c.align)}">${content}</td>`;
+      }).join("");
+      tr.innerHTML = cells + `<td class="del-col"><button type="button" class="row-delete-btn" data-action="delete-item" data-idx="${idx}" aria-label="Remove item ${idx + 1}" tabindex="-1">✕</button></td>`;
+      body.appendChild(tr);
+    });
+  }
+  {
+    const addRow = document.createElement("tr");
+    addRow.className = "add-item-row";
+    addRow.innerHTML = `<td colspan="${Math.max(1, visible.length) + 1}" data-action="add-item" role="button" tabindex="0" aria-label="Add line item">+ Add item</td>`;
+    body.appendChild(addRow);
+  }
+
+  let t = calc();
+  setText($("pSubtotal"), money(t.subtotal));
+  setEditableLabel($("discountLabel"), `${escLabelPrefix("Discount")} (<span class="editable-num" contenteditable="true" data-editable="field:discount:percent" role="textbox" aria-label="Discount percentage" spellcheck="false">${pct(t.dr)}</span>%)`);
+  setText($("pDiscount"), "−" + money(t.disc));
+  setEditableLabel($("taxLabel"), `${escLabelPrefix("Tax")} (<span class="editable-num" contenteditable="true" data-editable="field:tax:percent" role="textbox" aria-label="Tax percentage" spellcheck="false">${pct(t.tr)}</span>%)`);
+  setText($("pTax"), money(t.tax));
+  setText($("pShipping"), money(t.ship));
+  setText($("pTotal"), money(t.total)); setText($("pBalance"), money(t.total));
   $("discountRow").style.display = t.disc && state.sections.discount ? "flex" : "none"; $("taxRow").style.display = t.tax && state.sections.tax ? "flex" : "none"; $("shippingRow").style.display = t.ship && state.sections.shipping ? "flex" : "none";
   $("pLogoFallback").textContent = ($("companyName").value.trim()[0] || "I").toUpperCase();
   let img = $("pLogo"), box = img.closest(".logobox");
@@ -71,6 +146,12 @@ export function renderPreview() {
   }
   fitInvoiceCanvas();
 }
+
+function pct(n) { return n.toFixed(2).replace(/\.00$/, ""); }
+// Discount/Tax labels are plain, non-editable words — esc() isn't strictly
+// needed since they're hardcoded, but kept for consistency with the rest of
+// this file's HTML-building helpers.
+function escLabelPrefix(s) { return esc(s); }
 
 // Print (see print.js) temporarily resizes .canvaswrap to its natural,
 // unscaled size right before calling window.print(). That resize is itself
@@ -397,7 +478,13 @@ function renderPageBreaks(inv, naturalH, pageCount) {
   }
 }
 
+// Both meta blocks can be edited as free text directly in the preview
+// (inlineEdit.js), which stores the exact text in state.overrides — that
+// takes over from the auto-built version below until the person clears the
+// block back to empty, which reverts to auto-building it from the
+// Company/Bill-to sidebar fields again.
 function metaCompany() {
+  if (typeof state.overrides.companyMeta === "string") return state.overrides.companyMeta;
   let a = [];
   if ($("companyReg").value.trim()) a.push("Registration: " + $("companyReg").value.trim());
   if ($("companyVat").value.trim()) a.push("VAT / Tax: " + $("companyVat").value.trim());
@@ -409,6 +496,7 @@ function metaCompany() {
 }
 
 function metaClient() {
+  if (typeof state.overrides.clientMeta === "string") return state.overrides.clientMeta;
   let a = [];
   if ($("clientContact").value.trim()) a.push($("clientContact").value.trim());
   if ($("clientTax").value.trim()) a.push("VAT / Tax: " + $("clientTax").value.trim());

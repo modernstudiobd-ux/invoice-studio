@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/invoice.css">
 <link rel="stylesheet" href="css/templates.css">
+<link rel="stylesheet" href="css/inline-edit.css">
 <link rel="stylesheet" href="css/responsive.css">
 <link rel="stylesheet" href="css/print.css">
 <style id="pageSizeCSS"></style>
@@ -364,41 +365,48 @@
   <article class="invoice template-modern" id="invoice">
     <header class="inv-header">
       <div class="companywrap" data-section="company">
-        <div class="logobox" data-section="logo"><img id="pLogo"><div class="logofallback" id="pLogoFallback">Y</div></div>
-        <div><div class="companyname" id="pCompanyName">Your Company Ltd.</div><div class="metaText" id="pCompanyMeta">Add your company details</div></div>
+        <div class="logobox" data-section="logo">
+          <img id="pLogo" alt="Company logo">
+          <div class="logofallback" id="pLogoFallback">Y</div>
+          <span class="logo-upload-hint" aria-hidden="true">+ Logo</span>
+          <button type="button" class="logo-remove-btn" id="logoRemoveInline" aria-label="Remove logo" title="Remove logo">✕</button>
+          <button type="button" class="logo-position-btn" id="logoPositionInline" aria-label="Toggle logo position" title="Toggle logo position">⇄</button>
+          <span class="logo-resize-handle" data-action="logo-resize" role="slider" tabindex="0" aria-label="Drag to resize logo" aria-valuemin="24" aria-valuemax="160"></span>
+        </div>
+        <div><div class="companyname" id="pCompanyName" contenteditable="true" data-editable="field:companyName" data-placeholder="Your company name" role="textbox" aria-label="Company name" spellcheck="false">Your Company Ltd.</div><div class="metaText" id="pCompanyMeta" contenteditable="true" data-editable="meta:companyMeta" data-placeholder="Add your company details" role="textbox" aria-label="Company details" spellcheck="false">Add your company details</div></div>
       </div>
       <div class="invtitle">
-        <h2 id="pInvoiceTitle">INVOICE</h2><div class="invno" id="pInvoiceNo">#INV-1001</div>
+        <h2 id="pInvoiceTitle" contenteditable="true" data-editable="label:title" role="textbox" aria-label="Document title" spellcheck="false">INVOICE</h2><div class="invno" id="pInvoiceNo" contenteditable="true" data-editable="field:invoiceNumber" data-prefix="#" role="textbox" aria-label="Invoice number" spellcheck="false">#INV-1001</div>
         <table class="metatable">
-          <tr data-section="invoiceDate"><td>Invoice date</td><td id="pDate">—</td></tr>
-          <tr data-section="dueDate"><td>Due date</td><td id="pDue">—</td></tr>
-          <tr data-section="reference"><td>Reference</td><td id="pReference">—</td></tr>
+          <tr data-section="invoiceDate"><td id="pDateLabel" contenteditable="true" data-editable="label:date" role="textbox" aria-label="Invoice date row label" spellcheck="false">Invoice date</td><td id="pDate" data-editable="field:invoiceDate:date" role="button" tabindex="0" aria-label="Invoice date, activate to change">—</td></tr>
+          <tr data-section="dueDate"><td id="pDueLabel" contenteditable="true" data-editable="label:due" role="textbox" aria-label="Due date row label" spellcheck="false">Due date</td><td id="pDue" data-editable="field:dueDate:date" role="button" tabindex="0" aria-label="Due date, activate to change">—</td></tr>
+          <tr data-section="reference"><td id="pReferenceLabel" contenteditable="true" data-editable="label:ref" role="textbox" aria-label="Reference row label" spellcheck="false">Reference</td><td id="pReference" contenteditable="true" data-editable="field:reference" data-placeholder="Add value" role="textbox" aria-label="Reference / PO value" spellcheck="false">—</td></tr>
         </table>
         <div class="statusbalance">
-          <div class="balance" data-section="balance"><span id="pBalanceLabel">Balance due</span><strong id="pBalance">£0.00</strong></div>
-          <span class="status" id="pStatus" data-section="status">● Due</span>
+          <div class="balance" data-section="balance"><span id="pBalanceLabel" contenteditable="true" data-editable="label:balance" role="textbox" aria-label="Balance due label" spellcheck="false">Balance due</span><strong id="pBalance">£0.00</strong></div>
+          <span class="status" id="pStatus" data-section="status" data-editable="status" role="button" tabindex="0" aria-label="Invoice status, activate to change">● Due</span>
         </div>
       </div>
     </header>
     <section class="billrow">
-      <div data-section="client"><div class="label" id="pBillToLabel">Bill to</div><div class="clientname" id="pClientName">Client company</div><div class="metaText" id="pClientMeta">Add client details</div></div>
+      <div data-section="client"><div class="label" id="pBillToLabel" contenteditable="true" data-editable="label:bill" role="textbox" aria-label="Bill to label" spellcheck="false">Bill to</div><div class="clientname" id="pClientName" contenteditable="true" data-editable="field:clientName" data-placeholder="Client name" role="textbox" aria-label="Client company name" spellcheck="false">Client company</div><div class="metaText" id="pClientMeta" contenteditable="true" data-editable="meta:clientMeta" data-placeholder="Add client details" role="textbox" aria-label="Client details" spellcheck="false">Add client details</div></div>
     </section>
     <table class="invtable"><colgroup id="pCols"></colgroup><thead><tr id="pHeaders"></tr></thead><tbody id="pItems"></tbody></table>
     <section class="bottomgrid">
-      <div class="notebox" data-section="notes"><div class="label" id="pNoteLabel">Invoice note</div><div class="metaText" id="pNotes"></div></div>
+      <div class="notebox" data-section="notes"><div class="label" id="pNoteLabel" contenteditable="true" data-editable="label:note" role="textbox" aria-label="Note label" spellcheck="false">Invoice note</div><div class="metaText" id="pNotes" contenteditable="true" data-editable="field:notes" data-placeholder="Click to add a note" role="textbox" aria-label="Invoice note text" spellcheck="false"></div></div>
       <div class="summary">
         <div class="sumrow"><span>Subtotal</span><strong id="pSubtotal">£0.00</strong></div>
         <div class="sumrow" id="discountRow" data-section="discount"><span id="discountLabel">Discount</span><strong id="pDiscount">−£0.00</strong></div>
         <div class="sumrow" id="taxRow" data-section="tax"><span id="taxLabel">Tax</span><strong id="pTax">£0.00</strong></div>
-        <div class="sumrow" id="shippingRow" data-section="shipping"><span>Shipping</span><strong id="pShipping">£0.00</strong></div>
+        <div class="sumrow" id="shippingRow" data-section="shipping"><span>Shipping</span><strong id="pShipping" contenteditable="true" data-editable="field:shipping:number" role="textbox" aria-label="Shipping amount" spellcheck="false">£0.00</strong></div>
         <div class="sumrow total"><span>Total</span><span id="pTotal">£0.00</span></div>
       </div>
     </section>
     <section class="paymentgrid">
-      <div data-section="payment"><div class="label" id="pPaymentLabel">Payment details</div><div class="metaText" id="pPayment">Add payment details.</div></div>
-      <div data-section="terms"><div class="label" id="pTermsLabel">Terms</div><div class="metaText" id="pTerms"></div></div>
+      <div data-section="payment"><div class="label" id="pPaymentLabel" contenteditable="true" data-editable="label:payment" role="textbox" aria-label="Payment details label" spellcheck="false">Payment details</div><div class="metaText" id="pPayment" contenteditable="true" data-editable="field:paymentDetails" data-placeholder="Add payment details" role="textbox" aria-label="Payment details text" spellcheck="false">Add payment details.</div></div>
+      <div data-section="terms"><div class="label" id="pTermsLabel" contenteditable="true" data-editable="label:terms" role="textbox" aria-label="Terms label" spellcheck="false">Terms</div><div class="metaText" id="pTerms" contenteditable="true" data-editable="field:terms" data-placeholder="Click to add terms" role="textbox" aria-label="Terms text" spellcheck="false"></div></div>
     </section>
-    <footer class="footer" data-section="footer"><span id="pFooterCompany">Your Company Ltd.</span><span id="pFooterInvoice">Invoice #INV-1001</span></footer>
+    <footer class="footer" data-section="footer"><span id="pFooterCompany" contenteditable="true" data-editable="field:companyName" role="textbox" aria-label="Company name (footer)" spellcheck="false">Your Company Ltd.</span><span id="pFooterInvoice">Invoice #INV-1001</span></footer>
   </article>
  </div>
 </main>

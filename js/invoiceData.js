@@ -2,7 +2,7 @@
 // entry, or an imported .json file) back into live app state + a full re-render.
 
 import { $, uid } from "./dom.js";
-import { state, fields, defaultColumns, defaultSections } from "./state.js";
+import { state, fields, defaultColumns, defaultSections, defaultLabels, defaultOverrides } from "./state.js";
 import { setAccent, applyAllOptionalColors } from "./accent.js";
 import { renderColumns } from "./columns.js";
 import { renderItems } from "./items.js";
@@ -20,5 +20,9 @@ export function load(d) {
   state.columns = cleanColumns.length ? cleanColumns : defaultColumns();
   state.items = Array.isArray(d.items) ? d.items.filter(i => i && typeof i === "object") : [];
   state.sections = { ...defaultSections(), ...(d.sections && typeof d.sections === "object" ? d.sections : {}) };
+  state.labels = { ...defaultLabels(), ...(d.labels && typeof d.labels === "object" ? d.labels : {}) };
+  { let ov = defaultOverrides(), src = (d.overrides && typeof d.overrides === "object") ? d.overrides : {};
+    Object.keys(ov).forEach(k => { if (typeof src[k] === "string") ov[k] = src[k]; });
+    state.overrides = ov; }
   setAccent($("accentHex").value); applyAllOptionalColors(); renderColumns(); renderItems(); renderToggles(); renderPreview(); save();
 }

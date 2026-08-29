@@ -18,6 +18,8 @@ import { LIBRARY_KEY, CURRENT_ID_KEY, getCurrentId, setCurrentId, saveToHistory,
 import { parseCSV, mapRows, ensureXLSX } from "./importSheet.js";
 import { printInvoice } from "./print.js";
 import { initInstallPrompt, registerServiceWorker } from "./install.js";
+import { naturalLogoHeight, handleLogoFile, removeLogo } from "./logo.js";
+import { initInlineEdit } from "./inlineEdit.js";
 // layout.js self-wires its own listeners on import (tabs, sidebar, mobile drawer, etc.)
 import "./layout.js";
 
@@ -48,32 +50,8 @@ $("addColumnBtn").onclick = () => { let i = state.columns.length + 1; state.colu
 $("restoreColumnsBtn").onclick = () => { if (confirm("Restore the default five columns?")) { state.columns = defaultColumns(); renderColumns(); renderItems(); renderPreview(); save(); } };
 
 /* --- Logo upload --- */
-function naturalLogoHeight() {
-  const n = state.logoNatural;
-  if (!n || !n.h) return 48;
-  return Math.round(Math.max(24, Math.min(160, n.h)));
-}
-$("logoFile").onchange = e => {
-  const f = e.target.files && e.target.files[0]; if (!f) return;
-  if (f.size > 3e6) { toast("Logo must be under 3 MB."); e.target.value = ""; return; }
-  if (!/^image\//.test(f.type)) { toast("Please select a valid image file."); e.target.value = ""; return; }
-  const r = new FileReader();
-  r.onerror = () => toast("The logo could not be read.");
-  r.onload = () => {
-    const test = new Image();
-    test.onerror = () => toast("The selected logo image is not valid.");
-    test.onload = () => {
-      state.logo = String(r.result);
-      state.logoNatural = { w: test.naturalWidth || 120, h: test.naturalHeight || 48 };
-      $("logoHeight").value = naturalLogoHeight();
-      $("logoHint").textContent = f.name + " added";
-      renderPreview(); save(); toast("Logo added.");
-    };
-    test.src = String(r.result);
-  };
-  r.readAsDataURL(f);
-};
-$("removeLogoBtn").onclick = () => { state.logo = ""; state.logoNatural = null; $("logoFile").value = ""; $("logoHint").textContent = "PNG, JPG, WEBP or SVG. Maximum 3 MB."; renderPreview(); save(); toast("Logo removed."); };
+$("logoFile").onchange = e => { const f = e.target.files && e.target.files[0]; if (f) handleLogoFile(f, e.target); };
+$("removeLogoBtn").onclick = () => removeLogo();
 $("resetLogoSizeBtn").onclick = () => { $("logoHeight").value = naturalLogoHeight(); renderPreview(); save(); toast(state.logoNatural ? "Logo reset to its original size." : "Logo size reset to default."); };
 $("resetColorBtn").onclick = () => { setAccent(DEFAULT_ACCENT); OPTIONAL_COLOR_IDS.forEach(clearOptionalColor); renderPreview(); save(); toast("Colors reset."); };
 
@@ -116,6 +94,7 @@ if (!$("logoHeight").value) $("logoHeight").value = "48";
 setAccent(DEFAULT_ACCENT);
 applyAllOptionalColors();
 renderColumns(); renderItems(); renderToggles(); renderPreview();
+initInlineEdit();
 
 {
   const canvasWrapEl = document.querySelector(".canvaswrap");
