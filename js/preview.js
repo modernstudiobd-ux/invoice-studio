@@ -63,8 +63,10 @@ export function renderPreview() {
   setText($("pCompanyMeta"), metaCompany());
   let no = $("invoiceNumber").value.trim() || "Untitled";
   setText($("pInvoiceNo"), "#" + no);
-  setText($("pDate"), dateFmt($("invoiceDate").value));
-  setText($("pDue"), dateFmt($("dueDate").value));
+  const invoiceDateVal = $("invoiceDate").value;
+  const dueDateVal = $("dueDate").value;
+  setText($("pDate"), dateFmt(invoiceDateVal));
+  setText($("pDue"), dateFmt(dueDateVal));
   const referenceText = $("reference").value.trim();
   setText($("pReference"), referenceText || "—");
   setText($("pClientName"), $("clientName").value.trim() || "Client company");
@@ -82,15 +84,27 @@ export function renderPreview() {
   // even though the badge keeps keyboard focus afterward.
   p.textContent = "● " + status; p.style.color = styles[0]; p.style.background = styles[1]; p.style.borderColor = styles[2];
   document.querySelectorAll("[data-section]").forEach(e => e.classList.toggle("section-hidden", !state.sections[e.dataset.section]));
+  // The rows/blocks below are "optional detail" fields (each has its own
+  // on/off switch in the section settings, toggled above via section-hidden
+  // — that's a deliberate choice and hides on screen too). Separately from
+  // that, if the section is ON but nothing was actually typed in, the row
+  // still shows on screen (with its placeholder, e.g. "—" / "Add value") so
+  // the person can see it's available to fill in — it only disappears from
+  // the printed/PDF "final" invoice, via the print-only .print-hide-empty
+  // rule in print.css.
   const notesSection = document.querySelector('[data-section="notes"]');
   const termsSection = document.querySelector('[data-section="terms"]');
-  if (notesSection) notesSection.classList.toggle("section-hidden", !state.sections.notes || !notesText);
-  if (termsSection) termsSection.classList.toggle("section-hidden", !state.sections.terms || !termsText);
+  if (notesSection) notesSection.classList.toggle("print-hide-empty", !notesText);
+  if (termsSection) termsSection.classList.toggle("print-hide-empty", !termsText);
   const paymentSection = document.querySelector('[data-section="payment"]');
   const paymentText = $("paymentDetails").value.trim();
-  if (paymentSection) paymentSection.classList.toggle("section-hidden", !state.sections.payment || !paymentText);
+  if (paymentSection) paymentSection.classList.toggle("print-hide-empty", !paymentText);
   const referenceSection = document.querySelector('[data-section="reference"]');
-  if (referenceSection) referenceSection.classList.toggle("section-hidden", !state.sections.reference || !referenceText);
+  if (referenceSection) referenceSection.classList.toggle("print-hide-empty", !referenceText);
+  const invoiceDateSection = document.querySelector('[data-section="invoiceDate"]');
+  const dueDateSection = document.querySelector('[data-section="dueDate"]');
+  if (invoiceDateSection) invoiceDateSection.classList.toggle("print-hide-empty", !invoiceDateVal);
+  if (dueDateSection) dueDateSection.classList.toggle("print-hide-empty", !dueDateVal);
 
   let visible = state.columns.filter(c => c.visible);
   // A slim extra "delete row" column rides alongside the real data columns
@@ -136,7 +150,9 @@ export function renderPreview() {
   setText($("pTax"), money(t.tax));
   setText($("pShipping"), money(t.ship));
   setText($("pTotal"), money(t.total)); setText($("pBalance"), money(t.total));
-  $("discountRow").style.display = t.disc && state.sections.discount ? "flex" : "none"; $("taxRow").style.display = t.tax && state.sections.tax ? "flex" : "none"; $("shippingRow").style.display = t.ship && state.sections.shipping ? "flex" : "none";
+  $("discountRow").classList.toggle("print-hide-empty", !t.disc);
+  $("taxRow").classList.toggle("print-hide-empty", !t.tax);
+  $("shippingRow").classList.toggle("print-hide-empty", !t.ship);
   $("pLogoFallback").textContent = ($("companyName").value.trim()[0] || "I").toUpperCase();
   let img = $("pLogo"), box = img.closest(".logobox");
   const logoSize = Math.max(24, Math.min(160, num($("logoHeight").value) || 48));

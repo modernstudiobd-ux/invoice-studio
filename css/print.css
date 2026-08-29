@@ -90,6 +90,15 @@
      clone out of the tfoot's normal flow and defeat the whole point of it
      repeating there. */
   .footer-print-clone{position:static;left:auto;right:auto;bottom:auto;padding:8px 0 0;margin:0;border-top:1px solid #e4e7ec}
+  /* Optional detail rows/fields (Reference, Invoice date, Due date, Notes,
+     Terms, Payment details, Discount, Tax, Shipping) stay visible on screen
+     with their placeholder text so the person can see what's available to
+     fill in — but if nothing was actually entered, they're stripped out of
+     the printed/PDF "final" invoice instead of printing an empty row.
+     preview.js toggles this class purely on content emptiness, independent
+     of the section on/off switches (those use .section-hidden above, which
+     hides on screen too since that's a deliberate user choice). */
+  .invoice .print-hide-empty{display:none!important}
   /* Force background colors/fills to print consistently across Chrome, Edge,
      Firefox and Safari without relying on the browser's own "Background
      graphics" checkbox. */
