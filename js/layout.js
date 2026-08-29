@@ -198,11 +198,11 @@ templatesToggleBtn.addEventListener("click", e => {
 document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(templatesPanel) && !path.includes(templatesToggleBtn)) closeTemplatesPanel(); });
 drawerOverlay.addEventListener("click", closeTemplatesPanel);
 
-// Collapsible sections — tap a panel heading to expand/collapse (mobile width only;
-// inert elsewhere since the CSS effect itself is gated to the ≤640px breakpoint).
+// Collapsible sections — tap a panel heading to expand/collapse it (every
+// width now; less-used panels start collapsed by default — see main.js —
+// so the sidebar itself takes up less room without losing any control).
 document.querySelectorAll(".panelhead").forEach(h => {
   h.addEventListener("click", () => {
-    if (window.innerWidth > 640) return;
     const panel = h.closest(".panel");
     if (panel) panel.classList.toggle("collapsed");
   });

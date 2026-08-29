@@ -59,11 +59,8 @@
   .actions-more.open{display:flex}
   .actions-more .btn{width:100%;text-align:left}
 
-  /* Collapsible sections — tap a panel heading to expand/collapse it. */
-  .panelhead{cursor:pointer;user-select:none}
-  .panelhead::after{content:"⌄";margin-left:6px;color:var(--muted);font-size:13px;transition:transform .15s ease;flex:none}
-  .panel.collapsed>*:not(.panelhead){display:none}
-  .panel.collapsed .panelhead::after{transform:rotate(-90deg)}
+  /* Collapsible sections now apply at every width (see .panelhead/.panel.collapsed
+     in base.css) — nothing phone-specific needed here anymore. */
 
   /* Card-based line items — roomier touch targets on phone. */
   .itemcard{padding:12px;border-radius:12px}

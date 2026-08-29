@@ -8,7 +8,7 @@
 
 <!-- PWA: installability -->
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#18181b">
+<meta name="theme-color" content="#4f46e5">
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="icon" href="icons/icon-512.png" sizes="512x512" type="image/png">
 
@@ -72,6 +72,11 @@
   </div>
   <p class="hint" style="margin:-4px 0 8px">Print opens your browser's print dialog — choose a physical printer, or "Save as PDF" as the destination for a PDF copy.</p>
   <div class="notice">All invoice values are blank/default. No financial data from the uploaded samples has been copied into the application.</div>
+  <div class="sidebar-tip" id="sidebarTip">
+    <span class="emoji">💡</span>
+    <span>Most text on the invoice — company info, client details, dates, notes — can be edited by clicking it directly in the preview. The panels below are for the settings that don't live on the page itself: template, colors, paper size and columns.</span>
+    <button type="button" id="sidebarTipDismiss" aria-label="Dismiss tip">✕</button>
+  </div>
   <nav class="tabs" role="tablist" aria-label="Invoice sections">
     <button class="tab active" role="tab" id="tabbtn-design" data-tab="design" aria-selected="true" aria-controls="tab-design">Design</button>
     <button class="tab" role="tab" id="tabbtn-details" data-tab="details" aria-selected="false" aria-controls="tab-details" tabindex="-1">Details</button>
@@ -153,7 +158,7 @@
         <div class="field"><label for="reference">Reference / PO</label><input id="reference"></div>
       </div>
     </section>
-    <section class="panel">
+    <section class="panel collapsed">
       <div class="panelhead"><h2>Your company</h2><span class="hint">Seller</span></div>
       <div class="grid2">
         <div class="field full"><label for="companyName">Company name</label><input id="companyName" value="Your Company Ltd."></div>
@@ -185,7 +190,7 @@
 </div>
       </div>
     </section>
-    <section class="panel">
+    <section class="panel collapsed">
       <div class="panelhead"><h2>Bill to</h2><span class="hint">Customer</span></div>
       <div class="grid2">
         <div class="field full"><label for="clientName">Client company</label><input id="clientName"></div>
@@ -195,7 +200,7 @@
         <div class="field full"><label for="clientEmail">Email</label><input id="clientEmail"></div>
       </div>
     </section>
-    <section class="panel">
+    <section class="panel collapsed">
       <div class="panelhead"><h2>Totals and footer</h2></div>
       <div class="grid3">
         <div class="field"><label for="discount">Discount %</label><input id="discount" type="number" min="0" value="0" step=".01"></div>
@@ -254,7 +259,7 @@
   </div>
 
   <div class="tabpane active" id="tab-design" role="tabpanel" aria-labelledby="tabbtn-design">
-    <section class="panel">
+    <section class="panel collapsed">
       <div class="panelhead"><h2>Page setup</h2><span class="hint">Affects screen, print and PDF</span></div>
       <div class="field"><label for="paperSize">Paper size</label>
         <select id="paperSize">
@@ -291,7 +296,7 @@
         </select>
       </div>
     </section>
-    <section class="panel">
+    <section class="panel collapsed">
       <div class="panelhead"><h2>Color</h2><button class="btn small" id="resetColorBtn" type="button">Reset colors</button></div>
       <div class="grid2">
         <div class="field"><label for="accent">Accent color</label><input id="accent" type="color" value="#18181b"></div>
@@ -331,7 +336,7 @@
         </div>
       </div>
     </section>
-    <section class="panel">
+    <section class="panel collapsed">
       <div class="panelhead"><h2>Show / hide sections</h2></div>
       <div id="sectionToggles"></div>
     </section>

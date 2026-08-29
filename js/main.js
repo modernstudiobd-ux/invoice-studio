@@ -88,6 +88,14 @@ $("sheetFile").onchange = async e => {
 $("zoomIn").onclick = () => { state.zoom = Math.min(1.3, state.zoom + .1); renderPreview(); save(); };
 $("zoomOut").onclick = () => { state.zoom = Math.max(.6, state.zoom - .1); renderPreview(); save(); };
 
+/* --- Sidebar "click the invoice to edit" tip: dismiss once, stays hidden --- */
+const SIDEBAR_TIP_KEY = "invoiceStudio.sidebarTipDismissed.v1";
+if (localStorage.getItem(SIDEBAR_TIP_KEY)) $("sidebarTip").classList.add("hidden");
+$("sidebarTipDismiss").onclick = () => {
+  $("sidebarTip").classList.add("hidden");
+  try { localStorage.setItem(SIDEBAR_TIP_KEY, "1"); } catch {}
+};
+
 /* --- Initial defaults + first render --- */
 $("invoiceDate").value = today();
 $("dueDate").value = plusDays(today(), 14);

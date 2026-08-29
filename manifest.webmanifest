@@ -8,8 +8,8 @@
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "any",
-  "background_color": "#edf1f6",
-  "theme_color": "#18181b",
+  "background_color": "#eef0f6",
+  "theme_color": "#4f46e5",
   "categories": ["business", "finance", "productivity"],
   "icons": [
     { "src": "icons/icon-72.png", "sizes": "72x72", "type": "image/png", "purpose": "any" },
