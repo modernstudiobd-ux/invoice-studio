@@ -15,6 +15,7 @@ import { renderToggles } from "./toggles.js";
 import { save, undo, redo, pushEditHistory, updateUndoRedoButtons } from "./persistence.js";
 import { load } from "./invoiceData.js";
 import { LIBRARY_KEY, CURRENT_ID_KEY, getCurrentId, setCurrentId, saveToHistory, renderHistory, duplicateCurrentInvoice, newInvoice, clearLibrary } from "./library.js";
+import { BRAND_KEY, saveCurrentAsTemplate, renderBrandTemplates, clearBrandTemplates } from "./brandTemplates.js";
 import { parseCSV, mapRows, ensureXLSX } from "./importSheet.js";
 import { printInvoice } from "./print.js";
 import { initInstallPrompt, registerServiceWorker } from "./install.js";
@@ -64,7 +65,7 @@ function download(name, text) { let b = new Blob([text], { type: "application/js
 $("exportBtn").onclick = () => download(($("invoiceNumber").value || "invoice") + ".json", JSON.stringify(serialize(), null, 2));
 $("importBtn").onclick = () => $("jsonFile").click();
 $("jsonFile").onchange = async e => { try { load(JSON.parse(await e.target.files[0].text())); toast("Invoice imported."); } catch (err) { toast(err.message); } e.target.value = ""; };
-$("resetBtn").onclick = () => { if (confirm("Reset the app and delete ALL locally saved invoices (current draft + History)? This cannot be undone.")) { localStorage.removeItem(KEY); localStorage.removeItem(LIBRARY_KEY); localStorage.removeItem(CURRENT_ID_KEY); location.reload(); } };
+$("resetBtn").onclick = () => { if (confirm("Reset the app and delete ALL locally saved invoices and templates (current draft + History + Templates)? This cannot be undone.")) { localStorage.removeItem(KEY); localStorage.removeItem(LIBRARY_KEY); localStorage.removeItem(CURRENT_ID_KEY); localStorage.removeItem(BRAND_KEY); location.reload(); } };
 
 /* --- Spreadsheet (CSV/XLSX) import --- */
 $("importSheetBtn").onclick = () => $("sheetFile").click();
@@ -111,12 +112,15 @@ if (!getCurrentId()) setCurrentId(uid());
 pushEditHistory();
 updateUndoRedoButtons();
 renderHistory();
+renderBrandTemplates();
 
 /* --- Save / Duplicate / New / Undo / Redo buttons --- */
 $("saveInvoiceBtn").onclick = () => { saveToHistory(); toast("Saved to history."); };
 $("duplicateInvoiceBtn").onclick = () => duplicateCurrentInvoice();
 $("newInvoiceBtn").onclick = () => newInvoice();
 $("clearHistoryBtn").onclick = () => clearLibrary();
+$("saveTemplateBtn").onclick = () => saveCurrentAsTemplate();
+$("clearTemplatesBtn").onclick = () => clearBrandTemplates();
 $("undoBtn").onclick = () => undo(load);
 $("redoBtn").onclick = () => redo(load);
 document.addEventListener("keydown", e => {

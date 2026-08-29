@@ -122,7 +122,7 @@ phoneQuery.addEventListener("change", e => placeInvoiceToolbar(e.matches));
 
 // Tapping Save/Duplicate/New invoice inside the drawer should feel like a
 // normal menu action: perform it, then dismiss the drawer.
-["saveInvoiceBtn", "duplicateInvoiceBtn", "newInvoiceBtn"].forEach(id => {
+["saveInvoiceBtn", "duplicateInvoiceBtn", "newInvoiceBtn", "saveTemplateBtn"].forEach(id => {
   $(id).addEventListener("click", () => { if (phoneQuery.matches) closeDrawer(); });
 });
 
@@ -157,10 +157,11 @@ const historyToggleBtn = $("historyToggleBtn"), historyPanel = $("historyPanel")
 export function closeHistoryPanel() {
   historyPanel.classList.remove("open");
   historyToggleBtn.setAttribute("aria-expanded", "false");
-  if (phoneQuery.matches && !mobileDrawer.classList.contains("open")) drawerOverlay.classList.remove("show");
+  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !templatesPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
 }
 historyToggleBtn.addEventListener("click", e => {
   e.stopPropagation();
+  closeTemplatesPanel();
   const open = historyPanel.classList.toggle("open");
   historyToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
   // On phone widths the panel opens as its own centered card (the drawer is
@@ -174,6 +175,28 @@ historyToggleBtn.addEventListener("click", e => {
 });
 document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(historyPanel) && !path.includes(historyToggleBtn)) closeHistoryPanel(); });
 drawerOverlay.addEventListener("click", closeHistoryPanel);
+
+// Brand "Templates" dropdown — same pattern as History above, for saving/
+// reusing company info + design across different companies/personal brands.
+const templatesToggleBtn = $("templatesToggleBtn"), templatesPanel = $("templatesPanel");
+export function closeTemplatesPanel() {
+  templatesPanel.classList.remove("open");
+  templatesToggleBtn.setAttribute("aria-expanded", "false");
+  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !historyPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
+}
+templatesToggleBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  closeHistoryPanel();
+  const open = templatesPanel.classList.toggle("open");
+  templatesToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  if (phoneQuery.matches) {
+    mobileDrawer.classList.remove("open");
+    hamburgerBtn.setAttribute("aria-expanded", "false");
+    drawerOverlay.classList.toggle("show", open);
+  }
+});
+document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(templatesPanel) && !path.includes(templatesToggleBtn)) closeTemplatesPanel(); });
+drawerOverlay.addEventListener("click", closeTemplatesPanel);
 
 // Collapsible sections — tap a panel heading to expand/collapse (mobile width only;
 // inert elsewhere since the CSS effect itself is gated to the ≤640px breakpoint).

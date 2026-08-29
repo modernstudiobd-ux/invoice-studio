@@ -357,6 +357,19 @@
          <div id="historyList" style="margin-top:8px"></div>
        </div>
      </div>
+     <div class="history-dropdown">
+       <button class="btn small" id="templatesToggleBtn" aria-haspopup="true" aria-expanded="false" aria-controls="templatesPanel">🏷️ Templates</button>
+       <div class="history-panel" id="templatesPanel" role="dialog" aria-label="Brand templates">
+         <div class="history-panel-head">
+           <h2>Brand templates</h2>
+           <button class="btn small danger" id="clearTemplatesBtn" type="button">Clear all</button>
+         </div>
+         <span class="hint">Save your company info, logo, colors and layout as a reusable template, then apply it to quickly start an invoice for a different company or personal brand. Client, items and invoice numbers are left untouched.</span>
+         <button class="btn small primary" id="saveTemplateBtn" type="button" style="width:100%;margin-top:8px">💾 Save current as template</button>
+         <span class="hint" id="templatesCount"></span>
+         <div id="templatesList" style="margin-top:8px"></div>
+       </div>
+     </div>
      <button class="btn small" id="newInvoiceBtn" title="Clear client and items; keeps company profile and design">+ New invoice</button>
    </div>
  </div>
