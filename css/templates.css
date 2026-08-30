@@ -313,9 +313,9 @@
 .template-dark .clientname{color:#fff}
 .template-dark .invtable th{background:#1c1f26;border-color:#2a2e37;color:#c7cbd1}
 .template-dark .invtable td{background:transparent;border-color:#2a2e37;color:#e6e8eb}
-.template-dark .empty{color:#6b7280}
+.template-dark .empty{color:#9aa1ac}
 .template-dark .summary{border-top:2px solid #2a2e37}
 .template-dark .sumrow span:first-child{color:#9aa1ac}
 .template-dark .sumrow.total{border-top:1px solid #2a2e37;color:#fff}
 .template-dark .notebox{background:#171a20;border:1px solid #2a2e37}
-.template-dark .footer{color:#6b7280}
+.template-dark .footer{color:#9aa1ac}

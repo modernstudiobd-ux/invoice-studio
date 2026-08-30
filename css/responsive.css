@@ -69,7 +69,7 @@
   .columnrow{padding:11px}
 
   /* Hamburger / expand icon buttons inside the mobile top bar. */
-  .mtb-icon{flex:none;width:34px;height:34px;padding:0;display:grid;place-items:center;font-size:15px;border-radius:9px}
+  .mtb-icon{flex:none;width:44px;height:44px;padding:0;display:grid;place-items:center;font-size:15px;border-radius:9px}
 
   /* Slide-in drawer for switching Details / Items / Design sections. */
   .drawer-overlay{display:block;position:fixed;inset:0;background:rgba(16,24,40,.4);z-index:49;opacity:0;pointer-events:none;transition:opacity .18s ease}
@@ -105,5 +105,5 @@
   .fullscreen-exit{display:none}
   body.fullscreen-preview .mobileview-toggle,body.fullscreen-preview .canvasbar,body.fullscreen-preview .actions{display:none}
   body.fullscreen-preview .workspace{padding:0}
-  body.fullscreen-preview .fullscreen-exit{display:grid;place-items:center;position:fixed;top:calc(14px + env(safe-area-inset-top));right:14px;z-index:60;width:38px;height:38px;border-radius:50%;background:rgba(16,24,40,.62);color:#fff;border:0;font-size:15px}
+  body.fullscreen-preview .fullscreen-exit{display:grid;place-items:center;position:fixed;top:calc(14px + env(safe-area-inset-top));right:14px;z-index:60;width:44px;height:44px;border-radius:50%;background:rgba(16,24,40,.62);color:#fff;border:0;font-size:15px}
 }
