@@ -1,10 +1,21 @@
 /* Responsive behavior — mobile edit/preview switcher, sidebar collapse, tablet/phone breakpoints */
+/* App header — brand + quickbar sit side by side down to tablet width; on
+   phones the subtitle line is dropped and the header stacks so Template/
+   Currency stay full-width and easy to tap. */
+@media (max-width:900px){
+  .appheader .brand p{display:none}
+}
+@media (max-width:640px){
+  .appheader{flex-direction:column;align-items:stretch;gap:8px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top))}
+  .appheader .brand p{display:block}
+  .appheader .quickbar{width:100%}
+}
 /* Mobile edit/preview switcher — Mobile tier only (≤640px). Tablet (641–1080px)
    keeps both panels stacked and visible; only true phone widths need to show
    one panel at a time, since side-by-side editing + preview doesn't fit there. */
 .mobileview-toggle{display:none}
 @media (max-width:640px){
-  .mobileview-toggle{display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:15;background:#fff;padding:9px 10px;border-bottom:1px solid var(--line);padding-top:calc(9px + env(safe-area-inset-top))}
+  .mobileview-toggle{display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:15;background:#fff;padding:9px 10px;border-bottom:1px solid var(--line)}
   .mobileview-toggle .view-switch{display:flex;flex:1 1 auto;gap:6px}
   .mobileview-toggle .btn{flex:1 1 0;text-align:center}
   .mobileview-toggle .btn.active{background:var(--app-accent);border-color:var(--app-accent);color:#fff}
