@@ -136,6 +136,24 @@ function setFullscreenPreview(on) {
 expandPreviewBtn.addEventListener("click", () => setFullscreenPreview(true));
 exitFullscreenBtn.addEventListener("click", () => setFullscreenPreview(false));
 
+// Edit / Preview canvas switch — "Edit" (default) is today's click-anything
+// live-editable canvas; "Preview" strips every editing affordance (hover
+// outlines, placeholder hint text, delete/resize/logo controls, empty
+// optional rows) via the .canvas-preview-mode rules in inline-edit.css, the
+// same rules @media print already uses — so it's a faithful, live dry run
+// of the actual Print/PDF output, not a separate approximation of it.
+const canvasModeEditBtn = $("canvasModeEditBtn"), canvasModePreviewBtn = $("canvasModePreviewBtn");
+export function setCanvasMode(mode) {
+  const isPreview = mode === "preview";
+  document.body.classList.toggle("canvas-preview-mode", isPreview);
+  canvasModeEditBtn.classList.toggle("active", !isPreview);
+  canvasModeEditBtn.setAttribute("aria-selected", String(!isPreview));
+  canvasModePreviewBtn.classList.toggle("active", isPreview);
+  canvasModePreviewBtn.setAttribute("aria-selected", String(isPreview));
+}
+canvasModeEditBtn.addEventListener("click", () => setCanvasMode("edit"));
+canvasModePreviewBtn.addEventListener("click", () => setCanvasMode("preview"));
+
 // Bottom-bar "more actions" popover — same Export/Import/Reset buttons, just tucked away on phone.
 const actionsMoreBtn = $("actionsMoreBtn"), actionsMorePanel = $("actionsMorePanel");
 function closeActionsMore() { actionsMorePanel.classList.remove("open"); actionsMoreBtn.setAttribute("aria-expanded", "false"); }

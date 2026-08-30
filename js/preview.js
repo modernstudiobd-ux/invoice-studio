@@ -511,7 +511,7 @@ function metaCompany() {
   if ($("companyPhone").value.trim()) a.push("Phone: " + $("companyPhone").value.trim());
   if ($("companyEmail").value.trim()) a.push("Email: " + $("companyEmail").value.trim());
   if ($("companyWebsite").value.trim()) a.push($("companyWebsite").value.trim());
-  return a.join("\n") || "Add your company details";
+  return a.join("\n");
 }
 
 function metaClient() {
@@ -521,5 +521,5 @@ function metaClient() {
   if ($("clientTax").value.trim()) a.push("VAT / Tax: " + $("clientTax").value.trim());
   if ($("clientAddress").value.trim()) a.push($("clientAddress").value.trim());
   if ($("clientEmail").value.trim()) a.push($("clientEmail").value.trim());
-  return a.join("\n") || "Add client details";
+  return a.join("\n");
 }

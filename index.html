@@ -378,7 +378,20 @@
      <button class="btn small" id="newInvoiceBtn" title="Clear client and items; keeps company profile and design">+ New invoice</button>
    </div>
  </div>
- <div class="canvasbar"><div class="meta" id="previewMeta">A4 portrait preview</div><div class="actions"><button class="btn small" id="zoomOut">−</button><span class="meta" id="zoomLabel">100%</span><button class="btn small" id="zoomIn">+</button></div></div>
+ <div class="canvasbar">
+   <div class="canvasmode-switch" role="tablist" aria-label="Edit or preview the invoice">
+     <button type="button" class="canvasmode-btn active" id="canvasModeEditBtn" role="tab" aria-selected="true"><span aria-hidden="true">✏️</span> Edit</button>
+     <button type="button" class="canvasmode-btn" id="canvasModePreviewBtn" role="tab" aria-selected="false"><span aria-hidden="true">👁</span> Preview</button>
+   </div>
+   <div class="canvasbar-right">
+     <div class="meta" id="previewMeta">A4 portrait preview</div>
+     <div class="actions">
+       <button class="btn small" id="zoomOut">−</button>
+       <span class="meta" id="zoomLabel">100%</span>
+       <button class="btn small" id="zoomIn">+</button>
+     </div>
+   </div>
+ </div>
  <div class="canvaswrap">
   <article class="invoice template-modern" id="invoice">
     <header class="inv-header">

@@ -322,7 +322,52 @@
   }
   .logobox:hover,
   .logobox:focus-within { box-shadow: none !important; }
+  /* An empty field should look genuinely empty on paper — never the
+     on-screen "click to fill this in" hint text. */
+  .invoice [contenteditable]:empty::before { content: none !important; }
 }
+
+/* ---------------------------------------------------------------------- */
+/* "Preview" canvas mode — a live, on-screen dry run of exactly what      */
+/* Print/PDF will produce. Same rules as the @media print block above,    */
+/* applied via a class (toggled by the Edit/Preview switch above the      */
+/* canvas — see layout.js) instead of a media query, plus pointer-events  */
+/* so nothing is accidentally editable while previewing — one click back  */
+/* to "Edit" restores it exactly as it was.                               */
+/* ---------------------------------------------------------------------- */
+body.canvas-preview-mode .invoice { cursor: default; }
+body.canvas-preview-mode .invoice [data-editable],
+body.canvas-preview-mode .invoice .editable-num,
+body.canvas-preview-mode .logobox,
+body.canvas-preview-mode .col-resize-handle {
+  pointer-events: none;
+}
+body.canvas-preview-mode .del-col-width { width: 0 !important; }
+body.canvas-preview-mode .invoice th.del-col,
+body.canvas-preview-mode .invoice td.del-col,
+body.canvas-preview-mode .row-delete-btn,
+body.canvas-preview-mode .add-item-row,
+body.canvas-preview-mode .col-resize-handle,
+body.canvas-preview-mode .logo-upload-hint,
+body.canvas-preview-mode .logo-remove-btn,
+body.canvas-preview-mode .logo-position-btn,
+body.canvas-preview-mode .logo-resize-handle {
+  display: none !important;
+}
+body.canvas-preview-mode .invoice [data-editable]:hover,
+body.canvas-preview-mode .invoice [data-editable]:focus,
+body.canvas-preview-mode .invoice [data-editable].is-editing {
+  box-shadow: none !important;
+  background: transparent !important;
+}
+body.canvas-preview-mode .logobox:hover,
+body.canvas-preview-mode .logobox:focus-within { box-shadow: none !important; }
+body.canvas-preview-mode .invoice [contenteditable]:empty::before { content: none !important; }
+/* Section/row-level "only show if filled in" — reuses the same class
+   preview.js already toggles for print (Reference, Notes, Terms, Payment,
+   Invoice/Due date, Discount/Tax/Shipping) so Preview mode matches the
+   real output there too, not just the text-level placeholder hint above. */
+body.canvas-preview-mode .invoice .print-hide-empty { display: none !important; }
 
 /* Touch devices have no hover — always reveal delete/resize/logo controls
    there instead of hiding them behind a hover state that can't fire. */
