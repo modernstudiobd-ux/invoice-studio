@@ -8,14 +8,15 @@
    and above the two-column layout on desktop) instead of buried in a
    sidebar tab (see js/quickbar.js). Sits above everything, full-width, so
    it never depends on which panel is currently visible. */
-.quickbar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;background:#fff;border-bottom:1px solid var(--line);padding:8px 16px}
+.quickbar{display:flex;gap:18px;flex-wrap:wrap;align-items:center;background:#fff;border-bottom:1px solid var(--line);padding:8px 16px}
 .quickbar:empty{display:none;border:0;padding:0}
-.quickbar-field{flex:0 1 200px;margin:0}
-.quickbar-field label{font-size:8.5px}
-.quickbar-field select{min-height:32px;padding:5px 8px;font-size:12px}
+.quickbar-field{display:flex;align-items:center;gap:7px;flex:0 1 auto;margin:0;white-space:nowrap}
+.quickbar-field label{font-size:8.5px;margin-bottom:0;flex:none}
+.quickbar-field select{min-height:32px;padding:5px 8px;font-size:12px;width:auto}
 @media (max-width:640px){
   .quickbar{padding-top:calc(8px + env(safe-area-inset-top))}
-  .quickbar-field{flex:1 1 45%}
+  .quickbar-field{flex:1 1 45%;flex-direction:column;align-items:stretch;gap:2px;white-space:normal}
+  .quickbar-field select{width:100%}
 }
 .canvasbar{width:100%;max-width:var(--page-w);margin:0 auto 10px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.canvasbar .meta{font-size:11px;color:var(--muted)}
 .canvasbar-right{display:flex;align-items:center;gap:12px}
