@@ -98,3 +98,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .history-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .history-panel-head h2{font-size:13px;margin:0}
 
+/* Off-screen but still fully functional data-backing fields (see
+   #detailsHiddenFields in index.html) — every value on the invoice that
+   isn't shown as its own sidebar panel anymore, now that it's directly
+   editable in the live preview instead. Uses the standard "visually
+   hidden" clip pattern (not display:none) so the hidden file input can
+   still be opened programmatically (logobox click / drag-drop) and the
+   range slider can still be dragged via the on-canvas resize handle. */
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+

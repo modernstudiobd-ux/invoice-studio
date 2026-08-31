@@ -10,13 +10,14 @@
 // item rows) is wired up automatically — nothing needs re-attaching after
 // a render, since the listeners live on the stable #invoice container.
 //
-// Editing funnels back into the exact same state + sidebar fields the form
-// already uses: a plain text/number field dispatches a real "input"/"change"
-// event on its hidden sidebar counterpart (reusing every existing listener
-// in main.js — render, autosave, undo history, all of it) rather than
-// duplicating that logic here. Only things with no sidebar counterpart
-// (item cells, column labels/widths, document labels, meta overrides) write
-// straight into `state` and call renderPreview()/save() directly.
+// Editing funnels back into the exact same state + sidebar-backing fields
+// already used elsewhere: a plain text/number field dispatches a real
+// "input"/"change" event on its hidden data-backing counterpart (reusing
+// every existing listener in main.js — render, autosave, undo history, all
+// of it) rather than duplicating that logic here. Only things with no
+// backing field of their own (item cells, column labels/widths, document
+// labels) write straight into `state` and call renderPreview()/save()
+// directly.
 
 import { $ } from "./dom.js";
 import { state, defaultLabels } from "./state.js";
@@ -25,13 +26,14 @@ import { renderPreview } from "./preview.js";
 import { renderItems } from "./items.js";
 import { renderColumns } from "./columns.js";
 import { save } from "./persistence.js";
-import { handleLogoFile, removeLogo } from "./logo.js";
+import { handleLogoFile, removeLogo, naturalLogoHeight } from "./logo.js";
+import { toast } from "./toast.js";
 
 const STATUS_ORDER = ["Draft", "Due", "Paid", "Partially Paid", "Overdue", "Canceled"];
-const MULTILINE_FIELDS = new Set(["notes", "paymentDetails", "terms"]);
+const MULTILINE_FIELDS = new Set(["notes", "paymentDetails", "terms", "companyAddress", "clientAddress"]);
 // Placeholder copy shown when a field is empty — cleared automatically when
 // the person starts editing it, so they aren't stuck deleting hint text.
-const PLACEHOLDERS = new Set(["Your Company", "Client company", "Add your company details", "Add client details", "—", "Add payment details."]);
+const PLACEHOLDERS = new Set(["Your Company", "Client company", "—", "Add payment details."]);
 
 // Remembers each element's content at focus-in, so Escape can restore it.
 const editOriginal = new WeakMap();
@@ -41,14 +43,12 @@ function parseSpec(raw) {
   const kind = parts[0];
   if (kind === "field") return { kind, field: parts[1], numericKind: parts[2] === "percent" ? "percent" : parts[2] === "number" ? "number" : null, dateSwap: parts[2] === "date" };
   if (kind === "label") return { kind, name: parts[1] };
-  if (kind === "meta") return { kind, name: parts[1] };
   if (kind === "colhead") return { kind, colId: parts[1] };
   if (kind === "item") return { kind, idx: Number(parts[1]), key: parts[2], itemType: parts[3] };
   return { kind: "unknown" };
 }
 
 function isMultilineSpec(spec) {
-  if (spec.kind === "meta") return true;
   if (spec.kind === "field") return MULTILINE_FIELDS.has(spec.field);
   if (spec.kind === "item") { const col = state.columns.find(c => c.key === spec.key); return !!(col && col.key === "description" && col.type === "text"); }
   return false;
@@ -136,12 +136,6 @@ function commit(spec, el) {
     case "label": {
       const text = readText(el, false);
       state.labels[spec.name] = text || defaultLabels()[spec.name] || "";
-      renderPreview(); save();
-      return;
-    }
-    case "meta": {
-      const text = readText(el, true);
-      state.overrides[spec.name] = text === "" ? null : text;
       renderPreview(); save();
       return;
     }
@@ -305,6 +299,19 @@ function onPointerDown(e) {
   if (logoHandle) { e.preventDefault(); startLogoResize(e); return; }
 }
 
+// Double-clicking the logo's own resize handle resets it to its original
+// size — the on-canvas equivalent of the old sidebar "Reset to original
+// size" button, which no longer has a home now that the Details/Company
+// panel is gone.
+function onDoubleClick(e) {
+  const logoHandle = e.target.closest('[data-action="logo-resize"]');
+  if (!logoHandle) return;
+  e.preventDefault();
+  $("logoHeight").value = naturalLogoHeight();
+  renderPreview(); save();
+  toast(state.logoNatural ? "Logo reset to its original size." : "Logo size reset to default.");
+}
+
 function currentScale() {
   const inv = $("invoice");
   if (!inv || !inv.offsetWidth) return 1;
@@ -382,4 +389,5 @@ export function initInlineEdit() {
   invoice.addEventListener("dragleave", onDragLeave);
   invoice.addEventListener("drop", onDrop);
   invoice.addEventListener("pointerdown", onPointerDown);
+  invoice.addEventListener("dblclick", onDoubleClick);
 }

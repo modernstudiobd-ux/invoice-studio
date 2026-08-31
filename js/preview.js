@@ -60,7 +60,12 @@ export function renderPreview() {
   setText($("pDueLabel"), labels.due);
   setText($("pReferenceLabel"), labels.ref);
   setText($("pCompanyName"), $("companyName").value.trim() || "Your Company");
-  setText($("pCompanyMeta"), metaCompany());
+  setMetaField($("pCompanyReg"), $("companyReg").value.trim(), "Registration: ");
+  setMetaField($("pCompanyVat"), $("companyVat").value.trim(), "VAT / Tax: ");
+  setMetaField($("pCompanyAddress"), $("companyAddress").value.trim(), "");
+  setMetaField($("pCompanyPhone"), $("companyPhone").value.trim(), "Phone: ");
+  setMetaField($("pCompanyEmail"), $("companyEmail").value.trim(), "Email: ");
+  setMetaField($("pCompanyWebsite"), $("companyWebsite").value.trim(), "");
   let no = $("invoiceNumber").value.trim() || "Untitled";
   setText($("pInvoiceNo"), "#" + no);
   const invoiceDateVal = $("invoiceDate").value;
@@ -70,7 +75,10 @@ export function renderPreview() {
   const referenceText = $("reference").value.trim();
   setText($("pReference"), referenceText || "—");
   setText($("pClientName"), $("clientName").value.trim() || "Client company");
-  setText($("pClientMeta"), metaClient());
+  setMetaField($("pClientContact"), $("clientContact").value.trim(), "");
+  setMetaField($("pClientTax"), $("clientTax").value.trim(), "VAT / Tax: ");
+  setMetaField($("pClientAddress"), $("clientAddress").value.trim(), "");
+  setMetaField($("pClientEmail"), $("clientEmail").value.trim(), "");
   const notesText = $("notes").value.trim();
   const termsText = $("terms").value.trim();
   setText($("pNotes"), notesText);
@@ -497,29 +505,18 @@ function renderPageBreaks(inv, naturalH, pageCount) {
   }
 }
 
-// Both meta blocks can be edited as free text directly in the preview
-// (inlineEdit.js), which stores the exact text in state.overrides — that
-// takes over from the auto-built version below until the person clears the
-// block back to empty, which reverts to auto-building it from the
-// Company/Bill-to sidebar fields again.
-function metaCompany() {
-  if (typeof state.overrides.companyMeta === "string") return state.overrides.companyMeta;
-  let a = [];
-  if ($("companyReg").value.trim()) a.push("Registration: " + $("companyReg").value.trim());
-  if ($("companyVat").value.trim()) a.push("VAT / Tax: " + $("companyVat").value.trim());
-  if ($("companyAddress").value.trim()) a.push($("companyAddress").value.trim());
-  if ($("companyPhone").value.trim()) a.push("Phone: " + $("companyPhone").value.trim());
-  if ($("companyEmail").value.trim()) a.push("Email: " + $("companyEmail").value.trim());
-  if ($("companyWebsite").value.trim()) a.push($("companyWebsite").value.trim());
-  return a.join("\n");
-}
-
-function metaClient() {
-  if (typeof state.overrides.clientMeta === "string") return state.overrides.clientMeta;
-  let a = [];
-  if ($("clientContact").value.trim()) a.push($("clientContact").value.trim());
-  if ($("clientTax").value.trim()) a.push("VAT / Tax: " + $("clientTax").value.trim());
-  if ($("clientAddress").value.trim()) a.push($("clientAddress").value.trim());
-  if ($("clientEmail").value.trim()) a.push($("clientEmail").value.trim());
-  return a.join("\n");
+// Each line of the company/client "meta" blocks (registration, VAT, address,
+// phone, email, website / contact, VAT, address, email) is now its own
+// directly-editable row in the preview (see inlineEdit.js's "field" kind,
+// which already knows how to strip a data-prefix like "Registration: " back
+// off before saving — the same mechanism the invoice-number "#" prefix
+// uses). A row with no value renders empty so its CSS placeholder shows in
+// Edit mode, and is hidden from Preview/print via .print-hide-empty so
+// blank rows never appear on the actual document.
+function setMetaField(el, value, prefix) {
+  if (!el) return;
+  setText(el, value ? prefix + value : "");
+  if (!(el.isContentEditable && document.activeElement === el)) {
+    el.classList.toggle("print-hide-empty", !value);
+  }
 }

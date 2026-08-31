@@ -139,7 +139,6 @@
 <nav class="mobile-drawer" id="mobileDrawer" aria-hidden="true" aria-label="Invoice sections menu">
   <div class="drawer-head"><strong>Sections</strong><button class="btn small icon mtb-icon" id="drawerCloseBtn" aria-label="Close menu"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button></div>
   <button class="drawer-item active" data-tab="design" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.9 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H16a4 4 0 0 0 4-4c0-4.4-3.6-8.2-8-8.2Z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="10.5" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/><circle cx="17" cy="11" r="1"/></svg> Design</button>
-  <button class="drawer-item" data-tab="details" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg> Details</button>
   <button class="drawer-item" data-tab="items" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/></svg> Table Columns</button>
   <button class="drawer-item" data-tab="lineitems" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="8" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="8" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/></svg> Items</button>
   <div class="drawer-divider"></div>
@@ -177,83 +176,52 @@
   </div>
   <nav class="tabs" role="tablist" aria-label="Invoice sections">
     <button class="tab active" role="tab" id="tabbtn-design" data-tab="design" aria-selected="true" aria-controls="tab-design">Design</button>
-    <button class="tab" role="tab" id="tabbtn-details" data-tab="details" aria-selected="false" aria-controls="tab-details" tabindex="-1">Details</button>
     <button class="tab" role="tab" id="tabbtn-items" data-tab="items" aria-selected="false" aria-controls="tab-items" tabindex="-1">Table Columns</button>
     <button class="tab" role="tab" id="tabbtn-lineitems" data-tab="lineitems" aria-selected="false" aria-controls="tab-lineitems" tabindex="-1">Items</button>
   </nav>
 
-  <div class="tabpane" id="tab-details" role="tabpanel" aria-labelledby="tabbtn-details">
-    <section class="panel">
-      <div class="panelhead"><h2>Invoice</h2><span class="hint">General details</span></div>
-      <div class="grid2">
-        <div class="field"><label for="invoiceNumber">Invoice number</label><input id="invoiceNumber" value="INV-1001"></div>
-        <div class="field"><label for="status">Status</label><select id="status"><option>Draft</option><option selected>Due</option><option>Paid</option><option>Partially Paid</option><option>Overdue</option><option>Canceled</option></select></div>
-        <div class="field"><label for="invoiceDate">Invoice date</label><input id="invoiceDate" type="date"></div>
-        <div class="field"><label for="dueDate">Due date</label><input id="dueDate" type="date"></div>
-        <div class="field"><label for="reference">Reference / PO</label><input id="reference"></div>
-      </div>
-    </section>
-    <section class="panel collapsed">
-      <div class="panelhead"><h2>Your company</h2><span class="hint">Seller</span></div>
-      <div class="grid2">
-        <div class="field full"><label for="companyName">Company name</label><input id="companyName" value="Your Company Ltd."></div>
-        <div class="field"><label for="companyReg">Registration number</label><input id="companyReg"></div>
-        <div class="field"><label for="companyVat">VAT / tax number</label><input id="companyVat"></div>
-        <div class="field full"><label for="companyAddress">Address</label><textarea id="companyAddress"></textarea></div>
-        <div class="field"><label for="companyPhone">Phone</label><input id="companyPhone"></div>
-        <div class="field"><label for="companyEmail">Email</label><input id="companyEmail"></div>
-        <div class="field"><label for="companyWebsite">Website</label><input id="companyWebsite"></div>
-        <div class="field full"><label for="logoFile">Logo</label>
-<div class="logo-actions"><input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"><button class="btn small danger" id="removeLogoBtn" type="button">Remove</button></div>
-<div class="hint" id="logoHint" style="margin-top:5px">PNG, JPG, WEBP or SVG. Maximum 3 MB.</div>
-<div class="field" style="margin-top:9px">
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-    <label for="logoHeight" style="margin-bottom:0">Logo size (max height, px)</label>
-    <button class="btn small" id="resetLogoSizeBtn" type="button">Reset to original size</button>
-  </div>
-  <input id="logoHeight" type="range" min="24" max="160" value="48">
-  <div class="hint"><span id="logoHeightValue">48</span> px — width scales automatically to fit any logo's aspect ratio</div>
-</div>
-<div class="field" style="margin-top:9px">
-  <label for="logoPosition">Logo position</label>
-  <select id="logoPosition">
-    <option value="">Auto (template default)</option>
-    <option value="left">Left of company name</option>
-    <option value="above">Above company name</option>
-  </select>
-</div>
-</div>
-      </div>
-    </section>
-    <section class="panel collapsed">
-      <div class="panelhead"><h2>Bill to</h2><span class="hint">Customer</span></div>
-      <div class="grid2">
-        <div class="field full"><label for="clientName">Client company</label><input id="clientName"></div>
-        <div class="field"><label for="clientContact">Contact</label><input id="clientContact"></div>
-        <div class="field"><label for="clientTax">VAT / tax</label><input id="clientTax"></div>
-        <div class="field full"><label for="clientAddress">Address</label><textarea id="clientAddress"></textarea></div>
-        <div class="field full"><label for="clientEmail">Email</label><input id="clientEmail"></div>
-      </div>
-    </section>
-    <section class="panel collapsed">
-      <div class="panelhead"><h2>Totals and footer</h2></div>
-      <div class="grid3">
-        <div class="field"><label for="discount">Discount %</label><input id="discount" type="number" min="0" value="0" step=".01"></div>
-        <div class="field"><label for="tax">Tax %</label><input id="tax" type="number" min="0" value="0" step=".01"></div>
-        <div class="field"><label for="shipping">Shipping</label><input id="shipping" type="number" min="0" value="0" step=".01"></div>
-        <div class="field full"><label for="notes">Notes</label><textarea id="notes" placeholder="Optional"></textarea></div>
-        <div class="field full"><label for="paymentDetails">Payment details</label><textarea id="paymentDetails"></textarea></div>
-        <div class="field full"><label for="terms">Terms</label><textarea id="terms" placeholder="Optional"></textarea></div>
-        <div class="field full">
-          <label for="notesAlign">Note / payment / terms text alignment</label>
-          <select id="notesAlign">
-            <option value="left">Left</option>
-            <option value="center">Middle</option>
-            <option value="right">Right</option>
-          </select>
-        </div>
-      </div>
-    </section>
+  <!-- Everything below backs the live-editable preview (see js/inlineEdit.js)
+       rather than a sidebar panel — the Details tab was removed since every
+       one of these fields can already be edited directly on the invoice
+       itself (see the "Sections" tip above). These inputs stay in the DOM,
+       just off-screen, because the rest of the app (calc.js, preview.js,
+       persistence, History, brand templates, etc.) reads/writes them by id
+       as the actual source of truth. -->
+  <div id="detailsHiddenFields" class="visually-hidden" aria-hidden="true">
+    <input id="invoiceNumber" value="INV-1001">
+    <select id="status"><option>Draft</option><option selected>Due</option><option>Paid</option><option>Partially Paid</option><option>Overdue</option><option>Canceled</option></select>
+    <input id="invoiceDate" type="date">
+    <input id="dueDate" type="date">
+    <input id="reference">
+    <input id="companyName" value="Your Company Ltd.">
+    <input id="companyReg">
+    <input id="companyVat">
+    <textarea id="companyAddress"></textarea>
+    <input id="companyPhone">
+    <input id="companyEmail">
+    <input id="companyWebsite">
+    <input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" tabindex="-1">
+    <span id="logoHint"></span>
+    <button id="removeLogoBtn" type="button" tabindex="-1">Remove</button>
+    <input id="logoHeight" type="range" min="24" max="160" value="48" tabindex="-1">
+    <span id="logoHeightValue">48</span>
+    <button id="resetLogoSizeBtn" type="button" tabindex="-1">Reset to original size</button>
+    <select id="logoPosition" tabindex="-1">
+      <option value="">Auto (template default)</option>
+      <option value="left">Left of company name</option>
+      <option value="above">Above company name</option>
+    </select>
+    <input id="clientName">
+    <input id="clientContact">
+    <input id="clientTax">
+    <textarea id="clientAddress"></textarea>
+    <input id="clientEmail">
+    <input id="discount" type="number" min="0" value="0" step=".01">
+    <input id="tax" type="number" min="0" value="0" step=".01">
+    <input id="shipping" type="number" min="0" value="0" step=".01">
+    <textarea id="notes"></textarea>
+    <textarea id="paymentDetails"></textarea>
+    <textarea id="terms"></textarea>
   </div>
 
   <div class="tabpane" id="tab-items" role="tabpanel" aria-labelledby="tabbtn-items">
@@ -277,7 +245,7 @@
       <details class="importhelp">
         <summary>How to set up your CSV / Excel file ▸</summary>
         <div class="importhelp-body">
-          <p>Put one line item per row, with a header row on top naming each column. The importer matches your headers against your current <a href="#" data-goto-tab="items">table columns</a> (Details tab) by name — plus these common aliases, so close variations still match automatically:</p>
+          <p>Put one line item per row, with a header row on top naming each column. The importer matches your headers against your current <a href="#" data-goto-tab="items">table columns</a> by name — plus these common aliases, so close variations still match automatically:</p>
           <ul>
             <li><strong>SKU</strong> — also matches: Item code, Product code, Code</li>
             <li><strong>Description</strong> — also matches: Name, Item, Product, Course name</li>
@@ -300,6 +268,14 @@
         <select id="paperSize">
           <option value="a4">A4 — 210 × 297 mm (International)</option>
           <option value="letter">US Letter — 8.5 × 11 in</option>
+        </select>
+      </div>
+      <div class="field" style="margin-top:9px">
+        <label for="notesAlign">Note / payment / terms text alignment</label>
+        <select id="notesAlign">
+          <option value="left">Left</option>
+          <option value="center">Middle</option>
+          <option value="right">Right</option>
         </select>
       </div>
     </section>
@@ -409,9 +385,16 @@
           <span class="logo-upload-hint" aria-hidden="true">+ Logo</span>
           <button type="button" class="logo-remove-btn" id="logoRemoveInline" aria-label="Remove logo" title="Remove logo">✕</button>
           <button type="button" class="logo-position-btn" id="logoPositionInline" aria-label="Toggle logo position" title="Toggle logo position">⇄</button>
-          <span class="logo-resize-handle" data-action="logo-resize" role="slider" tabindex="0" aria-label="Drag to resize logo" aria-valuemin="24" aria-valuemax="160"></span>
+          <span class="logo-resize-handle" data-action="logo-resize" role="slider" tabindex="0" title="Drag to resize · double-click to reset" aria-label="Drag to resize logo, double-click to reset to original size" aria-valuemin="24" aria-valuemax="160"></span>
         </div>
-        <div><div class="companyname" id="pCompanyName" contenteditable="true" data-editable="field:companyName" data-placeholder="Your company name" role="textbox" aria-label="Company name" spellcheck="false">Your Company Ltd.</div><div class="metaText" id="pCompanyMeta" contenteditable="true" data-editable="meta:companyMeta" data-placeholder="Add your company details" role="textbox" aria-label="Company details" spellcheck="false">Add your company details</div></div>
+        <div><div class="companyname" id="pCompanyName" contenteditable="true" data-editable="field:companyName" data-placeholder="Your company name" role="textbox" aria-label="Company name" spellcheck="false">Your Company Ltd.</div><div class="metaText" id="pCompanyMeta">
+          <div id="pCompanyReg" contenteditable="true" data-editable="field:companyReg" data-prefix="Registration: " data-placeholder="Add registration number" role="textbox" aria-label="Company registration number" spellcheck="false"></div>
+          <div id="pCompanyVat" contenteditable="true" data-editable="field:companyVat" data-prefix="VAT / Tax: " data-placeholder="Add VAT / tax number" role="textbox" aria-label="Company VAT or tax number" spellcheck="false"></div>
+          <div id="pCompanyAddress" contenteditable="true" data-editable="field:companyAddress" data-placeholder="Add address" role="textbox" aria-label="Company address" spellcheck="false"></div>
+          <div id="pCompanyPhone" contenteditable="true" data-editable="field:companyPhone" data-prefix="Phone: " data-placeholder="Add phone" role="textbox" aria-label="Company phone" spellcheck="false"></div>
+          <div id="pCompanyEmail" contenteditable="true" data-editable="field:companyEmail" data-prefix="Email: " data-placeholder="Add email" role="textbox" aria-label="Company email" spellcheck="false"></div>
+          <div id="pCompanyWebsite" contenteditable="true" data-editable="field:companyWebsite" data-placeholder="Add website" role="textbox" aria-label="Company website" spellcheck="false"></div>
+        </div></div>
       </div>
       <div class="invtitle">
         <h2 id="pInvoiceTitle" contenteditable="true" data-editable="label:title" role="textbox" aria-label="Document title" spellcheck="false">INVOICE</h2><div class="invno" id="pInvoiceNo" contenteditable="true" data-editable="field:invoiceNumber" data-prefix="#" role="textbox" aria-label="Invoice number" spellcheck="false">#INV-1001</div>
@@ -427,7 +410,12 @@
       </div>
     </header>
     <section class="billrow">
-      <div data-section="client"><div class="label" id="pBillToLabel" contenteditable="true" data-editable="label:bill" role="textbox" aria-label="Bill to label" spellcheck="false">Bill to</div><div class="clientname" id="pClientName" contenteditable="true" data-editable="field:clientName" data-placeholder="Client name" role="textbox" aria-label="Client company name" spellcheck="false">Client company</div><div class="metaText" id="pClientMeta" contenteditable="true" data-editable="meta:clientMeta" data-placeholder="Add client details" role="textbox" aria-label="Client details" spellcheck="false">Add client details</div></div>
+      <div data-section="client"><div class="label" id="pBillToLabel" contenteditable="true" data-editable="label:bill" role="textbox" aria-label="Bill to label" spellcheck="false">Bill to</div><div class="clientname" id="pClientName" contenteditable="true" data-editable="field:clientName" data-placeholder="Client name" role="textbox" aria-label="Client company name" spellcheck="false">Client company</div><div class="metaText" id="pClientMeta">
+        <div id="pClientContact" contenteditable="true" data-editable="field:clientContact" data-placeholder="Add contact name" role="textbox" aria-label="Client contact" spellcheck="false"></div>
+        <div id="pClientTax" contenteditable="true" data-editable="field:clientTax" data-prefix="VAT / Tax: " data-placeholder="Add VAT / tax number" role="textbox" aria-label="Client VAT or tax number" spellcheck="false"></div>
+        <div id="pClientAddress" contenteditable="true" data-editable="field:clientAddress" data-placeholder="Add address" role="textbox" aria-label="Client address" spellcheck="false"></div>
+        <div id="pClientEmail" contenteditable="true" data-editable="field:clientEmail" data-placeholder="Add email" role="textbox" aria-label="Client email" spellcheck="false"></div>
+      </div></div>
     </section>
     <table class="invtable"><colgroup id="pCols"></colgroup><thead><tr id="pHeaders"></tr></thead><tbody id="pItems"></tbody></table>
     <section class="bottomgrid">

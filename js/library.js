@@ -80,7 +80,7 @@ export function openInvoiceById(id) {
   setCurrentId(id);
   load(entry.snapshot);
   renderHistory();
-  const tabBtn = $("tabbtn-details");
+  const tabBtn = $("tabbtn-design");
   if (tabBtn) activateTab(tabBtn, false);
   setMobileView("edit");
   closeHistoryPanel();

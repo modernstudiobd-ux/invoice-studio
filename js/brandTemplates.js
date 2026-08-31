@@ -54,10 +54,7 @@ function serializeBrand() {
     logoNatural: state.logoNatural,
     columns: state.columns,
     sections: state.sections,
-    labels: state.labels,
-    // Only the company meta override travels with the brand — clientMeta is
-    // about whoever's being billed, which is invoice-specific.
-    companyMeta: typeof state.overrides.companyMeta === "string" ? state.overrides.companyMeta : null
+    labels: state.labels
   };
 }
 
@@ -97,7 +94,6 @@ export function applyBrandTemplate(id) {
   state.columns = cleanColumns.length ? cleanColumns : defaultColumns();
   state.sections = { ...defaultSections(), ...(d.sections && typeof d.sections === "object" ? d.sections : {}) };
   state.labels = { ...defaultLabels(), ...(d.labels && typeof d.labels === "object" ? d.labels : {}) };
-  state.overrides.companyMeta = typeof d.companyMeta === "string" ? d.companyMeta : null;
   setAccent($("accentHex").value);
   applyAllOptionalColors();
   renderColumns(); renderItems(); renderToggles(); renderPreview(); save();
