@@ -18,7 +18,18 @@
   .quickbar-field{flex:1 1 45%;flex-direction:column;align-items:stretch;gap:2px;white-space:normal}
   .quickbar-field select{width:100%}
 }
-.canvasbar{width:100%;max-width:var(--page-w);margin:0 auto 10px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.canvasbar .meta{font-size:11px;color:var(--muted);display:inline-flex;align-items:center}
+/* Unified toolbar row — Save/Duplicate/Saved invoices/Templates on the
+   left, Edit⇄Preview + Zoom on the right, as one visual bar instead of two
+   stacked ones. #invoiceToolbar stays its own DOM node inside here (rather
+   than being merged into one flat container) purely so js/layout.js can
+   still teleport it whole into the hamburger drawer on phones — see
+   .drawer-toolbar-slot in responsive.css — without this row's layout CSS
+   following it there. */
+.toolbar-row{width:100%;max-width:var(--page-w);margin:0 auto 10px;display:flex;align-items:center;justify-content:space-between;gap:14px 20px;flex-wrap:wrap}
+#invoiceToolbarAnchor{display:none}
+.toolbar-row .invoice-toolbar{width:auto;max-width:none;margin:0;justify-content:flex-start}
+.toolbar-row .canvasbar{width:auto;max-width:none;margin:0;justify-content:flex-start;gap:20px}
+.canvasbar{display:flex;justify-content:flex-start;align-items:center;gap:14px;flex-wrap:wrap}.canvasbar .meta{font-size:11px;color:var(--muted);display:inline-flex;align-items:center}
 .canvasbar-right{display:flex;align-items:center;gap:12px}
 /* "A4 portrait preview · N pages" only makes sense as a description of the
    Preview mode (a faithful dry run of Print/PDF output) — in Edit mode the

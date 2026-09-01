@@ -97,7 +97,7 @@ export function applyBrandTemplate(id) {
   setAccent($("accentHex").value);
   applyAllOptionalColors();
   renderColumns(); renderItems(); renderToggles(); renderPreview(); save();
-  toast(`Applied "${entry.name}" — client, items and invoice number are unchanged.`);
+  toast(`Loaded "${entry.name}" — client, items and invoice number are unchanged.`);
   closeTemplatesPanel();
 }
 
@@ -141,7 +141,7 @@ export function renderBrandTemplates() {
   root.innerHTML = list.map(e => `<div class="historycard" data-id="${esc(e.id)}">
    <div class="historytop"><div><strong>${esc(e.name)}</strong></div></div>
    <div class="historymeta"><span>${esc((e.snapshot && e.snapshot.fields && e.snapshot.fields.companyName) || "No company name")}</span><span>${esc(new Date(e.updatedAt).toLocaleDateString())}</span></div>
-   <div class="historyactions"><button class="btn small" data-act="apply" type="button">Apply</button><button class="btn small" data-act="rename" type="button">Rename</button><button class="btn small danger" data-act="delete" type="button">Delete</button></div>
+   <div class="historyactions"><button class="btn small" data-act="apply" type="button">Load</button><button class="btn small" data-act="rename" type="button">Rename</button><button class="btn small danger" data-act="delete" type="button">Delete</button></div>
  </div>`).join("");
   root.querySelectorAll(".historycard").forEach(card => {
     const id = card.dataset.id;

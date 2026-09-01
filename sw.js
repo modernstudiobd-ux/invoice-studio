@@ -1,7 +1,7 @@
 // Invoice Studio Pro — Service Worker
 // Bump this version string whenever index.html (or any cached asset) changes,
 // so returning users automatically pick up the new version.
-const VERSION = "v3.9.0";
+const VERSION = "v3.10.0";
 const SHELL_CACHE = `invoice-studio-shell-${VERSION}`;
 const RUNTIME_CACHE = `invoice-studio-runtime-${VERSION}`;
 
@@ -37,6 +37,9 @@ const SHELL_ASSETS = [
   "./js/inlineEdit.js",
   "./js/main.js",
   "./fonts/inter-variable.woff2",
+  "./fonts/currency-latinext.woff2",
+  "./fonts/currency-thai.woff2",
+  "./fonts/currency-bengali.woff2",
   "./icons/icon-72.png",
   "./icons/icon-96.png",
   "./icons/icon-128.png",

@@ -65,7 +65,7 @@ function download(name, text) { let b = new Blob([text], { type: "application/js
 $("exportBtn").onclick = () => download(($("invoiceNumber").value || "invoice") + ".json", JSON.stringify(serialize(), null, 2));
 $("importBtn").onclick = () => $("jsonFile").click();
 $("jsonFile").onchange = async e => { try { load(JSON.parse(await e.target.files[0].text())); toast("Invoice imported."); } catch (err) { toast(err.message); } e.target.value = ""; };
-$("resetBtn").onclick = () => { if (confirm("Reset the app and delete ALL locally saved invoices and templates (current draft + History + Templates)? This cannot be undone.")) { localStorage.removeItem(KEY); localStorage.removeItem(LIBRARY_KEY); localStorage.removeItem(CURRENT_ID_KEY); localStorage.removeItem(BRAND_KEY); location.reload(); } };
+$("resetBtn").onclick = () => { if (confirm("Reset the app and delete ALL locally saved invoices and templates (current draft + Saved Invoices + Brand Templates)? This cannot be undone.")) { localStorage.removeItem(KEY); localStorage.removeItem(LIBRARY_KEY); localStorage.removeItem(CURRENT_ID_KEY); localStorage.removeItem(BRAND_KEY); location.reload(); } };
 
 /* --- Spreadsheet (CSV/XLSX) import --- */
 $("importSheetBtn").onclick = () => $("sheetFile").click();
@@ -123,7 +123,16 @@ renderHistory();
 renderBrandTemplates();
 
 /* --- Save / Duplicate / New / Undo / Redo buttons --- */
-$("saveInvoiceBtn").onclick = () => { saveToHistory(); toast("Saved to history."); };
+let saveStatusTimer = null;
+function markSaved() {
+  const el = $("saveStatus");
+  if (!el) return;
+  el.textContent = "✓ Saved " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  el.classList.add("show");
+  clearTimeout(saveStatusTimer);
+  saveStatusTimer = setTimeout(() => el.classList.remove("show"), 4000);
+}
+$("saveInvoiceBtn").onclick = () => { saveToHistory(); markSaved(); toast("Saved to Saved Invoices."); };
 $("duplicateInvoiceBtn").onclick = () => duplicateCurrentInvoice();
 $("newInvoiceBtn").onclick = () => newInvoice();
 $("clearHistoryBtn").onclick = () => clearLibrary();

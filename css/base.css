@@ -5,6 +5,17 @@
    this only affects editor UI text, never the invoice document itself
    (each invoice template sets its own font independently). */
 @font-face{font-family:"Inter";src:url("../fonts/inter-variable.woff2") format("woff2-variations"),url("../fonts/inter-variable.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+/* Inter (above) doesn't include every currency symbol glyph (₹ ₩ ₪ ₦ ₴ ₺ ₽
+   ₱ ₫ ₵ ł č ฿ ৳ are all missing from it) — these three tiny, self-hosted
+   subset fonts fill in exactly those characters so currency symbols
+   (js/format.js's CURRENCY_SYMBOLS) render correctly even fully offline,
+   instead of falling back to tofu boxes or a system font that may not be
+   installed. Each is restricted via unicode-range to only the handful of
+   codepoints it actually contains, so the browser loads it only when one of
+   those specific characters is used. See fonts/LICENSE-CurrencySymbols.txt. */
+@font-face{font-family:"Inter";src:url("../fonts/currency-latinext.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+20A6,U+20A9,U+20AA,U+20AB,U+20B1,U+20B4,U+20B5,U+20B9,U+20BA,U+20BD,U+0142,U+010D}
+@font-face{font-family:"Inter";src:url("../fonts/currency-thai.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+0E3F}
+@font-face{font-family:"Inter";src:url("../fonts/currency-bengali.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+09F3}
 /* --app-accent is the app's OWN UI color (tabs, primary buttons, focus rings,
    switches, badges) — fixed, independent of --accent which is set on #invoice
    and only affects the invoice design itself. Changing the invoice's Accent
@@ -85,13 +96,20 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .sidebar-tip button{flex:none;border:0;background:transparent;color:#4338ca;opacity:.55;font-size:13px;line-height:1;padding:2px;cursor:pointer}
 .sidebar-tip button:hover{opacity:1}
 
-/* Invoice toolbar — Save/Duplicate/History/New invoice, positioned above the
-   preview (aligned to the page width) instead of buried in a sidebar tab. */
-.invoice-toolbar{width:100%;max-width:var(--page-w);margin:0 auto 10px;display:flex;justify-content:center}
+/* Invoice toolbar — Save/Duplicate/History/New invoice. Shares one visual
+   row with the Edit/Preview + Zoom bar on desktop (see .toolbar-row /
+   .canvasbar in css/invoice.css) instead of stacking as two separate bars. */
+.invoice-toolbar{display:flex;justify-content:center}
 .invoice-toolbar-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;background:#fff;border:1px solid var(--line);border-radius:13px;padding:6px;box-shadow:var(--shadow-sm)}
 .invoice-toolbar-actions .btn{box-shadow:none;border-color:transparent}
 .invoice-toolbar-actions .btn:hover{border-color:var(--line);box-shadow:var(--shadow-sm)}
 .invoice-toolbar-actions .btn.primary{box-shadow:0 2px 8px rgba(var(--app-accent-rgb),.28)}
+/* Tiny "Saved ✓ 4:12 PM" confirmation that appears next to Save right after
+   it succeeds and fades after a few seconds — a persistent, easy-to-spot
+   confirmation (unlike the toast, which is easy to miss) that the click
+   actually did something, addressing "it doesn't look like it's saving". */
+.save-status{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#18794e;opacity:0;transform:translateX(-4px);transition:opacity .2s ease,transform .2s ease;white-space:nowrap}
+.save-status.show{opacity:1;transform:translateX(0)}
 .history-dropdown{position:relative}
 .history-panel{display:none;position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);z-index:40;width:min(360px,calc(100vw - 32px));max-height:70vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);padding:12px}
 .history-panel.open{display:block}

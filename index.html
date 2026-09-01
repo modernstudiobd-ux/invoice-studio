@@ -329,13 +329,15 @@
 <button class="sidebar-toggle" id="sidebarToggleBtn" title="Collapse sidebar" aria-label="Collapse sidebar">‹</button>
 
 <main class="workspace">
+ <div class="toolbar-row" id="toolbarRow">
  <div id="invoiceToolbarAnchor"></div>
  <div class="invoice-toolbar" id="invoiceToolbar">
    <div class="invoice-toolbar-actions">
-     <button class="btn small primary" id="saveInvoiceBtn" title="Save a reopenable snapshot to History"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>Save</button>
+     <button class="btn small primary" id="saveInvoiceBtn" title="Save a reopenable snapshot to Saved Invoices"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>Save</button>
+     <span class="save-status" id="saveStatus" aria-live="polite"></span>
      <button class="btn small" id="duplicateInvoiceBtn" title="Save a copy with the next invoice number and today's dates"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Duplicate</button>
      <div class="history-dropdown">
-       <button class="btn small" id="historyToggleBtn" aria-haspopup="true" aria-expanded="false" aria-controls="historyPanel"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>History</button>
+       <button class="btn small" id="historyToggleBtn" aria-haspopup="true" aria-expanded="false" aria-controls="historyPanel"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>Saved Invoices</button>
        <div class="history-panel" id="historyPanel" role="dialog" aria-label="Saved invoices">
          <div class="history-panel-head">
            <h2>Saved invoices</h2>
@@ -346,13 +348,13 @@
        </div>
      </div>
      <div class="history-dropdown">
-       <button class="btn small" id="templatesToggleBtn" aria-haspopup="true" aria-expanded="false" aria-controls="templatesPanel"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 13V7a2 2 0 0 0-2-2h-6L3 14l7 7 9-9Z"/><circle cx="13" cy="9" r="1.3" fill="currentColor" stroke="none"/></svg>Templates</button>
+       <button class="btn small" id="templatesToggleBtn" aria-haspopup="true" aria-expanded="false" aria-controls="templatesPanel"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 13V7a2 2 0 0 0-2-2h-6L3 14l7 7 9-9Z"/><circle cx="13" cy="9" r="1.3" fill="currentColor" stroke="none"/></svg>Brand Templates</button>
        <div class="history-panel" id="templatesPanel" role="dialog" aria-label="Brand templates">
          <div class="history-panel-head">
            <h2>Brand templates</h2>
            <button class="btn small danger" id="clearTemplatesBtn" type="button">Clear all</button>
          </div>
-         <span class="hint">Save your company info, logo, colors and layout as a reusable template, then apply it to quickly start an invoice for a different company or personal brand. Client, items and invoice numbers are left untouched.</span>
+         <span class="hint">Save your company info, logo, colors and layout as a reusable template, then load it to quickly start an invoice for a different company or personal brand. Client, items and invoice numbers are left untouched.</span>
          <button class="btn small primary" id="saveTemplateBtn" type="button" style="width:100%;margin-top:8px"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>Save current as template</button>
          <span class="hint" id="templatesCount"></span>
          <div id="templatesList" style="margin-top:8px"></div>
@@ -374,6 +376,7 @@
        <button class="btn small" id="zoomIn">+</button>
      </div>
    </div>
+ </div>
  </div>
  <div class="canvaswrap">
   <article class="invoice template-modern" id="invoice">

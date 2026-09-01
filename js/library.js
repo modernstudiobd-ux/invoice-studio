@@ -50,7 +50,7 @@ export function saveToHistory() {
     if (idx >= 0) lib[idx] = meta; else lib.unshift(meta);
     saveLibrary(lib);
     renderHistory();
-  } catch { toast("Could not save to history — your browser's storage may be full (try a smaller logo)."); }
+  } catch { toast("Could not save this invoice — your browser's storage may be full (try a smaller logo)."); }
 }
 
 export function renderHistory() {
@@ -90,7 +90,7 @@ export function openInvoiceById(id) {
 export function deleteInvoiceById(id) {
   const lib = loadLibrary(), entry = lib.find(x => x.id === id);
   if (!entry) return;
-  if (!confirm(`Delete "${entry.invoiceNumber || "this invoice"}" from History? This can't be undone.`)) return;
+  if (!confirm(`Delete "${entry.invoiceNumber || "this invoice"}" from Saved Invoices? This can't be undone.`)) return;
   saveLibrary(lib.filter(x => x.id !== id));
   renderHistory();
   toast("Deleted from history.");
@@ -115,7 +115,7 @@ export function renameInvoiceById(id) {
 
 export function clearLibrary() {
   if (!loadLibrary().length) return toast("No saved invoices to clear.");
-  if (!confirm("Delete ALL saved invoices from History? This can't be undone. (Your current on-screen draft is not affected.)")) return;
+  if (!confirm("Delete ALL saved invoices? This can't be undone. (Your current on-screen draft is not affected.)")) return;
   saveLibrary([]);
   renderHistory();
   toast("Cleared all saved invoices.");
@@ -139,7 +139,7 @@ export function duplicateInvoiceById(id) {
 }
 
 export function newInvoice() {
-  if (!confirm("Start a new invoice? This clears the client and items from your current draft (company info and design stay). Save first if you want to keep this draft in History.")) return;
+  if (!confirm("Start a new invoice? This clears the client and items from your current draft (company info and design stay). Save first if you want to keep this draft in Saved Invoices.")) return;
   setCurrentId(uid());
   $("invoiceNumber").value = nextInvoiceNumber();
   $("status").value = "Draft";
