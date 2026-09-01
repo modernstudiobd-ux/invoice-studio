@@ -4,6 +4,7 @@
 // the browser resolves all the import statements natively.
 
 import { $, uid } from "./dom.js";
+import { APP_VERSION, BUILD_DATE, BUILD_STRING } from "./version.js";
 import { state, fields, defaultColumns, KEY, DEFAULT_ACCENT, serialize } from "./state.js";
 import { today, plusDays } from "./format.js";
 import { toast } from "./toast.js";
@@ -88,14 +89,6 @@ $("sheetFile").onchange = async e => {
 $("zoomIn").onclick = () => { state.zoom = Math.min(1.3, state.zoom + .1); renderPreview(); save(); };
 $("zoomOut").onclick = () => { state.zoom = Math.max(.6, state.zoom - .1); renderPreview(); save(); };
 
-/* --- Sidebar "click the invoice to edit" tip: dismiss once, stays hidden --- */
-const SIDEBAR_TIP_KEY = "invoiceStudio.sidebarTipDismissed.v1";
-if (localStorage.getItem(SIDEBAR_TIP_KEY)) $("sidebarTip").classList.add("hidden");
-$("sidebarTipDismiss").onclick = () => {
-  $("sidebarTip").classList.add("hidden");
-  try { localStorage.setItem(SIDEBAR_TIP_KEY, "1"); } catch {}
-};
-
 /* --- Initial defaults + first render --- */
 $("invoiceDate").value = today();
 $("dueDate").value = plusDays(today(), 14);
@@ -151,3 +144,17 @@ document.addEventListener("keydown", e => {
 /* --- PWA install banner + service worker --- */
 initInstallPrompt();
 registerServiceWorker();
+
+/* --- Build/version string ---------------------------------------------
+   Shown as a small badge in the header and exposed on window so the user
+   can verify the running build via the browser console (type
+   `APP_VERSION` or `BUILD_STRING` in DevTools > Console). Bumped on every
+   delivered update — see js/version.js. */
+{
+  const badge = $("appVersionBadge");
+  if (badge) { badge.textContent = BUILD_STRING; badge.title = `Invoice Studio Pro — build ${BUILD_STRING}`; }
+  window.APP_VERSION = APP_VERSION;
+  window.BUILD_DATE = BUILD_DATE;
+  window.BUILD_STRING = BUILD_STRING;
+  console.log(`%cInvoice Studio Pro ${BUILD_STRING}`, "color:#4f46e5;font-weight:bold;");
+}

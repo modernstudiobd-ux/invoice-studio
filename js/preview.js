@@ -5,6 +5,7 @@ import { state, currentPaper, applyPaperSize, templateFooterInsetMm, templatePad
 import { money, dateFmt, alignClass, fmtCell, num } from "./format.js";
 import { calc, itemValue } from "./calc.js";
 import { applyAllOptionalColors } from "./accent.js";
+import { syncCurrencyDisplay } from "./currencySearch.js";
 
 // Writes text into a preview element unless that exact element is the one
 // currently being typed into (contenteditable + focused) — otherwise every
@@ -30,6 +31,7 @@ function setEditableLabel(container, html) {
 }
 
 export function renderPreview() {
+  syncCurrencyDisplay();
   let inv = $("invoice"), tpl = $("template").value;
   const logoPos = $("logoPosition").value;
   const notesAlign = $("notesAlign").value || "left";

@@ -13,6 +13,29 @@
 .quickbar-field{display:flex;align-items:center;gap:7px;flex:0 1 auto;margin:0;white-space:nowrap}
 .quickbar-field label{font-size:8.5px;margin-bottom:0;flex:none}
 .quickbar-field select{min-height:32px;padding:5px 8px;font-size:12px;width:auto}
+/* Searchable currency combobox — a text input + filtered listbox layered
+   over the real (visually hidden) #currency <select>, which stays the
+   source of truth so every other module keeps reading/writing it exactly
+   as before. See js/currencySearch.js. */
+.currency-field{position:relative}
+.combobox{position:relative;min-width:190px}
+.combobox-input{min-height:32px;padding:5px 26px 5px 8px;font-size:12px;width:100%;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-family:inherit;cursor:text}
+.combobox-input:focus{outline:2px solid var(--app-accent);outline-offset:1px;border-color:var(--app-accent)}
+.combobox-caret{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);pointer-events:none;transition:transform .15s ease}
+.combobox.open .combobox-caret{transform:translateY(-50%) rotate(180deg)}
+.combobox-list{position:absolute;top:calc(100% + 6px);left:0;right:0;min-width:260px;max-height:280px;overflow-y:auto;margin:0;padding:5px;list-style:none;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow-lg);z-index:50}
+.combobox-list.hidden{display:none}
+.combobox.open .combobox-list{display:block}
+.combobox-group-label{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:8px 8px 3px}
+.combobox-option{font-size:12.5px;padding:7px 8px;border-radius:7px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.combobox-option.active{background:#eef0f7}
+.combobox-option.selected{font-weight:750;color:var(--app-accent)}
+.combobox-option.selected::after{content:"✓";float:right;margin-left:8px}
+.combobox-empty{font-size:12px;color:var(--muted);padding:10px 8px;text-align:center}
+@media (max-width:640px){
+  .combobox{min-width:0}
+  .combobox-list{min-width:0}
+}
 @media (max-width:640px){
   .quickbar{padding-top:calc(8px + env(safe-area-inset-top))}
   .quickbar-field{flex:1 1 45%;flex-direction:column;align-items:stretch;gap:2px;white-space:normal}
@@ -41,7 +64,7 @@
 .invoice-toolbar-actions{flex-wrap:nowrap}
 .canvasbar{display:flex;justify-content:flex-start;align-items:center;gap:14px;flex-wrap:nowrap}.canvasbar .meta{font-size:11px;color:var(--muted);display:inline-flex;align-items:center;white-space:nowrap}
 .canvasbar-right{display:flex;align-items:center;gap:12px;flex:none}
-.canvasbar-right .actions{flex-wrap:nowrap}
+.canvasbar-right .actions{flex-wrap:nowrap;margin-bottom:0}
 .canvasmode-switch{flex:none}
 /* Pushes the divider (and everything after it — the Edit/Preview switch +
    zoom) all the way to the right edge of the pill, while Save's button

@@ -9,6 +9,8 @@
   .appheader{flex-direction:column;align-items:stretch;gap:8px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top))}
   .appheader .brand p{display:block}
   .appheader .quickbar{width:100%}
+  .appheader .topbar{flex-wrap:wrap;row-gap:6px}
+  .app-version-badge{order:1}
 }
 /* Mobile edit/preview switcher — Mobile tier only (≤640px). Tablet (641–1080px)
    keeps both panels stacked and visible; only true phone widths need to show
@@ -106,6 +108,7 @@
   .drawer-toolbar-slot .invoice-toolbar-actions .btn.primary:hover{background:rgba(var(--app-accent-rgb),.14)}
   .drawer-toolbar-slot .history-dropdown{width:100%}
   .drawer-toolbar-slot #historyToggleBtn{width:100%}
+  .drawer-toolbar-slot #pageSetupToggleBtn{width:100%}
 
   /* The History panel opens as its own centered card on phone widths — the
      drawer is too narrow to anchor a dropdown under the button. */
