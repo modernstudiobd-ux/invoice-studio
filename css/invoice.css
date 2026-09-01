@@ -26,16 +26,23 @@
    teleport it whole into the hamburger drawer on phones — see
    .drawer-toolbar-slot in responsive.css — without this row's layout CSS
    following it there; the divider hides itself on phones (below) since
-   there's nothing left of it once Save's group has moved to the drawer. */
-.toolbar-row{width:100%;max-width:var(--page-w);margin:0 auto 10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:13px;padding:6px;box-shadow:var(--shadow-sm)}
-.toolbar-row .btn{box-shadow:none;border-color:transparent}
+   there's nothing left of it once Save's group has moved to the drawer.
+   Kept to a single line always (no wrap): it uses the full workspace
+   width — wider than the page-width-constrained canvas below it — to fit
+   everything, and falls back to horizontal scrolling (rather than ever
+   wrapping to a second line) if a window is too narrow for that. */
+.toolbar-row{width:100%;max-width:none;margin:0 auto 10px;display:flex;align-items:center;gap:10px;flex-wrap:nowrap;overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:13px;padding:6px;box-shadow:var(--shadow-sm)}
+.toolbar-row .btn{box-shadow:none;border-color:transparent;white-space:nowrap}
 .toolbar-row .btn:hover{border-color:var(--line);box-shadow:var(--shadow-sm)}
 .toolbar-row .btn.primary{box-shadow:0 2px 8px rgba(var(--app-accent-rgb),.28)}
 #invoiceToolbarAnchor{display:none}
-.toolbar-row .invoice-toolbar{width:auto;max-width:none;margin:0;justify-content:flex-start}
-.toolbar-row .canvasbar{width:auto;max-width:none;margin:0;justify-content:flex-start;gap:16px}
-.canvasbar{display:flex;justify-content:flex-start;align-items:center;gap:14px;flex-wrap:wrap}.canvasbar .meta{font-size:11px;color:var(--muted);display:inline-flex;align-items:center}
-.canvasbar-right{display:flex;align-items:center;gap:12px}
+.toolbar-row .invoice-toolbar{width:auto;max-width:none;margin:0;justify-content:flex-start;flex:none}
+.toolbar-row .canvasbar{width:auto;max-width:none;margin:0;justify-content:flex-start;gap:16px;flex:none}
+.invoice-toolbar-actions{flex-wrap:nowrap}
+.canvasbar{display:flex;justify-content:flex-start;align-items:center;gap:14px;flex-wrap:nowrap}.canvasbar .meta{font-size:11px;color:var(--muted);display:inline-flex;align-items:center;white-space:nowrap}
+.canvasbar-right{display:flex;align-items:center;gap:12px;flex:none}
+.canvasbar-right .actions{flex-wrap:nowrap}
+.canvasmode-switch{flex:none}
 /* Pushes the divider (and everything after it — the Edit/Preview switch +
    zoom) all the way to the right edge of the pill, while Save's button
    group stays left-aligned; the gap this creates lands only in front of
