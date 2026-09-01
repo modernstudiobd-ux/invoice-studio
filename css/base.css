@@ -97,13 +97,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .sidebar-tip button:hover{opacity:1}
 
 /* Invoice toolbar — Save/Duplicate/History/New invoice. Shares one visual
-   row with the Edit/Preview + Zoom bar on desktop (see .toolbar-row /
-   .canvasbar in css/invoice.css) instead of stacking as two separate bars. */
+   pill with the Edit/Preview + Zoom bar on desktop (see .toolbar-row in
+   css/invoice.css, which supplies the shared background/border/shadow)
+   instead of stacking as two separate boxed bars; on phones this becomes a
+   plain vertical list once js/layout.js moves it into the hamburger
+   drawer (see .drawer-toolbar-slot in responsive.css for that styling). */
 .invoice-toolbar{display:flex;justify-content:center}
-.invoice-toolbar-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;background:#fff;border:1px solid var(--line);border-radius:13px;padding:6px;box-shadow:var(--shadow-sm)}
-.invoice-toolbar-actions .btn{box-shadow:none;border-color:transparent}
-.invoice-toolbar-actions .btn:hover{border-color:var(--line);box-shadow:var(--shadow-sm)}
-.invoice-toolbar-actions .btn.primary{box-shadow:0 2px 8px rgba(var(--app-accent-rgb),.28)}
+.invoice-toolbar-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
 /* Tiny "Saved ✓ 4:12 PM" confirmation that appears next to Save right after
    it succeeds and fades after a few seconds — a persistent, easy-to-spot
    confirmation (unlike the toast, which is easy to miss) that the click

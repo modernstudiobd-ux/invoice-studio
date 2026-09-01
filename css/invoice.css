@@ -19,18 +19,29 @@
   .quickbar-field select{width:100%}
 }
 /* Unified toolbar row — Save/Duplicate/Saved invoices/Templates on the
-   left, Edit⇄Preview + Zoom on the right, as one visual bar instead of two
-   stacked ones. #invoiceToolbar stays its own DOM node inside here (rather
-   than being merged into one flat container) purely so js/layout.js can
-   still teleport it whole into the hamburger drawer on phones — see
+   left, then a vertical divider, then Edit⇄Preview + Zoom pushed to the
+   far right — all inside one visual pill instead of two stacked bars.
+   #invoiceToolbar stays its own DOM node inside here (rather than being
+   merged into one flat container) purely so js/layout.js can still
+   teleport it whole into the hamburger drawer on phones — see
    .drawer-toolbar-slot in responsive.css — without this row's layout CSS
-   following it there. */
-.toolbar-row{width:100%;max-width:var(--page-w);margin:0 auto 10px;display:flex;align-items:center;justify-content:space-between;gap:14px 20px;flex-wrap:wrap}
+   following it there; the divider hides itself on phones (below) since
+   there's nothing left of it once Save's group has moved to the drawer. */
+.toolbar-row{width:100%;max-width:var(--page-w);margin:0 auto 10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:13px;padding:6px;box-shadow:var(--shadow-sm)}
+.toolbar-row .btn{box-shadow:none;border-color:transparent}
+.toolbar-row .btn:hover{border-color:var(--line);box-shadow:var(--shadow-sm)}
+.toolbar-row .btn.primary{box-shadow:0 2px 8px rgba(var(--app-accent-rgb),.28)}
 #invoiceToolbarAnchor{display:none}
 .toolbar-row .invoice-toolbar{width:auto;max-width:none;margin:0;justify-content:flex-start}
-.toolbar-row .canvasbar{width:auto;max-width:none;margin:0;justify-content:flex-start;gap:20px}
+.toolbar-row .canvasbar{width:auto;max-width:none;margin:0;justify-content:flex-start;gap:16px}
 .canvasbar{display:flex;justify-content:flex-start;align-items:center;gap:14px;flex-wrap:wrap}.canvasbar .meta{font-size:11px;color:var(--muted);display:inline-flex;align-items:center}
 .canvasbar-right{display:flex;align-items:center;gap:12px}
+/* Pushes the divider (and everything after it — the Edit/Preview switch +
+   zoom) all the way to the right edge of the pill, while Save's button
+   group stays left-aligned; the gap this creates lands only in front of
+   the divider, not evenly across every gap in the row. */
+.toolbar-divider{width:1px;align-self:stretch;background:var(--line);margin-left:auto;flex:none}
+@media (max-width:640px){ .toolbar-divider{display:none} }
 /* "A4 portrait preview · N pages" only makes sense as a description of the
    Preview mode (a faithful dry run of Print/PDF output) — in Edit mode the
    canvas isn't a page-accurate preview (it shows editing affordances,
