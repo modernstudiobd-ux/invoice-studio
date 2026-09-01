@@ -175,12 +175,11 @@ const historyToggleBtn = $("historyToggleBtn"), historyPanel = $("historyPanel")
 export function closeHistoryPanel() {
   historyPanel.classList.remove("open");
   historyToggleBtn.setAttribute("aria-expanded", "false");
-  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !templatesPanel.classList.contains("open") && !pageSetupPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
+  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !templatesPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
 }
 historyToggleBtn.addEventListener("click", e => {
   e.stopPropagation();
   closeTemplatesPanel();
-  closePageSetupPanel();
   const open = historyPanel.classList.toggle("open");
   historyToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
   // On phone widths the panel opens as its own centered card (the drawer is
@@ -201,12 +200,11 @@ const templatesToggleBtn = $("templatesToggleBtn"), templatesPanel = $("template
 export function closeTemplatesPanel() {
   templatesPanel.classList.remove("open");
   templatesToggleBtn.setAttribute("aria-expanded", "false");
-  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !historyPanel.classList.contains("open") && !pageSetupPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
+  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !historyPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
 }
 templatesToggleBtn.addEventListener("click", e => {
   e.stopPropagation();
   closeHistoryPanel();
-  closePageSetupPanel();
   const open = templatesPanel.classList.toggle("open");
   templatesToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
   if (phoneQuery.matches) {
@@ -217,30 +215,6 @@ templatesToggleBtn.addEventListener("click", e => {
 });
 document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(templatesPanel) && !path.includes(templatesToggleBtn)) closeTemplatesPanel(); });
 drawerOverlay.addEventListener("click", closeTemplatesPanel);
-
-// "Page setup" dropdown — same pattern as History/Templates above, for the
-// paper size + notes alignment settings (moved out of the sidebar so they
-// sit next to the other per-invoice toolbar actions).
-const pageSetupToggleBtn = $("pageSetupToggleBtn"), pageSetupPanel = $("pageSetupPanel");
-export function closePageSetupPanel() {
-  pageSetupPanel.classList.remove("open");
-  pageSetupToggleBtn.setAttribute("aria-expanded", "false");
-  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !historyPanel.classList.contains("open") && !templatesPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
-}
-pageSetupToggleBtn.addEventListener("click", e => {
-  e.stopPropagation();
-  closeHistoryPanel();
-  closeTemplatesPanel();
-  const open = pageSetupPanel.classList.toggle("open");
-  pageSetupToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
-  if (phoneQuery.matches) {
-    mobileDrawer.classList.remove("open");
-    hamburgerBtn.setAttribute("aria-expanded", "false");
-    drawerOverlay.classList.toggle("show", open);
-  }
-});
-document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(pageSetupPanel) && !path.includes(pageSetupToggleBtn)) closePageSetupPanel(); });
-drawerOverlay.addEventListener("click", closePageSetupPanel);
 
 // Collapsible sections — tap a panel heading to expand/collapse it (every
 // width now; less-used panels start collapsed by default — see main.js —

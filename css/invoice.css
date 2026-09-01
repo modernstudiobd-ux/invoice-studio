@@ -65,6 +65,15 @@
 .canvasbar{display:flex;justify-content:flex-start;align-items:center;gap:14px;flex-wrap:nowrap}.canvasbar .meta{font-size:11px;color:var(--muted);display:inline-flex;align-items:center;white-space:nowrap}
 .canvasbar-right{display:flex;align-items:center;gap:12px;flex:none}
 .canvasbar-right .actions{flex-wrap:nowrap;margin-bottom:0}
+/* Page setup — Paper size + Notes alignment, shown as plain inline
+   dropdowns on the toolbar's right side (alongside Edit/Preview + Zoom)
+   rather than tucked behind a button/popover. Styled to match the zoom
+   buttons on the same row (border, radius, shadow) so the row reads as
+   one consistent control cluster. */
+.pagesetup-inline{display:flex;align-items:center;gap:6px;flex:none}
+.toolbar-select{min-height:0;height:27px;padding:0 22px 0 9px;font-size:11px;font-weight:750;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);cursor:pointer;width:auto;max-width:118px;text-overflow:ellipsis}
+.toolbar-select:hover{border-color:#c2c9d6}
+.toolbar-select:focus{outline:2px solid var(--app-accent);outline-offset:1px}
 .canvasmode-switch{flex:none}
 /* Pushes the divider (and everything after it — the Edit/Preview switch +
    zoom) all the way to the right edge of the pill, while Save's button

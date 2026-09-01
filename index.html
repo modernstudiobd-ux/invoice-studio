@@ -346,29 +346,6 @@
        </div>
      </div>
      <button class="btn small" id="newInvoiceBtn" title="Clear client and items; keeps company profile and design">+ New invoice</button>
-     <div class="history-dropdown">
-       <button class="btn small" id="pageSetupToggleBtn" aria-haspopup="true" aria-expanded="false" aria-controls="pageSetupPanel"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>Page setup</button>
-       <div class="history-panel" id="pageSetupPanel" role="dialog" aria-label="Page setup">
-         <div class="history-panel-head">
-           <h2>Page setup</h2>
-         </div>
-         <span class="hint">Affects screen, print and PDF</span>
-         <div class="field" style="margin-top:10px"><label for="paperSize">Paper size</label>
-           <select id="paperSize">
-             <option value="a4">A4 — 210 × 297 mm (International)</option>
-             <option value="letter">US Letter — 8.5 × 11 in</option>
-           </select>
-         </div>
-         <div class="field" style="margin-top:9px">
-           <label for="notesAlign">Note / payment / terms text alignment</label>
-           <select id="notesAlign">
-             <option value="left">Left</option>
-             <option value="center">Middle</option>
-             <option value="right">Right</option>
-           </select>
-         </div>
-       </div>
-     </div>
    </div>
  </div>
  <span class="toolbar-divider" aria-hidden="true"></span>
@@ -379,6 +356,19 @@
    </div>
    <div class="canvasbar-right">
      <div class="meta" id="previewMeta">A4 portrait preview</div>
+     <div class="pagesetup-inline" title="Page setup — affects screen, print and PDF">
+       <label class="visually-hidden" for="paperSize">Paper size</label>
+       <select id="paperSize" class="toolbar-select">
+         <option value="a4">A4</option>
+         <option value="letter">US Letter</option>
+       </select>
+       <label class="visually-hidden" for="notesAlign">Note / payment / terms text alignment</label>
+       <select id="notesAlign" class="toolbar-select">
+         <option value="left">Align: Left</option>
+         <option value="center">Align: Middle</option>
+         <option value="right">Align: Right</option>
+       </select>
+     </div>
      <div class="actions">
        <button class="btn small" id="zoomOut">−</button>
        <span class="meta" id="zoomLabel">100%</span>

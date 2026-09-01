@@ -108,7 +108,6 @@
   .drawer-toolbar-slot .invoice-toolbar-actions .btn.primary:hover{background:rgba(var(--app-accent-rgb),.14)}
   .drawer-toolbar-slot .history-dropdown{width:100%}
   .drawer-toolbar-slot #historyToggleBtn{width:100%}
-  .drawer-toolbar-slot #pageSetupToggleBtn{width:100%}
 
   /* The History panel opens as its own centered card on phone widths — the
      drawer is too narrow to anchor a dropdown under the button. */
