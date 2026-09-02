@@ -37,7 +37,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .appheader .quickbar-field select{min-width:0}
 .brand{display:flex;gap:10px;align-items:center}.mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(145deg,var(--app-accent),#7c74f0);box-shadow:0 4px 12px rgba(var(--app-accent-rgb),.35);color:#fff;font-weight:900;display:grid;place-items:center;flex:none}
 .brand h1{font-size:17px;margin:0;letter-spacing:-.01em}.brand p{margin:2px 0 0;font-size:11px;color:var(--muted)}
-.app-version-badge{font-size:10px;font-weight:700;letter-spacing:.02em;color:var(--muted);background:#f4f5fa;border:1px solid var(--line);border-radius:999px;padding:3px 9px;flex:none;white-space:nowrap;user-select:none}
 .actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff;border-radius:var(--radius-sm);padding:7px 11px;font-size:12px;font-weight:750;color:var(--ink);box-shadow:var(--shadow-sm);transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease,background-color .12s ease}
 .actions-more{display:contents}.actions-more-toggle{display:none}
 .mtb-icon,.drawer-overlay,.mobile-drawer,.fullscreen-exit{display:none}
@@ -101,7 +100,16 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .save-status{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#18794e;opacity:0;transform:translateX(-4px);transition:opacity .2s ease,transform .2s ease;white-space:nowrap}
 .save-status.show{opacity:1;transform:translateX(0)}
 .history-dropdown{position:relative}
-.history-panel{display:none;position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);z-index:40;width:min(360px,calc(100vw - 32px));max-height:70vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);padding:12px}
+/* Positioned as position:fixed with top/left set inline by JS (see
+   layout.js's positionDropdownPanel) rather than position:absolute here —
+   .toolbar-row (the button strip these dropdowns hang off of) has
+   overflow-x:auto for horizontal scrolling on narrow widths, and any
+   absolutely-positioned descendant gets clipped to that scrolling
+   container's own bounds, which was squashing this panel visually inside
+   the toolbar instead of letting it float below it. Fixed positioning
+   with JS-computed coordinates escapes that clipping entirely. The mobile
+   media query below still overrides this into simple centered-fixed. */
+.history-panel{display:none;position:fixed;z-index:40;width:min(360px,calc(100vw - 32px));max-height:70vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);padding:12px}
 .history-panel.open{display:block}
 .history-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .history-panel-head h2{font-size:13px;margin:0}

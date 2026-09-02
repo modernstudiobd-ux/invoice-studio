@@ -172,6 +172,34 @@ actionsMorePanel.querySelectorAll("button").forEach(b => b.addEventListener("cli
 // Saved-invoices "History" dropdown, positioned above the preview alongside
 // Save/Duplicate/New invoice (replaces the old sidebar History tab).
 const historyToggleBtn = $("historyToggleBtn"), historyPanel = $("historyPanel");
+
+// Anchors a .history-panel below its toggle button using fixed positioning
+// computed from the button's actual on-screen position, instead of relying
+// on CSS position:absolute (which was getting clipped by .toolbar-row's
+// overflow-x:auto — see the comment on .history-panel in base.css). On
+// phone widths the panel is centered via its own CSS media query instead,
+// so any inline position from a previous desktop placement is cleared.
+function positionDropdownPanel(panel, toggleBtn) {
+  if (phoneQuery.matches) {
+    panel.style.top = "";
+    panel.style.left = "";
+    panel.style.width = "";
+    return;
+  }
+  const r = toggleBtn.getBoundingClientRect();
+  const width = Math.min(360, window.innerWidth - 32);
+  let left = r.left + r.width / 2 - width / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
+  panel.style.width = width + "px";
+  panel.style.left = left + "px";
+  panel.style.top = (r.bottom + 8) + "px";
+}
+// Horizontally scrolling the toolbar row would leave an already-open panel
+// visually anchored to where its button used to be, so just close it —
+// simpler and safer than recomputing position continuously on scroll.
+const toolbarRowEl = document.querySelector(".toolbar-row");
+if (toolbarRowEl) toolbarRowEl.addEventListener("scroll", () => { closeHistoryPanel(); closeTemplatesPanel(); }, { passive: true });
+
 export function closeHistoryPanel() {
   historyPanel.classList.remove("open");
   historyToggleBtn.setAttribute("aria-expanded", "false");
@@ -182,6 +210,7 @@ historyToggleBtn.addEventListener("click", e => {
   closeTemplatesPanel();
   const open = historyPanel.classList.toggle("open");
   historyToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) positionDropdownPanel(historyPanel, historyToggleBtn);
   // On phone widths the panel opens as its own centered card (the drawer is
   // too narrow to anchor a dropdown under the button), so hide the sections
   // drawer but keep a dimmed backdrop behind the card.
@@ -207,6 +236,7 @@ templatesToggleBtn.addEventListener("click", e => {
   closeHistoryPanel();
   const open = templatesPanel.classList.toggle("open");
   templatesToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) positionDropdownPanel(templatesPanel, templatesToggleBtn);
   if (phoneQuery.matches) {
     mobileDrawer.classList.remove("open");
     hamburgerBtn.setAttribute("aria-expanded", "false");

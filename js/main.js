@@ -146,13 +146,11 @@ initInstallPrompt();
 registerServiceWorker();
 
 /* --- Build/version string ---------------------------------------------
-   Shown as a small badge in the header and exposed on window so the user
-   can verify the running build via the browser console (type
-   `APP_VERSION` or `BUILD_STRING` in DevTools > Console). Bumped on every
-   delivered update — see js/version.js. */
+   Not shown in the UI (removed per feedback) — exposed on window only, so
+   the build can still be confirmed via the browser console if ever needed
+   (type `BUILD_STRING` in DevTools > Console). Bumped on every delivered
+   update — see js/version.js. */
 {
-  const badge = $("appVersionBadge");
-  if (badge) { badge.textContent = BUILD_STRING; badge.title = `Invoice Studio Pro — build ${BUILD_STRING}`; }
   window.APP_VERSION = APP_VERSION;
   window.BUILD_DATE = BUILD_DATE;
   window.BUILD_STRING = BUILD_STRING;

@@ -10,7 +10,6 @@
   .appheader .brand p{display:block}
   .appheader .quickbar{width:100%}
   .appheader .topbar{flex-wrap:wrap;row-gap:6px}
-  .app-version-badge{order:1}
 }
 /* Mobile edit/preview switcher — Mobile tier only (≤640px). Tablet (641–1080px)
    keeps both panels stacked and visible; only true phone widths need to show

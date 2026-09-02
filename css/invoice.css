@@ -89,6 +89,11 @@
    the divider, not evenly across every gap in the row. */
 .toolbar-divider{width:1px;align-self:stretch;background:var(--line);margin-left:auto;flex:none}
 @media (max-width:640px){ .toolbar-divider{display:none} }
+/* A second divider nested inside .canvasbar (between Page setup and
+   Edit/Preview) needs to sit flush against its neighbors, not push
+   everything after it to the far right the way the top-level divider
+   (between the button toolbar and this whole bar) does. */
+.canvasbar .toolbar-divider{margin-left:0}
 /* "A4 portrait preview · N pages" only makes sense as a description of the
    Preview mode (a faithful dry run of Print/PDF output) — in Edit mode the
    canvas isn't a page-accurate preview (it shows editing affordances,
