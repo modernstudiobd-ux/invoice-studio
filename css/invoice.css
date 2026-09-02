@@ -21,10 +21,9 @@
 .combobox{position:relative;min-width:190px}
 .combobox-input{min-height:32px;padding:5px 26px 5px 8px;font-size:12px;width:100%;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-family:inherit;cursor:text}
 .combobox-input:focus{outline:2px solid var(--app-accent);outline-offset:1px;border-color:var(--app-accent)}
-.combobox-caret{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);pointer-events:none;transition:transform .15s ease}
+.combobox-caret{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);cursor:pointer;transition:transform .15s ease}
 .combobox.open .combobox-caret{transform:translateY(-50%) rotate(180deg)}
-.combobox-list{position:absolute;top:calc(100% + 6px);left:0;right:0;min-width:260px;max-height:280px;overflow-y:auto;margin:0;padding:5px;list-style:none;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow-lg);z-index:50}
-.combobox-list.hidden{display:none}
+.combobox-list{position:absolute;top:calc(100% + 6px);left:0;right:0;min-width:260px;max-height:280px;overflow-y:auto;margin:0;padding:5px;list-style:none;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow-lg);z-index:50;display:none}
 .combobox.open .combobox-list{display:block}
 .combobox-group-label{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:8px 8px 3px}
 .combobox-option{font-size:12.5px;padding:7px 8px;border-radius:7px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
@@ -74,6 +73,15 @@
 .toolbar-select{min-height:0;height:27px;padding:0 22px 0 9px;font-size:11px;font-weight:750;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);cursor:pointer;width:auto;max-width:118px;text-overflow:ellipsis}
 .toolbar-select:hover{border-color:#c2c9d6}
 .toolbar-select:focus{outline:2px solid var(--app-accent);outline-offset:1px}
+/* The real #currency <select> underneath the searchable combobox must stay
+   fully invisible AND non-interactive — otherwise generic rules elsewhere
+   (e.g. ".quickbar-field select") can leak real width/padding onto it
+   (they win over the single-class ".visually-hidden" on specificity), which
+   gives it a real clickable box that can sit on top of the search input or
+   its arrow and silently steal clicks/focus meant for the combobox. The ID
+   selector here guarantees this always wins, regardless of what else
+   targets "select" elsewhere in the stylesheet, now or in the future. */
+#currency{position:absolute!important;width:1px!important;height:1px!important;min-width:0!important;min-height:0!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;pointer-events:none!important}
 .canvasmode-switch{flex:none}
 /* Pushes the divider (and everything after it — the Edit/Preview switch +
    zoom) all the way to the right edge of the pill, while Save's button

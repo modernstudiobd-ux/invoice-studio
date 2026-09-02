@@ -128,6 +128,15 @@ input.addEventListener("focus", () => { openList(); input.select(); });
 input.addEventListener("click", () => { if (!combo.classList.contains("open")) openList(); });
 input.addEventListener("input", () => { if (!combo.classList.contains("open")) openList(); else renderList(input.value); });
 
+// Caret icon acts as an explicit open/close toggle (mousedown, so it fires
+// before the input's blur would otherwise close the list first).
+const caret = combo.querySelector(".combobox-caret");
+if (caret) caret.addEventListener("mousedown", e => {
+  e.preventDefault();
+  if (combo.classList.contains("open")) { input.blur(); closeList(); }
+  else { openList(); input.focus(); input.select(); }
+});
+
 input.addEventListener("keydown", e => {
   if (e.key === "ArrowDown") {
     e.preventDefault();

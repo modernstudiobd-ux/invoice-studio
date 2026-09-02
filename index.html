@@ -66,7 +66,7 @@
     <div class="combobox" id="currencyCombo">
       <input type="text" id="currencySearchInput" class="combobox-input" role="combobox" aria-expanded="false" aria-controls="currencyListbox" aria-autocomplete="list" aria-haspopup="listbox" autocomplete="off" spellcheck="false" placeholder="Search currency…">
       <svg class="combobox-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
-      <ul class="combobox-list hidden" id="currencyListbox" role="listbox" aria-label="Currency"></ul>
+      <ul class="combobox-list" id="currencyListbox" role="listbox" aria-label="Currency"></ul>
       <select id="currency" class="visually-hidden" tabindex="-1" aria-hidden="true">
       <optgroup label="Americas">
         <option value="USD" selected>USD - US Dollar</option>
@@ -350,25 +350,25 @@
  </div>
  <span class="toolbar-divider" aria-hidden="true"></span>
  <div class="canvasbar">
+   <div class="pagesetup-inline" title="Page setup — affects screen, print and PDF">
+     <label class="visually-hidden" for="paperSize">Paper size</label>
+     <select id="paperSize" class="toolbar-select">
+       <option value="a4">A4</option>
+       <option value="letter">US Letter</option>
+     </select>
+     <label class="visually-hidden" for="notesAlign">Note / payment / terms text alignment</label>
+     <select id="notesAlign" class="toolbar-select">
+       <option value="left">Align: Left</option>
+       <option value="center">Align: Middle</option>
+       <option value="right">Align: Right</option>
+     </select>
+   </div>
    <div class="canvasmode-switch" role="tablist" aria-label="Edit or preview the invoice">
      <button type="button" class="canvasmode-btn active" id="canvasModeEditBtn" role="tab" aria-selected="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m17 3 4 4L7 21H3v-4Z"/></svg> Edit</button>
      <button type="button" class="canvasmode-btn" id="canvasModePreviewBtn" role="tab" aria-selected="false"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Preview</button>
    </div>
    <div class="canvasbar-right">
      <div class="meta" id="previewMeta">A4 portrait preview</div>
-     <div class="pagesetup-inline" title="Page setup — affects screen, print and PDF">
-       <label class="visually-hidden" for="paperSize">Paper size</label>
-       <select id="paperSize" class="toolbar-select">
-         <option value="a4">A4</option>
-         <option value="letter">US Letter</option>
-       </select>
-       <label class="visually-hidden" for="notesAlign">Note / payment / terms text alignment</label>
-       <select id="notesAlign" class="toolbar-select">
-         <option value="left">Align: Left</option>
-         <option value="center">Align: Middle</option>
-         <option value="right">Align: Right</option>
-       </select>
-     </div>
      <div class="actions">
        <button class="btn small" id="zoomOut">−</button>
        <span class="meta" id="zoomLabel">100%</span>
