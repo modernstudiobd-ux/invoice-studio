@@ -95,11 +95,19 @@
    (between the button toolbar and this whole bar) does. */
 .canvasbar .toolbar-divider{margin-left:0}
 /* "A4 portrait preview · N pages" only makes sense as a description of the
-   Preview mode (a faithful dry run of Print/PDF output) — in Edit mode the
-   canvas isn't a page-accurate preview (it shows editing affordances,
-   placeholders, etc.), so the label only shows once Preview is switched on. */
+   Preview mode (a faithful dry run of Print/PDF output) — in Draft mode the
+   canvas isn't a page-accurate preview (it still shows every optional
+   field's placeholder, even ones left blank), so the label only shows once
+   Preview is switched on. */
 #previewMeta{display:none}
 body.canvas-preview-mode #previewMeta{display:inline-flex}
+/* Draft/Preview canvas switch (js/layout.js setCanvasMode): Draft (default)
+   shows every optional row/field so it's clear what's available to fill
+   in, even when empty (see the "— " / "Add value" placeholders preview.js
+   renders for them). Preview strips those empty optional rows exactly like
+   @media print does (same .print-hide-empty class print.css already uses)
+   for a faithful live dry run of the actual Print/PDF output. */
+body.canvas-preview-mode .invoice .print-hide-empty{display:none!important}
 .canvasmode-switch{display:inline-flex;gap:2px;background:#eef0f7;padding:3px;border-radius:10px}
 .canvasmode-btn{border:0;background:transparent;border-radius:7px;padding:6px 11px;font-size:11.5px;font-weight:750;color:var(--muted);display:inline-flex;align-items:center;gap:5px;transition:background-color .15s ease,color .15s ease,box-shadow .15s ease}
 .canvasmode-btn.active{background:#fff;color:var(--app-accent);box-shadow:var(--shadow-sm)}

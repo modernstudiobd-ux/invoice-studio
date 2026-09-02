@@ -26,10 +26,11 @@ export const sectionDefs = [
 export const defaultSections = () => Object.fromEntries(sectionDefs.map(x => [x[0], x[0] !== "status"]));
 
 // Renameable document labels ("INVOICE", "Bill to", "Balance due", ...) —
-// editable directly in the live preview (inlineEdit.js) so the same
-// document can be relabeled as a quote, receipt, or in another language
-// without touching any code. Falls back to these defaults whenever a saved
-// invoice predates this feature or is missing one.
+// editable via the Details tab's label:* inputs (see preview.js's
+// LABEL_FIELD_IDS and main.js) so the same document can be relabeled as a
+// quote, receipt, or in another language without touching any code. Falls
+// back to these defaults whenever a saved invoice predates this feature or
+// is missing one.
 export const defaultLabels = () => ({
   title: "INVOICE", bill: "Bill to", balance: "Balance due", note: "Invoice note",
   payment: "Payment details", terms: "Terms", date: "Invoice date", due: "Due date", ref: "Reference"

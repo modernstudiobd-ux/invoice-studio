@@ -20,7 +20,6 @@
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/invoice.css">
 <link rel="stylesheet" href="css/templates.css">
-<link rel="stylesheet" href="css/inline-edit.css">
 <link rel="stylesheet" href="css/responsive.css">
 <link rel="stylesheet" href="css/print.css">
 <style id="pageSizeCSS"></style>
@@ -144,7 +143,8 @@
 <div class="drawer-overlay" id="drawerOverlay"></div>
 <nav class="mobile-drawer" id="mobileDrawer" aria-hidden="true" aria-label="Invoice sections menu">
   <div class="drawer-head"><strong>Sections</strong><button class="btn small icon mtb-icon" id="drawerCloseBtn" aria-label="Close menu"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button></div>
-  <button class="drawer-item active" data-tab="design" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.9 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H16a4 4 0 0 0 4-4c0-4.4-3.6-8.2-8-8.2Z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="10.5" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/><circle cx="17" cy="11" r="1"/></svg> Design</button>
+  <button class="drawer-item active" data-tab="details" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 12h6M9 16h6M9 8h1"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg> Details</button>
+  <button class="drawer-item" data-tab="design" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.9 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H16a4 4 0 0 0 4-4c0-4.4-3.6-8.2-8-8.2Z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="10.5" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/><circle cx="17" cy="11" r="1"/></svg> Design</button>
   <button class="drawer-item" data-tab="items" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/></svg> Table Columns</button>
   <button class="drawer-item" data-tab="lineitems" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="8" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="8" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/></svg> Items</button>
   <div class="drawer-divider"></div>
@@ -176,53 +176,116 @@
   <p class="hint" style="margin:-4px 0 8px">Print opens your browser's print dialog — choose a physical printer, or "Save as PDF" as the destination for a PDF copy.</p>
   <div class="notice">All invoice values are blank/default. No financial data from the uploaded samples has been copied into the application.</div>
   <nav class="tabs" role="tablist" aria-label="Invoice sections">
-    <button class="tab active" role="tab" id="tabbtn-design" data-tab="design" aria-selected="true" aria-controls="tab-design">Design</button>
+    <button class="tab active" role="tab" id="tabbtn-details" data-tab="details" aria-selected="true" aria-controls="tab-details">Details</button>
+    <button class="tab" role="tab" id="tabbtn-design" data-tab="design" aria-selected="false" aria-controls="tab-design" tabindex="-1">Design</button>
     <button class="tab" role="tab" id="tabbtn-items" data-tab="items" aria-selected="false" aria-controls="tab-items" tabindex="-1">Table Columns</button>
     <button class="tab" role="tab" id="tabbtn-lineitems" data-tab="lineitems" aria-selected="false" aria-controls="tab-lineitems" tabindex="-1">Items</button>
   </nav>
 
-  <!-- Everything below backs the live-editable preview (see js/inlineEdit.js)
-       rather than a sidebar panel — the Details tab was removed since every
-       one of these fields can already be edited directly on the invoice
-       itself (see the "Sections" tip above). These inputs stay in the DOM,
-       just off-screen, because the rest of the app (calc.js, preview.js,
-       persistence, History, brand templates, etc.) reads/writes them by id
-       as the actual source of truth. -->
-  <div id="detailsHiddenFields" class="visually-hidden" aria-hidden="true">
-    <input id="invoiceNumber" value="INV-1001">
-    <select id="status"><option>Draft</option><option selected>Due</option><option>Paid</option><option>Partially Paid</option><option>Overdue</option><option>Canceled</option></select>
-    <input id="invoiceDate" type="date">
-    <input id="dueDate" type="date">
-    <input id="reference">
-    <input id="companyName" value="Your Company Ltd.">
-    <input id="companyReg">
-    <input id="companyVat">
-    <textarea id="companyAddress"></textarea>
-    <input id="companyPhone">
-    <input id="companyEmail">
-    <input id="companyWebsite">
-    <input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" tabindex="-1">
-    <span id="logoHint"></span>
-    <button id="removeLogoBtn" type="button" tabindex="-1">Remove</button>
-    <input id="logoHeight" type="range" min="24" max="160" value="48" tabindex="-1">
-    <span id="logoHeightValue">48</span>
-    <button id="resetLogoSizeBtn" type="button" tabindex="-1">Reset to original size</button>
-    <select id="logoPosition" tabindex="-1">
-      <option value="">Auto (template default)</option>
-      <option value="left">Left of company name</option>
-      <option value="above">Above company name</option>
-    </select>
-    <input id="clientName">
-    <input id="clientContact">
-    <input id="clientTax">
-    <textarea id="clientAddress"></textarea>
-    <input id="clientEmail">
-    <input id="discount" type="number" min="0" value="0" step=".01">
-    <input id="tax" type="number" min="0" value="0" step=".01">
-    <input id="shipping" type="number" min="0" value="0" step=".01">
-    <textarea id="notes"></textarea>
-    <textarea id="paymentDetails"></textarea>
-    <textarea id="terms"></textarea>
+  <!-- Details tab: a real form for every field shown on the invoice,
+       grouped and ordered to match the invoice's own layout (top to
+       bottom: document meta, logo, company, client, totals, notes,
+       payment, terms). Editing now happens only here — the preview itself
+       is a read-only, always-in-sync mirror of these fields (see
+       js/preview.js). Every input below keeps the same id the rest of the
+       app (calc.js, preview.js, persistence, History, brand templates,
+       import/export, etc.) already reads/writes by id as the source of
+       truth; the label:* inputs are new and write into state.labels
+       (see js/main.js). -->
+  <div class="tabpane active" id="tab-details" role="tabpanel" aria-labelledby="tabbtn-details">
+
+    <section class="panel">
+      <div class="panelhead"><h2>Document</h2></div>
+      <div class="grid2">
+        <div class="field"><label for="labelTitle">Document title</label><input id="labelTitle" placeholder="INVOICE"></div>
+        <div class="field"><label for="invoiceNumber">Invoice number</label><input id="invoiceNumber" value="INV-1001"></div>
+        <div class="field"><label for="status">Status</label><select id="status"><option>Draft</option><option selected>Due</option><option>Paid</option><option>Partially Paid</option><option>Overdue</option><option>Canceled</option></select></div>
+      </div>
+      <div class="hint" style="margin:8px 0 6px">Row labels below can be renamed too — handy for quotes, receipts, or another language.</div>
+      <div class="grid2">
+        <div class="field"><label for="labelInvoiceDate">Date row label</label><input id="labelInvoiceDate" placeholder="Invoice date"></div>
+        <div class="field"><label for="invoiceDate">Invoice date</label><input id="invoiceDate" type="date"></div>
+        <div class="field"><label for="labelDueDate">Due row label</label><input id="labelDueDate" placeholder="Due date"></div>
+        <div class="field"><label for="dueDate">Due date</label><input id="dueDate" type="date"></div>
+        <div class="field"><label for="labelReference">Reference row label</label><input id="labelReference" placeholder="Reference"></div>
+        <div class="field"><label for="reference">Reference / PO</label><input id="reference" placeholder="Add value"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelhead"><h2>Logo</h2></div>
+      <div class="field full">
+        <label for="logoFile">Upload logo</label>
+        <input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+        <span class="hint" id="logoHint" style="display:block;margin-top:4px"></span>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="logoHeight">Logo height (<span id="logoHeightValue">48</span>px)</label><input id="logoHeight" type="range" min="24" max="160" value="48"></div>
+        <div class="field"><label for="logoPosition">Logo position</label><select id="logoPosition">
+          <option value="">Auto (template default)</option>
+          <option value="left">Left of company name</option>
+          <option value="above">Above company name</option>
+        </select></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn small" id="resetLogoSizeBtn" type="button">Reset to original size</button>
+        <button class="btn small danger" id="removeLogoBtn" type="button">Remove logo</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelhead"><h2>Company details</h2></div>
+      <div class="grid2">
+        <div class="field full"><label for="companyName">Company name</label><input id="companyName" value="Your Company Ltd."></div>
+        <div class="field"><label for="companyReg">Registration number</label><input id="companyReg"></div>
+        <div class="field"><label for="companyVat">VAT / Tax number</label><input id="companyVat"></div>
+        <div class="field full"><label for="companyAddress">Address</label><textarea id="companyAddress"></textarea></div>
+        <div class="field"><label for="companyPhone">Phone</label><input id="companyPhone"></div>
+        <div class="field"><label for="companyEmail">Email</label><input id="companyEmail" type="email"></div>
+        <div class="field full"><label for="companyWebsite">Website</label><input id="companyWebsite"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelhead"><h2>Client details</h2></div>
+      <div class="field"><label for="labelBillTo">"Bill to" label</label><input id="labelBillTo" placeholder="Bill to"></div>
+      <div class="grid2">
+        <div class="field full"><label for="clientName">Client name</label><input id="clientName"></div>
+        <div class="field"><label for="clientContact">Contact name</label><input id="clientContact"></div>
+        <div class="field"><label for="clientTax">VAT / Tax number</label><input id="clientTax"></div>
+        <div class="field full"><label for="clientAddress">Address</label><textarea id="clientAddress"></textarea></div>
+        <div class="field full"><label for="clientEmail">Email</label><input id="clientEmail" type="email"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelhead"><h2>Totals</h2></div>
+      <div class="field"><label for="labelBalance">"Balance due" label</label><input id="labelBalance" placeholder="Balance due"></div>
+      <div class="grid3">
+        <div class="field"><label for="discount">Discount %</label><input id="discount" type="number" min="0" max="100" value="0" step=".01"></div>
+        <div class="field"><label for="tax">Tax %</label><input id="tax" type="number" min="0" max="100" value="0" step=".01"></div>
+        <div class="field"><label for="shipping">Shipping</label><input id="shipping" type="number" min="0" value="0" step=".01"></div>
+      </div>
+    </section>
+
+    <section class="panel collapsed">
+      <div class="panelhead"><h2>Notes</h2></div>
+      <div class="field"><label for="labelNote">Note label</label><input id="labelNote" placeholder="Invoice note"></div>
+      <div class="field"><label for="notes">Note text</label><textarea id="notes" placeholder="Click to add a note"></textarea></div>
+    </section>
+
+    <section class="panel collapsed">
+      <div class="panelhead"><h2>Payment details</h2></div>
+      <div class="field"><label for="labelPayment">Payment label</label><input id="labelPayment" placeholder="Payment details"></div>
+      <div class="field"><label for="paymentDetails">Payment text</label><textarea id="paymentDetails" placeholder="Add payment details"></textarea></div>
+    </section>
+
+    <section class="panel collapsed">
+      <div class="panelhead"><h2>Terms</h2></div>
+      <div class="field"><label for="labelTerms">Terms label</label><input id="labelTerms" placeholder="Terms"></div>
+      <div class="field"><label for="terms">Terms text</label><textarea id="terms" placeholder="Click to add terms"></textarea></div>
+    </section>
+
   </div>
 
   <div class="tabpane" id="tab-items" role="tabpanel" aria-labelledby="tabbtn-items">
@@ -262,7 +325,7 @@
     </section>
   </div>
 
-  <div class="tabpane active" id="tab-design" role="tabpanel" aria-labelledby="tabbtn-design">
+  <div class="tabpane" id="tab-design" role="tabpanel" aria-labelledby="tabbtn-design">
     <section class="panel collapsed">
       <div class="panelhead"><h2>Color</h2><button class="btn small" id="resetColorBtn" type="button">Reset colors</button></div>
       <div class="grid2">
@@ -363,9 +426,9 @@
      </select>
    </div>
    <span class="toolbar-divider" aria-hidden="true"></span>
-   <div class="canvasmode-switch" role="tablist" aria-label="Edit or preview the invoice">
-     <button type="button" class="canvasmode-btn active" id="canvasModeEditBtn" role="tab" aria-selected="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m17 3 4 4L7 21H3v-4Z"/></svg> Edit</button>
-     <button type="button" class="canvasmode-btn" id="canvasModePreviewBtn" role="tab" aria-selected="false"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Preview</button>
+   <div class="canvasmode-switch" role="tablist" aria-label="Draft or preview the invoice">
+     <button type="button" class="canvasmode-btn active" id="canvasModeEditBtn" role="tab" aria-selected="true" title="Show every optional field, even ones left blank"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m17 3 4 4L7 21H3v-4Z"/></svg> Draft</button>
+     <button type="button" class="canvasmode-btn" id="canvasModePreviewBtn" role="tab" aria-selected="false" title="Hide empty optional fields, like the printed/PDF output"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Preview</button>
    </div>
    <div class="canvasbar-right">
      <div class="meta" id="previewMeta">A4 portrait preview</div>
@@ -384,57 +447,53 @@
         <div class="logobox" data-section="logo">
           <img id="pLogo" alt="Company logo">
           <div class="logofallback" id="pLogoFallback">Y</div>
-          <span class="logo-upload-hint" aria-hidden="true">+ Logo</span>
-          <button type="button" class="logo-remove-btn" id="logoRemoveInline" aria-label="Remove logo" title="Remove logo">✕</button>
-          <button type="button" class="logo-position-btn" id="logoPositionInline" aria-label="Toggle logo position" title="Toggle logo position">⇄</button>
-          <span class="logo-resize-handle" data-action="logo-resize" role="slider" tabindex="0" title="Drag to resize · double-click to reset" aria-label="Drag to resize logo, double-click to reset to original size" aria-valuemin="24" aria-valuemax="160"></span>
         </div>
-        <div><div class="companyname" id="pCompanyName" contenteditable="true" data-editable="field:companyName" data-placeholder="Your company name" role="textbox" aria-label="Company name" spellcheck="false">Your Company Ltd.</div><div class="metaText" id="pCompanyMeta">
-          <div id="pCompanyReg" contenteditable="true" data-editable="field:companyReg" data-prefix="Registration: " data-placeholder="Add registration number" role="textbox" aria-label="Company registration number" spellcheck="false"></div>
-          <div id="pCompanyVat" contenteditable="true" data-editable="field:companyVat" data-prefix="VAT / Tax: " data-placeholder="Add VAT / tax number" role="textbox" aria-label="Company VAT or tax number" spellcheck="false"></div>
-          <div id="pCompanyAddress" contenteditable="true" data-editable="field:companyAddress" data-placeholder="Add address" role="textbox" aria-label="Company address" spellcheck="false"></div>
-          <div id="pCompanyPhone" contenteditable="true" data-editable="field:companyPhone" data-prefix="Phone: " data-placeholder="Add phone" role="textbox" aria-label="Company phone" spellcheck="false"></div>
-          <div id="pCompanyEmail" contenteditable="true" data-editable="field:companyEmail" data-prefix="Email: " data-placeholder="Add email" role="textbox" aria-label="Company email" spellcheck="false"></div>
-          <div id="pCompanyWebsite" contenteditable="true" data-editable="field:companyWebsite" data-placeholder="Add website" role="textbox" aria-label="Company website" spellcheck="false"></div>
+        <div><div class="companyname" id="pCompanyName">Your Company Ltd.</div><div class="metaText" id="pCompanyMeta">
+          <div id="pCompanyReg"></div>
+          <div id="pCompanyVat"></div>
+          <div id="pCompanyAddress"></div>
+          <div id="pCompanyPhone"></div>
+          <div id="pCompanyEmail"></div>
+          <div id="pCompanyWebsite"></div>
         </div></div>
       </div>
       <div class="invtitle">
-        <h2 id="pInvoiceTitle" contenteditable="true" data-editable="label:title" role="textbox" aria-label="Document title" spellcheck="false">INVOICE</h2><div class="invno" id="pInvoiceNo" contenteditable="true" data-editable="field:invoiceNumber" data-prefix="#" role="textbox" aria-label="Invoice number" spellcheck="false">#INV-1001</div>
+        <h2 id="pInvoiceTitle">INVOICE</h2><div class="invno" id="pInvoiceNo">#INV-1001</div>
         <table class="metatable">
-          <tr data-section="invoiceDate"><td id="pDateLabel" contenteditable="true" data-editable="label:date" role="textbox" aria-label="Invoice date row label" spellcheck="false">Invoice date</td><td id="pDate" data-editable="field:invoiceDate:date" role="button" tabindex="0" aria-label="Invoice date, activate to change">—</td></tr>
-          <tr data-section="dueDate"><td id="pDueLabel" contenteditable="true" data-editable="label:due" role="textbox" aria-label="Due date row label" spellcheck="false">Due date</td><td id="pDue" data-editable="field:dueDate:date" role="button" tabindex="0" aria-label="Due date, activate to change">—</td></tr>
-          <tr data-section="reference"><td id="pReferenceLabel" contenteditable="true" data-editable="label:ref" role="textbox" aria-label="Reference row label" spellcheck="false">Reference</td><td id="pReference" contenteditable="true" data-editable="field:reference" data-placeholder="Add value" role="textbox" aria-label="Reference / PO value" spellcheck="false">—</td></tr>
+          <tr data-section="invoiceDate"><td id="pDateLabel">Invoice date</td><td id="pDate">—</td></tr>
+          <tr data-section="dueDate"><td id="pDueLabel">Due date</td><td id="pDue">—</td></tr>
+          <tr data-section="reference"><td id="pReferenceLabel">Reference</td><td id="pReference">—</td></tr>
         </table>
         <div class="statusbalance">
-          <div class="balance" data-section="balance"><span id="pBalanceLabel" contenteditable="true" data-editable="label:balance" role="textbox" aria-label="Balance due label" spellcheck="false">Balance due</span><strong id="pBalance">£0.00</strong></div>
-          <span class="status" id="pStatus" data-section="status" data-editable="status" role="button" tabindex="0" aria-label="Invoice status, activate to change">● Due</span>
+          <div class="balance" data-section="balance"><span id="pBalanceLabel">Balance due</span><strong id="pBalance">£0.00</strong></div>
+          <span class="status" id="pStatus" data-section="status">● Due</span>
         </div>
       </div>
     </header>
     <section class="billrow">
-      <div data-section="client"><div class="label" id="pBillToLabel" contenteditable="true" data-editable="label:bill" role="textbox" aria-label="Bill to label" spellcheck="false">Bill to</div><div class="clientname" id="pClientName" contenteditable="true" data-editable="field:clientName" data-placeholder="Client name" role="textbox" aria-label="Client company name" spellcheck="false">Client company</div><div class="metaText" id="pClientMeta">
-        <div id="pClientContact" contenteditable="true" data-editable="field:clientContact" data-placeholder="Add contact name" role="textbox" aria-label="Client contact" spellcheck="false"></div>
-        <div id="pClientTax" contenteditable="true" data-editable="field:clientTax" data-prefix="VAT / Tax: " data-placeholder="Add VAT / tax number" role="textbox" aria-label="Client VAT or tax number" spellcheck="false"></div>
-        <div id="pClientAddress" contenteditable="true" data-editable="field:clientAddress" data-placeholder="Add address" role="textbox" aria-label="Client address" spellcheck="false"></div>
-        <div id="pClientEmail" contenteditable="true" data-editable="field:clientEmail" data-placeholder="Add email" role="textbox" aria-label="Client email" spellcheck="false"></div>
+      <div data-section="client"><div class="label" id="pBillToLabel">Bill to</div><div class="clientname" id="pClientName">Client company</div><div class="metaText" id="pClientMeta">
+        <div id="pClientContact"></div>
+        <div id="pClientTax"></div>
+        <div id="pClientAddress"></div>
+        <div id="pClientEmail"></div>
       </div></div>
     </section>
     <table class="invtable"><colgroup id="pCols"></colgroup><thead><tr id="pHeaders"></tr></thead><tbody id="pItems"></tbody></table>
     <section class="bottomgrid">
-      <div class="notebox" data-section="notes"><div class="label" id="pNoteLabel" contenteditable="true" data-editable="label:note" role="textbox" aria-label="Note label" spellcheck="false">Invoice note</div><div class="metaText" id="pNotes" contenteditable="true" data-editable="field:notes" data-placeholder="Click to add a note" role="textbox" aria-label="Invoice note text" spellcheck="false"></div></div>
+      <div class="notebox" data-section="notes"><div class="label" id="pNoteLabel">Invoice note</div><div class="metaText" id="pNotes"></div></div>
       <div class="summary">
         <div class="sumrow"><span>Subtotal</span><strong id="pSubtotal">£0.00</strong></div>
         <div class="sumrow" id="discountRow" data-section="discount"><span id="discountLabel">Discount</span><strong id="pDiscount">−£0.00</strong></div>
         <div class="sumrow" id="taxRow" data-section="tax"><span id="taxLabel">Tax</span><strong id="pTax">£0.00</strong></div>
-        <div class="sumrow" id="shippingRow" data-section="shipping"><span>Shipping</span><strong id="pShipping" contenteditable="true" data-editable="field:shipping:number" role="textbox" aria-label="Shipping amount" spellcheck="false">£0.00</strong></div>
+        <div class="sumrow" id="shippingRow" data-section="shipping"><span>Shipping</span><strong id="pShipping">£0.00</strong></div>
         <div class="sumrow total"><span>Total</span><span id="pTotal">£0.00</span></div>
       </div>
     </section>
     <section class="paymentgrid">
-      <div data-section="payment"><div class="label" id="pPaymentLabel" contenteditable="true" data-editable="label:payment" role="textbox" aria-label="Payment details label" spellcheck="false">Payment details</div><div class="metaText" id="pPayment" contenteditable="true" data-editable="field:paymentDetails" data-placeholder="Add payment details" role="textbox" aria-label="Payment details text" spellcheck="false">Add payment details.</div></div>
-      <div data-section="terms"><div class="label" id="pTermsLabel" contenteditable="true" data-editable="label:terms" role="textbox" aria-label="Terms label" spellcheck="false">Terms</div><div class="metaText" id="pTerms" contenteditable="true" data-editable="field:terms" data-placeholder="Click to add terms" role="textbox" aria-label="Terms text" spellcheck="false"></div></div>
+      <div data-section="payment"><div class="label" id="pPaymentLabel">Payment details</div><div class="metaText" id="pPayment">Add payment details.</div></div>
+      <div data-section="terms"><div class="label" id="pTermsLabel">Terms</div><div class="metaText" id="pTerms"></div></div>
     </section>
-    <footer class="footer" data-section="footer"><span id="pFooterCompany" contenteditable="true" data-editable="field:companyName" role="textbox" aria-label="Company name (footer)" spellcheck="false">Your Company Ltd.</span><span id="pFooterInvoice">Invoice #INV-1001</span></footer>
+    <footer class="footer" data-section="footer"><span id="pFooterCompany">Your Company Ltd.</span><span id="pFooterInvoice">Invoice #INV-1001</span></footer>
   </article>
  </div>
 </main>

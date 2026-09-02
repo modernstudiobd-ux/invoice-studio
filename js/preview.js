@@ -7,27 +7,21 @@ import { calc, itemValue } from "./calc.js";
 import { applyAllOptionalColors } from "./accent.js";
 import { syncCurrencyDisplay } from "./currencySearch.js";
 
-// Writes text into a preview element unless that exact element is the one
-// currently being typed into (contenteditable + focused) — otherwise every
-// keystroke-triggered re-render would blow away the DOM node mid-edit and
-// throw the caret back to position 0. Non-editable / not-currently-focused
-// elements always update normally, so every other live preview element
-// (including a second element bound to the same field, e.g. the footer's
-// copy of the company name) still tracks changes in real time.
+// Maps each Details-tab label input's id to its key in state.labels — used
+// both by renderPreview() (to keep the inputs in sync with state) and by
+// main.js (to wire their change → state.labels handlers).
+export const LABEL_FIELD_IDS = [
+  ["labelTitle", "title"], ["labelBillTo", "bill"], ["labelBalance", "balance"],
+  ["labelNote", "note"], ["labelPayment", "payment"], ["labelTerms", "terms"],
+  ["labelInvoiceDate", "date"], ["labelDueDate", "due"], ["labelReference", "ref"]
+];
+
+// Writes text into a preview element — a thin wrapper kept mainly so every
+// preview text update goes through one place (guards against a missing
+// element cleanly, same as the rest of this file's helpers).
 function setText(el, text) {
   if (!el) return;
-  if (el.isContentEditable && document.activeElement === el) return;
   el.textContent = text;
-}
-
-// Same idea as setText(), for the two summary rows (Discount/Tax) whose
-// label rebuilds an embedded editable "12" inside "Discount (12%)" — skip
-// the innerHTML rebuild while that inner number is focused.
-function setEditableLabel(container, html) {
-  if (!container) return;
-  const active = document.activeElement;
-  if (active && container.contains(active) && active.isContentEditable) return;
-  container.innerHTML = html;
 }
 
 export function renderPreview() {
@@ -49,9 +43,16 @@ export function renderPreview() {
   inv.style.setProperty("--footer-right", footerInset.right + "mm");
   inv.style.setProperty("--footer-bottom", footerInset.bottom + "mm");
   applyPaperSize();
-  // Document labels ("INVOICE", "Bill to", ...) are user-renameable directly
-  // in the preview (see inlineEdit.js) and persisted in state.labels.
+  // Document labels ("INVOICE", "Bill to", ...) are renamed via the Details
+  // tab's label:* inputs (see main.js) and persisted in state.labels; keep
+  // those inputs themselves in sync too (e.g. after Undo, importing a JSON
+  // file, or loading a Saved Invoice/Brand Template changes state.labels
+  // without the person having touched the input directly).
   const labels = state.labels;
+  LABEL_FIELD_IDS.forEach(([id, key]) => {
+    const el = $(id);
+    if (el && document.activeElement !== el && el.value !== (labels[key] || "")) el.value = labels[key] || "";
+  });
   setText($("pInvoiceTitle"), labels.title);
   setText($("pBillToLabel"), labels.bill);
   setText($("pBalanceLabel"), labels.balance);
@@ -117,46 +118,26 @@ export function renderPreview() {
   if (dueDateSection) dueDateSection.classList.toggle("print-hide-empty", !dueDateVal);
 
   let visible = state.columns.filter(c => c.visible);
-  // A slim extra "delete row" column rides alongside the real data columns
-  // on screen (see the per-row × button below) and is stripped out for
-  // print/PDF via the .del-col rules in print.css.
-  { let raw = visible.map(c => Math.max(5, num(c.width))), sum = raw.reduce((a, b) => a + b, 0) || 1; $("pCols").innerHTML = raw.map(w => `<col style="width:${(w / sum * 100).toFixed(2)}%">`).join("") + `<col class="del-col-width">`; }
-  $("pHeaders").innerHTML = visible.map((c, i) => {
-    const isLast = i === visible.length - 1;
-    const resizeHandle = isLast ? "" : `<span class="col-resize-handle" data-action="col-resize" data-col-id="${c.id}" role="separator" aria-orientation="vertical" aria-label="Resize ${esc(c.label)} column" tabindex="-1"></span>`;
-    return `<th class="${alignClass(c.align)}"><span class="col-label-text" contenteditable="true" data-editable="colhead:${c.id}" role="textbox" aria-label="Column heading" spellcheck="false">${esc(c.label)}</span>${resizeHandle}</th>`;
-  }).join("") + `<th class="del-col" aria-hidden="true"></th>`;
+  { let raw = visible.map(c => Math.max(5, num(c.width))), sum = raw.reduce((a, b) => a + b, 0) || 1; $("pCols").innerHTML = raw.map(w => `<col style="width:${(w / sum * 100).toFixed(2)}%">`).join(""); }
+  $("pHeaders").innerHTML = visible.map(c => `<th class="${alignClass(c.align)}"><span class="col-label-text">${esc(c.label)}</span></th>`).join("");
 
   let body = $("pItems"); body.innerHTML = "";
   if (!state.items.length) {
-    body.innerHTML = `<tr><td class="empty" colspan="${Math.max(1, visible.length)}">No line items added.</td><td class="del-col"></td></tr>`;
+    body.innerHTML = `<tr><td class="empty" colspan="${Math.max(1, visible.length)}">No line items added.</td></tr>`;
   } else {
-    state.items.forEach((item, idx) => {
+    state.items.forEach((item) => {
       let tr = document.createElement("tr");
       tr.className = "inv-item-row";
-      const cells = visible.map(c => {
-        const editable = c.role !== "amount";
-        const content = fmtCell(itemValue(item, c), c);
-        return editable
-          ? `<td class="${alignClass(c.align)}" contenteditable="true" data-editable="item:${idx}:${esc(c.key)}:${c.type}" role="textbox" aria-label="${esc(c.label)}, item ${idx + 1}" spellcheck="false">${content}</td>`
-          : `<td class="${alignClass(c.align)}">${content}</td>`;
-      }).join("");
-      tr.innerHTML = cells + `<td class="del-col"><button type="button" class="row-delete-btn" data-action="delete-item" data-idx="${idx}" aria-label="Remove item ${idx + 1}" tabindex="-1">✕</button></td>`;
+      tr.innerHTML = visible.map(c => `<td class="${alignClass(c.align)}">${fmtCell(itemValue(item, c), c)}</td>`).join("");
       body.appendChild(tr);
     });
-  }
-  {
-    const addRow = document.createElement("tr");
-    addRow.className = "add-item-row";
-    addRow.innerHTML = `<td colspan="${Math.max(1, visible.length) + 1}" data-action="add-item" role="button" tabindex="0" aria-label="Add line item">+ Add item</td>`;
-    body.appendChild(addRow);
   }
 
   let t = calc();
   setText($("pSubtotal"), money(t.subtotal));
-  setEditableLabel($("discountLabel"), `${escLabelPrefix("Discount")} (<span class="editable-num" contenteditable="true" data-editable="field:discount:percent" role="textbox" aria-label="Discount percentage" spellcheck="false">${pct(t.dr)}</span>%)`);
+  setText($("discountLabel"), `Discount (${pct(t.dr)}%)`);
   setText($("pDiscount"), "−" + money(t.disc));
-  setEditableLabel($("taxLabel"), `${escLabelPrefix("Tax")} (<span class="editable-num" contenteditable="true" data-editable="field:tax:percent" role="textbox" aria-label="Tax percentage" spellcheck="false">${pct(t.tr)}</span>%)`);
+  setText($("taxLabel"), `Tax (${pct(t.tr)}%)`);
   setText($("pTax"), money(t.tax));
   setText($("pShipping"), money(t.ship));
   setText($("pTotal"), money(t.total)); setText($("pBalance"), money(t.total));
@@ -177,10 +158,6 @@ export function renderPreview() {
 }
 
 function pct(n) { return n.toFixed(2).replace(/\.00$/, ""); }
-// Discount/Tax labels are plain, non-editable words — esc() isn't strictly
-// needed since they're hardcoded, but kept for consistency with the rest of
-// this file's HTML-building helpers.
-function escLabelPrefix(s) { return esc(s); }
 
 // Print (see print.js) temporarily resizes .canvaswrap to its natural,
 // unscaled size right before calling window.print(). That resize is itself
@@ -508,17 +485,13 @@ function renderPageBreaks(inv, naturalH, pageCount) {
 }
 
 // Each line of the company/client "meta" blocks (registration, VAT, address,
-// phone, email, website / contact, VAT, address, email) is now its own
-// directly-editable row in the preview (see inlineEdit.js's "field" kind,
-// which already knows how to strip a data-prefix like "Registration: " back
-// off before saving — the same mechanism the invoice-number "#" prefix
-// uses). A row with no value renders empty so its CSS placeholder shows in
-// Edit mode, and is hidden from Preview/print via .print-hide-empty so
-// blank rows never appear on the actual document.
+// phone, email, website / contact, VAT, address, email) is its own row in
+// the preview, sourced from the matching Details-tab field. A row with no
+// value renders empty and gets .print-hide-empty so blank rows never
+// appear in Preview mode or the printed/PDF output (see setText()'s sibling
+// note above for why Draft mode still shows them).
 function setMetaField(el, value, prefix) {
   if (!el) return;
   setText(el, value ? prefix + value : "");
-  if (!(el.isContentEditable && document.activeElement === el)) {
-    el.classList.toggle("print-hide-empty", !value);
-  }
+  el.classList.toggle("print-hide-empty", !value);
 }

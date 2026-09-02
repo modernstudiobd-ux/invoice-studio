@@ -5,11 +5,11 @@
 
 import { $, uid } from "./dom.js";
 import { APP_VERSION, BUILD_DATE, BUILD_STRING } from "./version.js";
-import { state, fields, defaultColumns, KEY, DEFAULT_ACCENT, serialize } from "./state.js";
+import { state, fields, defaultColumns, KEY, DEFAULT_ACCENT, serialize, defaultLabels } from "./state.js";
 import { today, plusDays } from "./format.js";
 import { toast } from "./toast.js";
 import { setAccent, applyOptionalColor, clearOptionalColor, applyAllOptionalColors } from "./accent.js";
-import { renderPreview, fitInvoiceCanvas } from "./preview.js";
+import { renderPreview, fitInvoiceCanvas, LABEL_FIELD_IDS } from "./preview.js";
 import { renderColumns } from "./columns.js";
 import { renderItems } from "./items.js";
 import { renderToggles } from "./toggles.js";
@@ -21,7 +21,6 @@ import { parseCSV, mapRows, ensureXLSX } from "./importSheet.js";
 import { printInvoice } from "./print.js";
 import { initInstallPrompt, registerServiceWorker } from "./install.js";
 import { naturalLogoHeight, handleLogoFile, removeLogo } from "./logo.js";
-import { initInlineEdit } from "./inlineEdit.js";
 // layout.js self-wires its own listeners on import (tabs, sidebar, mobile drawer, etc.)
 import "./layout.js";
 
@@ -32,6 +31,22 @@ fields.forEach(id => {
   e.addEventListener(ev, () => {
     if (id === "accent" || id === "accentHex") setAccent(e.value);
     else if (OPTIONAL_COLOR_IDS.some(base => id === base + "Hex")) applyOptionalColor(id.replace(/Hex$/, ""));
+    renderPreview(); save();
+  });
+});
+
+/* --- Document label fields (Details tab): renaming "INVOICE", "Bill to",
+   "Balance due", the note/payment/terms labels, and the date/due/reference
+   row labels. These write straight into state.labels (not the `fields`
+   array above, since they have no single generic backing value) — see
+   LABEL_FIELD_IDS in preview.js, which also keeps each input in sync with
+   state.labels on every render (Undo, JSON import, Saved Invoices, Brand
+   Templates, etc. all change state.labels without touching the input). --- */
+LABEL_FIELD_IDS.forEach(([id, key]) => {
+  const e = $(id);
+  if (!e) return;
+  e.addEventListener("input", () => {
+    state.labels[key] = e.value || defaultLabels()[key] || "";
     renderPreview(); save();
   });
 });
@@ -96,7 +111,6 @@ if (!$("logoHeight").value) $("logoHeight").value = "48";
 setAccent(DEFAULT_ACCENT);
 applyAllOptionalColors();
 renderColumns(); renderItems(); renderToggles(); renderPreview();
-initInlineEdit();
 
 {
   const canvasWrapEl = document.querySelector(".canvaswrap");

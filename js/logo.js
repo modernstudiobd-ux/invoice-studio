@@ -1,6 +1,5 @@
-// logo.js — shared logo file handling. Used by the sidebar's file input AND
-// by inlineEdit.js (click-to-upload / drag-and-drop straight onto the
-// preview's logo box), so both paths validate and store a logo identically.
+// logo.js — shared logo file handling for the Details tab's logo upload,
+// remove, and reset-size controls.
 
 import { $ } from "./dom.js";
 import { state } from "./state.js";

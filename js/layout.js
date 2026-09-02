@@ -136,12 +136,14 @@ function setFullscreenPreview(on) {
 expandPreviewBtn.addEventListener("click", () => setFullscreenPreview(true));
 exitFullscreenBtn.addEventListener("click", () => setFullscreenPreview(false));
 
-// Edit / Preview canvas switch — "Edit" (default) is today's click-anything
-// live-editable canvas; "Preview" strips every editing affordance (hover
-// outlines, placeholder hint text, delete/resize/logo controls, empty
-// optional rows) via the .canvas-preview-mode rules in inline-edit.css, the
-// same rules @media print already uses — so it's a faithful, live dry run
-// of the actual Print/PDF output, not a separate approximation of it.
+// Draft / Preview canvas switch — "Draft" (default) shows every optional
+// field/row even when left blank (see the placeholder text preview.js
+// renders for them, e.g. "—" / "Add value"), so it's clear what's
+// available to fill in on the Details tab; "Preview" hides those empty
+// optional rows via the .canvas-preview-mode rule in invoice.css — the
+// same .print-hide-empty class @media print already uses — so it's a
+// faithful, live dry run of the actual Print/PDF output, not a separate
+// approximation of it.
 const canvasModeEditBtn = $("canvasModeEditBtn"), canvasModePreviewBtn = $("canvasModePreviewBtn");
 export function setCanvasMode(mode) {
   const isPreview = mode === "preview";
