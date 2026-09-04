@@ -2,7 +2,7 @@
 // entry, or an imported .json file) back into live app state + a full re-render.
 
 import { $, uid } from "./dom.js";
-import { state, fields, defaultColumns, defaultSections, defaultLabels, defaultOverrides } from "./state.js";
+import { state, fields, defaultColumns, defaultSections, defaultLabels, LEGACY_LABEL_MAP } from "./state.js";
 import { setAccent, applyAllOptionalColors } from "./accent.js";
 import { renderColumns } from "./columns.js";
 import { renderItems } from "./items.js";
@@ -13,6 +13,17 @@ import { save } from "./persistence.js";
 export function load(d) {
   if (!d || typeof d !== "object") throw Error("Invalid invoice file.");
   fields.forEach(id => { if (d.fields && id in d.fields && typeof d.fields[id] === "string") $(id).value = d.fields[id]; });
+  // Labels (document title, "Bill to", row labels, ...) used to live in a
+  // separate top-level `labels` object instead of `fields` — fill any
+  // label field an older save didn't have under `fields` from that legacy
+  // shape, then default, so opening a pre-3.15 file never leaves a label
+  // field showing stale leftover text from whatever was open before.
+  const legacyLabels = (d.labels && typeof d.labels === "object") ? d.labels : {};
+  Object.entries(LEGACY_LABEL_MAP).forEach(([fid, legacyKey]) => {
+    if (d.fields && typeof d.fields[fid] === "string") return;
+    const legacyVal = typeof legacyLabels[legacyKey] === "string" ? legacyLabels[legacyKey] : defaultLabels()[legacyKey];
+    $(fid).value = legacyVal || "";
+  });
   state.logo = typeof d.logo === "string" ? d.logo : "";
   state.logoNatural = (d.logoNatural && typeof d.logoNatural.w === "number" && typeof d.logoNatural.h === "number") ? d.logoNatural : null;
   state.zoom = (typeof d.zoom === "number" && d.zoom >= 0.5 && d.zoom <= 1.5) ? d.zoom : 1;
@@ -20,9 +31,5 @@ export function load(d) {
   state.columns = cleanColumns.length ? cleanColumns : defaultColumns();
   state.items = Array.isArray(d.items) ? d.items.filter(i => i && typeof i === "object") : [];
   state.sections = { ...defaultSections(), ...(d.sections && typeof d.sections === "object" ? d.sections : {}) };
-  state.labels = { ...defaultLabels(), ...(d.labels && typeof d.labels === "object" ? d.labels : {}) };
-  { let ov = defaultOverrides(), src = (d.overrides && typeof d.overrides === "object") ? d.overrides : {};
-    Object.keys(ov).forEach(k => { if (typeof src[k] === "string") ov[k] = src[k]; });
-    state.overrides = ov; }
   setAccent($("accentHex").value); applyAllOptionalColors(); renderColumns(); renderItems(); renderToggles(); renderPreview(); save();
 }

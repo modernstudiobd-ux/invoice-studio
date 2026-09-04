@@ -6,7 +6,7 @@
 .template-classic .companyname{font-size:18px;letter-spacing:.03em;text-transform:uppercase;font-weight:700}
 .template-classic .logobox{border-radius:0}
 .template-classic .invtitle h2{font-size:28px;font-weight:700;letter-spacing:.1em}
-.template-classic .status{border-radius:2px;border-color:#1f2937;background:#fff;color:#1f2937}
+.template-classic .status{border-radius:2px;border-color:#1f2937;background-color:#fff;color:#1f2937}
 .template-classic .balance{background:#fff;border:1px solid #1f2937;border-radius:0}
 .template-classic .balance strong{color:var(--total-color,#1f2937)}
 .template-classic .invtable th{background:#1f2937;color:#fff;border-color:#1f2937;font-family:Georgia,"Times New Roman",serif;font-weight:700}

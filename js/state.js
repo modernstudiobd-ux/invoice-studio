@@ -25,24 +25,26 @@ export const sectionDefs = [
 // don't need and is off until someone turns it on.
 export const defaultSections = () => Object.fromEntries(sectionDefs.map(x => [x[0], x[0] !== "status"]));
 
-// Renameable document labels ("INVOICE", "Bill to", "Balance due", ...) —
-// editable via the Details tab's label:* inputs (see preview.js's
-// LABEL_FIELD_IDS and main.js) so the same document can be relabeled as a
-// quote, receipt, or in another language without touching any code. Falls
-// back to these defaults whenever a saved invoice predates this feature or
-// is missing one.
+// Renameable document labels ("INVOICE", "Bill to", "Balance due", ...) are
+// now ordinary form fields living directly on the invoice canvas (ids
+// labelTitle, labelBillTo, labelBalance, labelNote, labelPayment,
+// labelTerms, labelInvoiceDate, labelDueDate, labelReference — see the
+// `fields` array below and index.html). defaultLabels() is kept only as
+// fallback/placeholder text and to migrate invoices saved before this
+// change (see LEGACY_LABEL_MAP in invoiceData.js / brandTemplates.js).
 export const defaultLabels = () => ({
   title: "INVOICE", bill: "Bill to", balance: "Balance due", note: "Invoice note",
   payment: "Payment details", terms: "Terms", date: "Invoice date", due: "Due date", ref: "Reference"
 });
 
-// Free-text overrides for the composite "meta" blocks under the company
-// name and client name (normally auto-built from the individual Company/
-// Bill-to fields — see metaCompany()/metaClient() in preview.js). Editing
-// either block directly in the preview stores the exact text here, which
-// then takes precedence over the auto-built version until cleared (leaving
-// the block empty in the preview reverts to the auto-built text).
-export const defaultOverrides = () => ({ companyMeta: null, clientMeta: null });
+// Maps each new label field id to its key in the old (pre-3.15) top-level
+// `labels` object, so invoices saved before labels became ordinary fields
+// still load with the right title/row-label text. See invoiceData.js and
+// brandTemplates.js.
+export const LEGACY_LABEL_MAP = {
+  labelTitle: "title", labelBillTo: "bill", labelBalance: "balance", labelNote: "note",
+  labelPayment: "payment", labelTerms: "terms", labelInvoiceDate: "date", labelDueDate: "due", labelReference: "ref"
+};
 
 export const state = {
   logo: "",
@@ -50,12 +52,18 @@ export const state = {
   zoom: 1,
   columns: defaultColumns(),
   items: [],
-  sections: defaultSections(),
-  labels: defaultLabels(),
-  overrides: defaultOverrides()
+  sections: defaultSections()
 };
 
-export const fields = ["logoHeight", "logoPosition", "invoiceNumber", "status", "invoiceDate", "dueDate", "currency", "reference", "companyName", "companyReg", "companyVat", "companyAddress", "companyPhone", "companyEmail", "companyWebsite", "clientName", "clientContact", "clientTax", "clientAddress", "clientEmail", "discount", "tax", "shipping", "notes", "paymentDetails", "terms", "notesAlign", "template", "accent", "accentHex", "totalColorHex", "headerColorHex", "headerTextColorHex", "invoiceColorHex", "paperSize"];
+export const fields = [
+  "logoHeight", "logoPosition", "invoiceNumber", "status", "invoiceDate", "dueDate", "currency", "reference",
+  "companyName", "companyReg", "companyVat", "companyAddress", "companyPhone", "companyEmail", "companyWebsite",
+  "clientName", "clientContact", "clientTax", "clientAddress", "clientEmail",
+  "discount", "tax", "shipping", "notes", "paymentDetails", "terms", "notesAlign", "template", "accent", "accentHex",
+  "totalColorHex", "headerColorHex", "headerTextColorHex", "invoiceColorHex", "paperSize",
+  "labelTitle", "labelBillTo", "labelBalance", "labelNote", "labelPayment", "labelTerms",
+  "labelInvoiceDate", "labelDueDate", "labelReference"
+];
 
 export const DEFAULT_ACCENT = "#18181b";
 
@@ -150,5 +158,5 @@ export function applyPaperSize() {
 export function serialize() {
   let f = {};
   fields.forEach(id => f[id] = $(id).value);
-  return { version: 2, logo: state.logo, logoNatural: state.logoNatural, zoom: state.zoom, columns: state.columns, items: state.items, sections: state.sections, labels: state.labels, overrides: state.overrides, fields: f };
+  return { version: 2, logo: state.logo, logoNatural: state.logoNatural, zoom: state.zoom, columns: state.columns, items: state.items, sections: state.sections, fields: f };
 }

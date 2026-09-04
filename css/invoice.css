@@ -108,6 +108,14 @@ body.canvas-preview-mode #previewMeta{display:inline-flex}
    @media print does (same .print-hide-empty class print.css already uses)
    for a faithful live dry run of the actual Print/PDF output. */
 body.canvas-preview-mode .invoice .print-hide-empty{display:none!important}
+/* Same reasoning as the @media print rules in print.css: Preview mode is a
+   faithful dry run of the actual Print/PDF output, so the on-screen-only
+   form chrome (dashed fillable-field underline, the status select's
+   dropdown arrow, empty-field placeholder text) is hidden here too,
+   alongside the logo upload toolbar hidden below. */
+body.canvas-preview-mode .invoice input,body.canvas-preview-mode .invoice select{border-bottom:none!important}
+body.canvas-preview-mode .invoice input::placeholder,body.canvas-preview-mode .invoice textarea::placeholder{color:transparent!important}
+body.canvas-preview-mode .status{background-image:none!important;padding:5px 9px!important}
 .canvasmode-switch{display:inline-flex;gap:2px;background:#eef0f7;padding:3px;border-radius:10px}
 .canvasmode-btn{border:0;background:transparent;border-radius:7px;padding:6px 11px;font-size:11.5px;font-weight:750;color:var(--muted);display:inline-flex;align-items:center;gap:5px;transition:background-color .15s ease,color .15s ease,box-shadow .15s ease}
 .canvasmode-btn.active{background:#fff;color:var(--app-accent);box-shadow:var(--shadow-sm)}
@@ -116,8 +124,54 @@ body.canvas-preview-mode .invoice .print-hide-empty{display:none!important}
 .invoice .section-hidden{display:none!important}.inv-header{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;background:var(--header-bg,transparent);border-radius:10px}.invoice.has-header-bg:not(.template-medical) .inv-header{padding:14px 16px;margin:0 0 14px}
 .invoice.has-header-text .inv-header .companyname,.invoice.has-header-text .inv-header .metaText,.invoice.has-header-text .inv-header .invtitle h2,.invoice.has-header-text .inv-header .invno,.invoice.has-header-text .inv-header .metatable td{color:var(--header-text)!important}
 .companywrap{display:flex;gap:12px;align-items:flex-start}.invoice.logo-position-left .companywrap{flex-direction:row;align-items:flex-start}.invoice.logo-position-above .companywrap{flex-direction:column;align-items:flex-start}.logobox{display:inline-flex;align-items:center;justify-content:center;flex:none}.logobox:not(.has-logo){width:var(--logo-h,48px);height:var(--logo-h,48px);border:1px solid #d7dde6;border-radius:10px;background:#f7f9fc}.logobox img{display:none;max-height:var(--logo-h,48px);max-width:220px;width:auto;height:auto;object-fit:contain}.logobox.has-logo img{display:block}.logobox.has-logo .logofallback{display:none}.logofallback{width:100%;height:100%;border-radius:11px;background:var(--template-accent);color:#fff;font-size:calc(var(--logo-h,48px)*0.42);font-weight:900;display:grid;place-items:center}.companyname{font-size:20px;font-weight:800;margin:1px 0 5px}.metaText{font-size:10.5px;color:#485568;line-height:1.4}.metaText>div{white-space:pre-line}.invtitle{text-align:right}.invtitle h2{margin:0;font-size:34px;font-weight:300;letter-spacing:.04em}.invno{font-size:15px;color:#667085;font-weight:700;margin-top:3px}.metatable{width:100%;margin-top:10px;border-collapse:collapse;font-size:10.5px}.metatable td{padding:2.5px 0}.metatable td:first-child{text-align:left;color:#667085;padding-right:14px;white-space:nowrap;width:1%}.metatable td:last-child{text-align:right;font-weight:700}.balance{margin-top:10px;background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.14);border-radius:8px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800}.balance span{color:var(--total-color,#1f2937)}.balance strong{font-size:18px;color:var(--total-color,#18181b)}
+
+/* ---- Canvas form fields --------------------------------------------------
+   Every field on the invoice (v3.15+) is a real <input>/<textarea>/<select>
+   living directly at its spot on the document, reusing the exact same
+   classes/tags the rules above (and every per-template override in
+   templates.css) already target — .companyname, .metaText, .invtitle h2,
+   .invno, .metatable td, .balance span/strong, .label, .clientname,
+   .status, .sumrow span — so every template's typography/color/shape still
+   applies untouched. This block only resets browser form-control chrome
+   (border, background, native font) on top of that inherited styling, and
+   adds the always-visible dashed underline that signals "this is a
+   fillable field" the way a paper form would. */
+.invoice input,.invoice textarea,.invoice select{font:inherit;color:inherit;letter-spacing:inherit;text-align:inherit;background:transparent;border:none;border-radius:0;padding:0;margin:0;width:100%;box-sizing:border-box;appearance:none;-webkit-appearance:none;outline:none}
+.invoice input,.invoice select{border-bottom:1px dashed #e1e6ee}
+.invoice input:hover,.invoice select:hover,.invoice input:focus,.invoice select:focus{border-bottom-color:#9aa6b8}
+.invoice input::placeholder,.invoice textarea::placeholder{color:#aab3c2;font-weight:400;opacity:1}
+.invoice textarea{display:block;resize:none;overflow:hidden;line-height:inherit}
+.invoice input[type=date]{cursor:pointer}
+.invoice select{cursor:pointer}
+.invoice input[type=number]::-webkit-outer-spin-button,.invoice input[type=number]::-webkit-inner-spin-button{margin:0}
+.invoice input[type=number]{-moz-appearance:textfield}
+.metaText input,.metaText textarea{display:block;margin:1px 0}
+.invtitle h2 input{text-align:right}
+.invno{display:flex;align-items:baseline;justify-content:flex-end;gap:2px}
+.invno input{width:auto;min-width:3ch;text-align:right}
+.hashprefix{flex:none}
+.metatable td:first-child input{text-align:left}
+.metatable td:last-child input{text-align:right;font-weight:700}
+.balance span{display:inline-flex;flex:1}
+.sumrow span{display:flex;align-items:baseline;gap:4px}
+.pct-input{width:2.6em;text-align:center;flex:none}
+.money-input{width:5.5em;text-align:right}
+
+/* Logo upload/height/position controls — not invoice content, so they're
+   hidden from print/PDF (print.css) and from the Draft/Preview canvas
+   switch's Preview mode (invoice.css, alongside every other print-only
+   exclusion) the same way the old inline-edit affordances always were. */
+.logoboxwrap{display:flex;flex-direction:column;align-items:flex-start;gap:5px;flex:none}
+.logotools{display:flex;flex-wrap:wrap;align-items:center;gap:5px;max-width:200px}
+.logotools-btn{font:600 9px/1 var(--font,inherit);padding:3px 7px;border:1px solid #d7dde6;border-radius:5px;background:#fff;color:#475467;cursor:pointer;white-space:nowrap}
+.logotools-btn:hover{background:#f7f9fc}
+.logotools-range{display:inline-flex;align-items:center;gap:4px;font-size:9px;color:#667085}
+.logotools-range input[type=range]{width:52px;border:none}
+.invoice select.logotools-select{font-size:9px;padding:2px 4px;border:1px solid #d7dde6;border-radius:5px;background:#fff;color:#475467;width:auto}
+.logotools-hint{font-size:8px;color:#98a2b3;flex-basis:100%}
+body.canvas-preview-mode .logotools{display:none}
 .statusbalance{margin-top:10px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}.statusbalance .balance{margin-top:0;width:100%}
-.billrow{margin:14px 0}.label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#667085;font-weight:850;margin-bottom:4px}.clientname{font-size:14px;font-weight:850;margin-bottom:3px}.status{display:inline-flex;flex:none;white-space:nowrap;padding:5px 9px;border-radius:999px;font-size:9.5px;font-weight:850;border:1px solid #abefc6;background:#ecfdf3;color:#18794e}
+.billrow{margin:14px 0}.label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#667085;font-weight:850;margin-bottom:4px}.clientname{font-size:14px;font-weight:850;margin-bottom:3px}.status{display:inline-flex;flex:none;white-space:nowrap;text-align:center;padding:5px 22px 5px 9px;border-radius:999px;font-size:9.5px;font-weight:850;border:1px solid #abefc6;background-color:#ecfdf3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;background-size:11px;color:#18794e}
 .invtable{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px}.invtable th{padding:7px}.invtable th{text-transform:none;letter-spacing:.04em;font-size:8.5px;background:#f4f6f9;color:#344054;border:1px solid #cfd6e0;text-align:left}.invtable td{padding:7px;border:1px solid #d7dde6;vertical-align:top;overflow-wrap:anywhere}.invtable .right{text-align:right}.invtable .center{text-align:center}.empty{text-align:center;color:#667085;padding:18px!important}
 .bottomgrid{display:grid;grid-template-columns:1fr 240px;gap:18px;margin-top:12px}.notebox{border:1px solid #d8dee7;border-radius:8px;padding:9px;background:#fbfcfe;min-height:72px}.summary{border-top:2px solid #344054;padding-top:5px}.sumrow{display:flex;justify-content:space-between;gap:14px;padding:3px 0;font-size:10.5px}.sumrow span:first-child{color:#667085}.sumrow.total{border-top:1px solid #d0d5dd;margin-top:3px;padding-top:7px;font-size:14px;font-weight:850}.paymentgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;border-top:1px solid #d9dee7;margin-top:14px;padding-top:11px}.footer{position:absolute;bottom:var(--footer-bottom,9mm);left:var(--footer-left,12mm);right:var(--footer-right,12mm);display:flex;justify-content:space-between;font-size:8.5px;color:#667085}
 .invoice.notes-align-left .notebox,.invoice.notes-align-left .paymentgrid>div{text-align:left}

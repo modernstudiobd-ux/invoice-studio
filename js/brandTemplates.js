@@ -12,7 +12,7 @@
 // is already on screen.
 
 import { $, esc, uid } from "./dom.js";
-import { state, fields, defaultColumns, defaultSections, defaultLabels } from "./state.js";
+import { state, fields, defaultColumns, defaultSections, defaultLabels, LEGACY_LABEL_MAP } from "./state.js";
 import { setAccent, applyAllOptionalColors } from "./accent.js";
 import { renderColumns } from "./columns.js";
 import { renderItems } from "./items.js";
@@ -53,8 +53,7 @@ function serializeBrand() {
     logo: state.logo,
     logoNatural: state.logoNatural,
     columns: state.columns,
-    sections: state.sections,
-    labels: state.labels
+    sections: state.sections
   };
 }
 
@@ -88,12 +87,19 @@ export function applyBrandTemplate(id) {
   if (!entry) return;
   const d = entry.snapshot || {};
   BRAND_FIELD_IDS.forEach(fid => { if (d.fields && fid in d.fields && typeof d.fields[fid] === "string") $(fid).value = d.fields[fid]; });
+  // Pre-3.15 templates kept labels in a separate top-level `labels` object.
+  const legacyLabels = (d.labels && typeof d.labels === "object") ? d.labels : {};
+  Object.entries(LEGACY_LABEL_MAP).forEach(([fid, legacyKey]) => {
+    if (!BRAND_FIELD_IDS.includes(fid)) return;
+    if (d.fields && typeof d.fields[fid] === "string") return;
+    const legacyVal = typeof legacyLabels[legacyKey] === "string" ? legacyLabels[legacyKey] : defaultLabels()[legacyKey];
+    $(fid).value = legacyVal || "";
+  });
   state.logo = typeof d.logo === "string" ? d.logo : "";
   state.logoNatural = (d.logoNatural && typeof d.logoNatural.w === "number" && typeof d.logoNatural.h === "number") ? d.logoNatural : null;
   let cleanColumns = Array.isArray(d.columns) ? d.columns.filter(c => c && typeof c === "object" && typeof c.key === "string" && typeof c.label === "string").map(c => ({ id: typeof c.id === "string" ? c.id : uid(), key: c.key, label: c.label, type: ["text", "number", "currency", "percentage", "date"].includes(c.type) ? c.type : "text", width: Number.isFinite(Number(c.width)) ? Number(c.width) : 15, align: ["left", "right", "center"].includes(c.align) ? c.align : "left", visible: c.visible !== false, role: ["none", "quantity", "rate", "amount"].includes(c.role) ? c.role : "none" })) : [];
   state.columns = cleanColumns.length ? cleanColumns : defaultColumns();
   state.sections = { ...defaultSections(), ...(d.sections && typeof d.sections === "object" ? d.sections : {}) };
-  state.labels = { ...defaultLabels(), ...(d.labels && typeof d.labels === "object" ? d.labels : {}) };
   setAccent($("accentHex").value);
   applyAllOptionalColors();
   renderColumns(); renderItems(); renderToggles(); renderPreview(); save();

@@ -2,19 +2,10 @@
 
 import { $, esc } from "./dom.js";
 import { state, currentPaper, applyPaperSize, templateFooterInsetMm, templatePaddingMm } from "./state.js";
-import { money, dateFmt, alignClass, fmtCell, num } from "./format.js";
+import { money, alignClass, fmtCell, num } from "./format.js";
 import { calc, itemValue } from "./calc.js";
 import { applyAllOptionalColors } from "./accent.js";
 import { syncCurrencyDisplay } from "./currencySearch.js";
-
-// Maps each Details-tab label input's id to its key in state.labels — used
-// both by renderPreview() (to keep the inputs in sync with state) and by
-// main.js (to wire their change → state.labels handlers).
-export const LABEL_FIELD_IDS = [
-  ["labelTitle", "title"], ["labelBillTo", "bill"], ["labelBalance", "balance"],
-  ["labelNote", "note"], ["labelPayment", "payment"], ["labelTerms", "terms"],
-  ["labelInvoiceDate", "date"], ["labelDueDate", "due"], ["labelReference", "ref"]
-];
 
 // Writes text into a preview element — a thin wrapper kept mainly so every
 // preview text update goes through one place (guards against a missing
@@ -24,6 +15,15 @@ function setText(el, text) {
   el.textContent = text;
 }
 
+// Every field on the invoice (company/client details, dates, notes,
+// discount %, etc.) is now a real <input>/<textarea>/<select> living right
+// on the canvas at its own id (see index.html and the `fields` array in
+// state.js) — there's no separate hidden "backing" field and display
+// element to keep in sync any more, so renderPreview()'s job here is just:
+// recompute the few genuinely *derived* numbers (totals, the footer's
+// mirrored copy of the company name/invoice number, the logo's fallback
+// initial, which optional rows are empty), and the template/paper/color
+// classes.
 export function renderPreview() {
   syncCurrencyDisplay();
   let inv = $("invoice"), tpl = $("template").value;
@@ -43,72 +43,41 @@ export function renderPreview() {
   inv.style.setProperty("--footer-right", footerInset.right + "mm");
   inv.style.setProperty("--footer-bottom", footerInset.bottom + "mm");
   applyPaperSize();
-  // Document labels ("INVOICE", "Bill to", ...) are renamed via the Details
-  // tab's label:* inputs (see main.js) and persisted in state.labels; keep
-  // those inputs themselves in sync too (e.g. after Undo, importing a JSON
-  // file, or loading a Saved Invoice/Brand Template changes state.labels
-  // without the person having touched the input directly).
-  const labels = state.labels;
-  LABEL_FIELD_IDS.forEach(([id, key]) => {
-    const el = $(id);
-    if (el && document.activeElement !== el && el.value !== (labels[key] || "")) el.value = labels[key] || "";
-  });
-  setText($("pInvoiceTitle"), labels.title);
-  setText($("pBillToLabel"), labels.bill);
-  setText($("pBalanceLabel"), labels.balance);
-  setText($("pNoteLabel"), labels.note);
-  setText($("pPaymentLabel"), labels.payment);
-  setText($("pTermsLabel"), labels.terms);
-  setText($("pDateLabel"), labels.date);
-  setText($("pDueLabel"), labels.due);
-  setText($("pReferenceLabel"), labels.ref);
-  setText($("pCompanyName"), $("companyName").value.trim() || "Your Company");
-  setMetaField($("pCompanyReg"), $("companyReg").value.trim(), "Registration: ");
-  setMetaField($("pCompanyVat"), $("companyVat").value.trim(), "VAT / Tax: ");
-  setMetaField($("pCompanyAddress"), $("companyAddress").value.trim(), "");
-  setMetaField($("pCompanyPhone"), $("companyPhone").value.trim(), "Phone: ");
-  setMetaField($("pCompanyEmail"), $("companyEmail").value.trim(), "Email: ");
-  setMetaField($("pCompanyWebsite"), $("companyWebsite").value.trim(), "");
-  let no = $("invoiceNumber").value.trim() || "Untitled";
-  setText($("pInvoiceNo"), "#" + no);
+
   const invoiceDateVal = $("invoiceDate").value;
   const dueDateVal = $("dueDate").value;
-  setText($("pDate"), dateFmt(invoiceDateVal));
-  setText($("pDue"), dateFmt(dueDateVal));
   const referenceText = $("reference").value.trim();
-  setText($("pReference"), referenceText || "—");
-  setText($("pClientName"), $("clientName").value.trim() || "Client company");
-  setMetaField($("pClientContact"), $("clientContact").value.trim(), "");
-  setMetaField($("pClientTax"), $("clientTax").value.trim(), "VAT / Tax: ");
-  setMetaField($("pClientAddress"), $("clientAddress").value.trim(), "");
-  setMetaField($("pClientEmail"), $("clientEmail").value.trim(), "");
   const notesText = $("notes").value.trim();
   const termsText = $("terms").value.trim();
-  setText($("pNotes"), notesText);
-  setText($("pPayment"), $("paymentDetails").value.trim());
-  setText($("pTerms"), termsText);
+  const paymentText = $("paymentDetails").value.trim();
+  let no = $("invoiceNumber").value.trim() || "Untitled";
+
+  // Footer is a second, separate location on the page — it can't share the
+  // header's companyName/invoiceNumber input, so it stays a plain mirrored
+  // display kept in sync here.
   setText($("pFooterCompany"), $("companyName").value.trim() || "Your Company");
   setText($("pFooterInvoice"), "Invoice #" + no);
-  let status = $("status").value, p = $("pStatus"), styles = { Draft: ["#475467", "#f2f4f7", "#d0d5dd"], Due: ["#18794e", "#ecfdf3", "#abefc6"], Paid: ["#175cd3", "#eff8ff", "#b2ddff"], "Partially Paid": ["#9a6700", "#fffaeb", "#fedf89"], Overdue: ["#b42318", "#fef3f2", "#fecdca"], Canceled: ["#667085", "#f2f4f7", "#d0d5dd"] }[status] || ["#475467", "#f2f4f7", "#d0d5dd"];
-  // Status is click-to-cycle (not a text edit), so it always updates —
-  // there's no caret to protect, and it should reflect a click immediately
-  // even though the badge keeps keyboard focus afterward.
-  p.textContent = "● " + status; p.style.color = styles[0]; p.style.background = styles[1]; p.style.borderColor = styles[2];
+
+  // Status select styled as a colored badge (border/background/text)
+  // matching the chosen status, same palette as before.
+  let status = $("status").value, sel = $("status"), styles = { Draft: ["#475467", "#f2f4f7", "#d0d5dd"], Due: ["#18794e", "#ecfdf3", "#abefc6"], Paid: ["#175cd3", "#eff8ff", "#b2ddff"], "Partially Paid": ["#9a6700", "#fffaeb", "#fedf89"], Overdue: ["#b42318", "#fef3f2", "#fecdca"], Canceled: ["#667085", "#f2f4f7", "#d0d5dd"] }[status] || ["#475467", "#f2f4f7", "#d0d5dd"];
+  // backgroundColor (not the background shorthand) so this never clobbers
+  // the dropdown-arrow background-image the .status rule sets in CSS.
+  sel.style.color = styles[0]; sel.style.backgroundColor = styles[1]; sel.style.borderColor = styles[2];
+
   document.querySelectorAll("[data-section]").forEach(e => e.classList.toggle("section-hidden", !state.sections[e.dataset.section]));
   // The rows/blocks below are "optional detail" fields (each has its own
   // on/off switch in the section settings, toggled above via section-hidden
   // — that's a deliberate choice and hides on screen too). Separately from
   // that, if the section is ON but nothing was actually typed in, the row
-  // still shows on screen (with its placeholder, e.g. "—" / "Add value") so
-  // the person can see it's available to fill in — it only disappears from
-  // the printed/PDF "final" invoice, via the print-only .print-hide-empty
-  // rule in print.css.
+  // still shows on screen (as an empty, fillable field) so the person can
+  // see it's available — it only disappears from the printed/PDF "final"
+  // invoice, via the print-only .print-hide-empty rule in print.css.
   const notesSection = document.querySelector('[data-section="notes"]');
   const termsSection = document.querySelector('[data-section="terms"]');
   if (notesSection) notesSection.classList.toggle("print-hide-empty", !notesText);
   if (termsSection) termsSection.classList.toggle("print-hide-empty", !termsText);
   const paymentSection = document.querySelector('[data-section="payment"]');
-  const paymentText = $("paymentDetails").value.trim();
   if (paymentSection) paymentSection.classList.toggle("print-hide-empty", !paymentText);
   const referenceSection = document.querySelector('[data-section="reference"]');
   if (referenceSection) referenceSection.classList.toggle("print-hide-empty", !referenceText);
@@ -135,11 +104,8 @@ export function renderPreview() {
 
   let t = calc();
   setText($("pSubtotal"), money(t.subtotal));
-  setText($("discountLabel"), `Discount (${pct(t.dr)}%)`);
   setText($("pDiscount"), "−" + money(t.disc));
-  setText($("taxLabel"), `Tax (${pct(t.tr)}%)`);
   setText($("pTax"), money(t.tax));
-  setText($("pShipping"), money(t.ship));
   setText($("pTotal"), money(t.total)); setText($("pBalance"), money(t.total));
   $("discountRow").classList.toggle("print-hide-empty", !t.disc);
   $("taxRow").classList.toggle("print-hide-empty", !t.tax);
@@ -154,10 +120,16 @@ export function renderPreview() {
   } else {
     img.removeAttribute("src"); box.classList.remove("has-logo");
   }
+  autoGrowAll();
   fitInvoiceCanvas();
 }
 
-function pct(n) { return n.toFixed(2).replace(/\.00$/, ""); }
+// Textareas living on the canvas (company/client address, notes, payment
+// details, terms) grow to fit their content instead of scrolling, both so
+// nothing is hidden on screen and so print/PDF output never clips text —
+// there's no way to size a <textarea> to its content in CSS alone.
+function autoGrow(el) { if (!el) return; el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
+function autoGrowAll() { document.querySelectorAll("#invoice textarea").forEach(autoGrow); }
 
 // Print (see print.js) temporarily resizes .canvaswrap to its natural,
 // unscaled size right before calling window.print(). That resize is itself
@@ -482,16 +454,4 @@ function renderPageBreaks(inv, naturalH, pageCount) {
     chip.textContent = `Page ${i + 1}`;
     inv.appendChild(chip);
   }
-}
-
-// Each line of the company/client "meta" blocks (registration, VAT, address,
-// phone, email, website / contact, VAT, address, email) is its own row in
-// the preview, sourced from the matching Details-tab field. A row with no
-// value renders empty and gets .print-hide-empty so blank rows never
-// appear in Preview mode or the printed/PDF output (see setText()'s sibling
-// note above for why Draft mode still shows them).
-function setMetaField(el, value, prefix) {
-  if (!el) return;
-  setText(el, value ? prefix + value : "");
-  el.classList.toggle("print-hide-empty", !value);
 }

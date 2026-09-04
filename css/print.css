@@ -100,6 +100,15 @@
      of the section on/off switches (those use .section-hidden above, which
      hides on screen too since that's a deliberate user choice). */
   .invoice .print-hide-empty{display:none!important}
+  /* Canvas form-field chrome (v3.15+): every field is a real input/select
+     on screen, with a dashed underline marking it as fillable and a logo
+     upload toolbar next to the logo box — neither belongs on the actual
+     printed/PDF document, which should read exactly like the old static
+     invoice did. */
+  .logotools{display:none!important}
+  .invoice input,.invoice select{border-bottom:none!important}
+  .invoice input::placeholder,.invoice textarea::placeholder{color:transparent!important}
+  .status{background-image:none!important;padding:5px 9px!important}
   /* Force background colors/fills to print consistently across Chrome, Edge,
      Firefox and Safari without relying on the browser's own "Background
      graphics" checkbox. */
