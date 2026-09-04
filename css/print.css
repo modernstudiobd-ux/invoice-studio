@@ -106,7 +106,6 @@
      printed/PDF document, which should read exactly like the old static
      invoice did. */
   .logotools{display:none!important}
-  .invoice input,.invoice select{border-bottom:none!important}
   .invoice input::placeholder,.invoice textarea::placeholder{color:transparent!important}
   .status{background-image:none!important;padding:5px 9px!important}
   /* Force background colors/fills to print consistently across Chrome, Edge,

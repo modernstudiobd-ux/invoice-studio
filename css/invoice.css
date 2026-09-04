@@ -113,7 +113,6 @@ body.canvas-preview-mode .invoice .print-hide-empty{display:none!important}
    form chrome (dashed fillable-field underline, the status select's
    dropdown arrow, empty-field placeholder text) is hidden here too,
    alongside the logo upload toolbar hidden below. */
-body.canvas-preview-mode .invoice input,body.canvas-preview-mode .invoice select{border-bottom:none!important}
 body.canvas-preview-mode .invoice input::placeholder,body.canvas-preview-mode .invoice textarea::placeholder{color:transparent!important}
 body.canvas-preview-mode .status{background-image:none!important;padding:5px 9px!important}
 .canvasmode-switch{display:inline-flex;gap:2px;background:#eef0f7;padding:3px;border-radius:10px}
@@ -133,12 +132,13 @@ body.canvas-preview-mode .status{background-image:none!important;padding:5px 9px
    .invno, .metatable td, .balance span/strong, .label, .clientname,
    .status, .sumrow span — so every template's typography/color/shape still
    applies untouched. This block only resets browser form-control chrome
-   (border, background, native font) on top of that inherited styling, and
-   adds the always-visible dashed underline that signals "this is a
-   fillable field" the way a paper form would. */
-.invoice input,.invoice textarea,.invoice select{font:inherit;color:inherit;letter-spacing:inherit;text-align:inherit;background:transparent;border:none;border-radius:0;padding:0;margin:0;width:100%;box-sizing:border-box;appearance:none;-webkit-appearance:none;outline:none}
-.invoice input,.invoice select{border-bottom:1px dashed #e1e6ee}
-.invoice input:hover,.invoice select:hover,.invoice input:focus,.invoice select:focus{border-bottom-color:#9aa6b8}
+   (border, background, native font) so each field looks exactly like the
+   plain invoice text it replaced — no added visual styling of its own,
+   just the browser's normal focus ring so it's still clear what's
+   selected. */
+.invoice input,.invoice textarea,.invoice select{font:inherit;color:inherit;letter-spacing:inherit;text-align:inherit;background:transparent;border:none;border-radius:0;padding:0;margin:0;width:100%;box-sizing:border-box}
+.invoice input,.invoice select{appearance:none;-webkit-appearance:none}
+.invoice input[type=range]{appearance:auto;-webkit-appearance:auto;width:auto}
 .invoice input::placeholder,.invoice textarea::placeholder{color:#aab3c2;font-weight:400;opacity:1}
 .invoice textarea{display:block;resize:none;overflow:hidden;line-height:inherit}
 .invoice input[type=date]{cursor:pointer}
@@ -166,7 +166,7 @@ body.canvas-preview-mode .status{background-image:none!important;padding:5px 9px
 .logotools-btn{font:600 9px/1 var(--font,inherit);padding:3px 7px;border:1px solid #d7dde6;border-radius:5px;background:#fff;color:#475467;cursor:pointer;white-space:nowrap}
 .logotools-btn:hover{background:#f7f9fc}
 .logotools-range{display:inline-flex;align-items:center;gap:4px;font-size:9px;color:#667085}
-.logotools-range input[type=range]{width:52px;border:none}
+.logotools-range input[type=range]{width:52px}
 .invoice select.logotools-select{font-size:9px;padding:2px 4px;border:1px solid #d7dde6;border-radius:5px;background:#fff;color:#475467;width:auto}
 .logotools-hint{font-size:8px;color:#98a2b3;flex-basis:100%}
 body.canvas-preview-mode .logotools{display:none}
