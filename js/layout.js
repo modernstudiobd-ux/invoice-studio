@@ -143,8 +143,34 @@ exitFullscreenBtn.addEventListener("click", () => setFullscreenPreview(false));
 // optional rows via the .canvas-preview-mode rule in invoice.css — the
 // same .print-hide-empty class @media print already uses — so it's a
 // faithful, live dry run of the actual Print/PDF output, not a separate
-// approximation of it.
+// approximation of it. That includes being genuinely non-editable, the
+// same way a real print preview is: setCanvasEditable() below locks every
+// real field living directly on the document (see setInvoiceFieldsEditable)
+// the instant Preview turns on, and unlocks them the instant Draft
+// returns — editing still happens freely through the sidebar's Items/
+// Table Columns/Design tabs and the page-setup toolbar, none of which are
+// part of the document itself.
 const canvasModeEditBtn = $("canvasModeEditBtn"), canvasModePreviewBtn = $("canvasModePreviewBtn");
+
+// Locks/unlocks every real form field living on the invoice document
+// itself (company/client details, dates, notes/terms/payment, discount/
+// tax/shipping, the status badge, the logo controls) — everything
+// index.html and state.js call "fields", i.e. the document's own content,
+// as opposed to the sidebar tools that manage it. readOnly covers
+// text-like inputs/textareas (keeps them focusable/selectable for copying,
+// just not editable, and is announced correctly by screen readers);
+// disabled covers <select> and the logo's range/file/checkbox-style
+// controls, which don't support readOnly at all. Blurring first stops a
+// field the person was actively typing in from being yanked read-only out
+// from under a live caret.
+function setInvoiceFieldsEditable(editable) {
+  const inv = $("invoice");
+  if (!inv) return;
+  if (!editable && inv.contains(document.activeElement)) document.activeElement.blur();
+  inv.querySelectorAll("input, textarea").forEach(el => { el.readOnly = !editable; });
+  inv.querySelectorAll("select").forEach(el => { el.disabled = !editable; });
+}
+
 export function setCanvasMode(mode) {
   const isPreview = mode === "preview";
   document.body.classList.toggle("canvas-preview-mode", isPreview);
@@ -152,6 +178,7 @@ export function setCanvasMode(mode) {
   canvasModeEditBtn.setAttribute("aria-selected", String(!isPreview));
   canvasModePreviewBtn.classList.toggle("active", isPreview);
   canvasModePreviewBtn.setAttribute("aria-selected", String(isPreview));
+  setInvoiceFieldsEditable(!isPreview);
   // Draft and Preview size the canvas wrapper differently (auto-height form
   // vs. fixed page multiples — see fitInvoiceCanvas in preview.js), so the
   // wrapper needs re-measuring the instant the mode actually changes, not

@@ -115,6 +115,23 @@ body.canvas-preview-mode .invoice .print-hide-empty{display:none!important}
    alongside the logo upload toolbar hidden below. */
 body.canvas-preview-mode .invoice input::placeholder,body.canvas-preview-mode .invoice textarea::placeholder{color:transparent!important}
 body.canvas-preview-mode .status{background-image:none!important;padding:5px 9px!important}
+/* Preview is a genuine read-only print preview, not a second editing
+   surface — js/layout.js's setCanvasMode() marks every real field on the
+   document readOnly/disabled the instant Preview turns on. These rules
+   just make the *look* match: no text-input caret or pointer cursor, no
+   focus ring (there's nothing to focus toward editing anymore), and none
+   of the browser's default washed-out "disabled control" styling — so
+   switching to Preview only removes the ability to edit, never changes
+   how the document itself looks. */
+body.canvas-preview-mode .invoice input,
+body.canvas-preview-mode .invoice textarea,
+body.canvas-preview-mode .invoice select{cursor:default;opacity:1;-webkit-text-fill-color:currentColor}
+body.canvas-preview-mode .invoice input:focus,
+body.canvas-preview-mode .invoice textarea:focus,
+body.canvas-preview-mode .invoice select:focus{outline:none}
+body.canvas-preview-mode .invoice input[type=number]::-webkit-outer-spin-button,
+body.canvas-preview-mode .invoice input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+body.canvas-preview-mode .invoice input[type=date]::-webkit-calendar-picker-indicator{display:none}
 /* Draft is an editing form, not a page-accurate mock-up — it shouldn't be
    held open to a fixed A4/Letter height (min-height, set below on the base
    .invoice rule) when the actual fields don't fill one, since that leaves a
