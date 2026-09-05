@@ -115,6 +115,21 @@ body.canvas-preview-mode .invoice .print-hide-empty{display:none!important}
    alongside the logo upload toolbar hidden below. */
 body.canvas-preview-mode .invoice input::placeholder,body.canvas-preview-mode .invoice textarea::placeholder{color:transparent!important}
 body.canvas-preview-mode .status{background-image:none!important;padding:5px 9px!important}
+/* Draft is an editing form, not a page-accurate mock-up — it shouldn't be
+   held open to a fixed A4/Letter height (min-height, set below on the base
+   .invoice rule) when the actual fields don't fill one, since that leaves a
+   dead gap of blank "page" below the last field instead of the canvas
+   simply ending there like an ordinary form. Preview keeps the fixed page
+   height (a faithful dry run of Print/PDF, which really does paginate to
+   the physical page size) — only Draft relaxes it; js/preview.js's
+   fitInvoiceCanvas() sizes the wrapper to match on the Draft side so
+   nothing beyond the real content is reserved. The footer likewise only
+   belongs to that page-accurate view (and to the repeating print/PDF
+   footer built separately in applyPrintTableWrap): it has nothing to
+   attach to at the bottom of an auto-height Draft canvas, so it's hidden
+   there and reappears once Preview is switched on.*/
+body:not(.canvas-preview-mode) .invoice{min-height:0}
+body:not(.canvas-preview-mode) .footer{display:none}
 .canvasmode-switch{display:inline-flex;gap:2px;background:#eef0f7;padding:3px;border-radius:10px}
 .canvasmode-btn{border:0;background:transparent;border-radius:7px;padding:6px 11px;font-size:11.5px;font-weight:750;color:var(--muted);display:inline-flex;align-items:center;gap:5px;transition:background-color .15s ease,color .15s ease,box-shadow .15s ease}
 .canvasmode-btn.active{background:#fff;color:var(--app-accent);box-shadow:var(--shadow-sm)}

@@ -152,6 +152,11 @@ export function setCanvasMode(mode) {
   canvasModeEditBtn.setAttribute("aria-selected", String(!isPreview));
   canvasModePreviewBtn.classList.toggle("active", isPreview);
   canvasModePreviewBtn.setAttribute("aria-selected", String(isPreview));
+  // Draft and Preview size the canvas wrapper differently (auto-height form
+  // vs. fixed page multiples — see fitInvoiceCanvas in preview.js), so the
+  // wrapper needs re-measuring the instant the mode actually changes, not
+  // just on the next unrelated re-render/resize.
+  fitInvoiceCanvas();
 }
 canvasModeEditBtn.addEventListener("click", () => setCanvasMode("edit"));
 canvasModePreviewBtn.addEventListener("click", () => setCanvasMode("preview"));

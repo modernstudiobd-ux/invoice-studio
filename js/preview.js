@@ -414,11 +414,30 @@ export function fitInvoiceCanvas() {
   // page-break guides) to match — Print/PDF already paginate correctly on
   // their own, this only affects the on-screen preview.
   const contentH = inv.scrollHeight || naturalH;
-  const pageCount = Math.max(1, Math.ceil(contentH / naturalH - 0.01));   // small epsilon avoids a
-                                                                            // false "page 2" from
-                                                                            // sub-pixel rounding
-  renderPageBreaks(inv, naturalH, pageCount);
-  wrap.style.height = Math.ceil(pageCount * naturalH * total) + "px";
+  const isPreviewMode = document.body.classList.contains("canvas-preview-mode");
+  // Page count is only meaningful in Preview (a faithful dry run of the
+  // physical page): computed there for both the wrapper height and the
+  // "N pages" labels below. Draft always reports/renders as a single,
+  // auto-height page since it isn't paginating anything.
+  const pageCount = isPreviewMode ? Math.max(1, Math.ceil(contentH / naturalH - 0.01)) : 1;   // small epsilon
+                                                                                                 // avoids a false
+                                                                                                 // "page 2" from
+                                                                                                 // sub-pixel rounding
+  if (isPreviewMode) {
+    // Preview always rounds the wrapper up to a whole number of pages and
+    // marks every page break, even when the last page is only partly full
+    // — exactly like Print/PDF.
+    renderPageBreaks(inv, naturalH, pageCount);
+    wrap.style.height = Math.ceil(pageCount * naturalH * total) + "px";
+  } else {
+    // Draft is an editing form, not a page mock-up: size the wrapper to
+    // exactly however tall the fields actually are (no footer, no
+    // min-height — see invoice.css), so it ends right after the last field
+    // like an ordinary form instead of reserving blank space out to the
+    // next full page boundary.
+    renderPageBreaks(inv, naturalH, 1);
+    wrap.style.height = Math.ceil(contentH * total) + "px";
+  }
 
   // The footer (see .footer in print.css) repeats on every printed page via
   // position:fixed rather than CSS @page margin boxes — reliable cross-browser,
