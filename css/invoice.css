@@ -185,6 +185,23 @@ body:not(.canvas-preview-mode) .footer{display:none}
 .invoice select.logotools-select{font-size:9px;padding:2px 4px;border:1px solid #d7dde6;border-radius:5px;background:#fff;color:#475467;width:auto}
 .logotools-hint{font-size:8px;color:#98a2b3;flex-basis:100%}
 body.canvas-preview-mode .logotools{display:none}
+/* Inline "+ Add item" control on the invoice canvas table (js/preview.js):
+   a real, clickable way to add a line item right where an empty (or
+   in-progress) items table naturally draws the eye, instead of only via
+   the "+ Add item" button tucked away in the sidebar's Items tab. Editing
+   chrome, not invoice content, so — same treatment as .logotools above —
+   it disappears in Preview mode and print/PDF (print.css); the trailing
+   "add another" row is hidden as a whole row there too (an empty bordered
+   table row would otherwise print/preview as a stray blank strip), while
+   the empty-state row keeps its "No line items added." text visible and
+   only its button hidden, so that placeholder still reads correctly in
+   Preview/print exactly as it always has. */
+.add-item-btn{font:750 10.5px/1 var(--font,inherit);padding:6px 12px;margin-top:8px;border:1px dashed #b6bfcc;border-radius:6px;background:#fbfcfe;color:var(--app-accent);cursor:pointer;white-space:nowrap}
+.add-item-btn:hover{background:#f2f4f7;border-color:#98a2b3}
+.add-item-btn:focus-visible{outline:2px solid var(--app-accent);outline-offset:1px}
+.add-item-row td{text-align:center;padding:8px 7px!important}
+body.canvas-preview-mode .add-item-btn{display:none}
+body.canvas-preview-mode .add-item-row{display:none}
 .statusbalance{margin-top:10px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}.statusbalance .balance{margin-top:0;width:100%}
 .billrow{margin:14px 0}.label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#667085;font-weight:850;margin-bottom:4px}.clientname{font-size:14px;font-weight:850;margin-bottom:3px}.status{display:inline-flex;flex:none;white-space:nowrap;text-align:center;padding:5px 22px 5px 9px;border-radius:999px;font-size:9.5px;font-weight:850;border:1px solid #abefc6;background-color:#ecfdf3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;background-size:11px;color:#18794e}
 .invtable{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px}.invtable th{padding:7px}.invtable th{text-transform:none;letter-spacing:.04em;font-size:8.5px;background:#f4f6f9;color:#344054;border:1px solid #cfd6e0;text-align:left}.invtable td{padding:7px;border:1px solid #d7dde6;vertical-align:top;overflow-wrap:anywhere}.invtable .right{text-align:right}.invtable .center{text-align:center}.empty{text-align:center;color:#667085;padding:18px!important}

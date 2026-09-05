@@ -91,8 +91,16 @@ export function renderPreview() {
   $("pHeaders").innerHTML = visible.map(c => `<th class="${alignClass(c.align)}"><span class="col-label-text">${esc(c.label)}</span></th>`).join("");
 
   let body = $("pItems"); body.innerHTML = "";
+  const colCount = Math.max(1, visible.length);
   if (!state.items.length) {
-    body.innerHTML = `<tr><td class="empty" colspan="${Math.max(1, visible.length)}">No line items added.</td></tr>`;
+    // Empty state: the old plain "No line items added." text gave no way to
+    // actually add one from the canvas itself — the only real control was
+    // the "+ Add item" button tucked away in the sidebar's Items tab, easy
+    // to miss. This adds a real, clickable control right where an empty
+    // items table naturally draws the eye. Editing-only chrome, so it's
+    // hidden in Preview mode and print the same way the logo upload
+    // toolbar is (see .add-item-btn in invoice.css / print.css).
+    body.innerHTML = `<tr><td class="empty" colspan="${colCount}">No line items added.<br><button type="button" class="add-item-btn">+ Add item</button></td></tr>`;
   } else {
     state.items.forEach((item) => {
       let tr = document.createElement("tr");
@@ -100,6 +108,13 @@ export function renderPreview() {
       tr.innerHTML = visible.map(c => `<td class="${alignClass(c.align)}">${fmtCell(itemValue(item, c), c)}</td>`).join("");
       body.appendChild(tr);
     });
+    // Trailing "add another" row — kept out of print/PDF (it's not
+    // content) and out of Preview mode via the same rule that hides the
+    // empty-state button above.
+    let addRow = document.createElement("tr");
+    addRow.className = "add-item-row";
+    addRow.innerHTML = `<td colspan="${colCount}"><button type="button" class="add-item-btn">+ Add item</button></td>`;
+    body.appendChild(addRow);
   }
 
   let t = calc();

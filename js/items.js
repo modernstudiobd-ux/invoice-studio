@@ -6,6 +6,19 @@ import { num } from "./format.js";
 import { renderPreview } from "./preview.js";
 import { save } from "./persistence.js";
 
+// Shared "add a line item" action — used by the sidebar's Items tab button
+// (js/main.js) and by the inline "+ Add item" control rendered directly on
+// the invoice canvas table (js/preview.js) so there's exactly one place
+// that knows how a new item is shaped, instead of two copies drifting apart.
+export function addItem() {
+  let item = {};
+  state.columns.forEach(c => item[c.key] = c.role === "quantity" ? 1 : "");
+  state.items.push(item);
+  renderItems();
+  renderPreview();
+  save();
+}
+
 export function renderItems() {
   let root = $("itemsEditor"); root.innerHTML = ""; state.items.forEach((item, idx) => {
     let card = document.createElement("div"); card.className = "itemcard"; let editable = state.columns.filter(c => c.role !== "amount");

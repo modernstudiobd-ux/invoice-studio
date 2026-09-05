@@ -11,7 +11,7 @@ import { toast } from "./toast.js";
 import { setAccent, applyOptionalColor, clearOptionalColor, applyAllOptionalColors } from "./accent.js";
 import { renderPreview, fitInvoiceCanvas } from "./preview.js";
 import { renderColumns } from "./columns.js";
-import { renderItems } from "./items.js";
+import { renderItems, addItem } from "./items.js";
 import { renderToggles } from "./toggles.js";
 import { save, undo, redo, pushEditHistory, updateUndoRedoButtons } from "./persistence.js";
 import { load } from "./invoiceData.js";
@@ -51,10 +51,20 @@ OPTIONAL_COLOR_IDS.forEach(id => {
 });
 
 /* --- Items / columns quick actions --- */
-$("addItemBtn").onclick = () => { let item = {}; state.columns.forEach(c => item[c.key] = c.role === "quantity" ? 1 : ""); state.items.push(item); renderItems(); renderPreview(); save(); };
+$("addItemBtn").onclick = () => addItem();
 $("clearItemsBtn").onclick = () => { if (confirm("Remove all line items?")) { state.items = []; renderItems(); renderPreview(); save(); } };
 $("addColumnBtn").onclick = () => { let i = state.columns.length + 1; state.columns.push({ id: uid(), key: "column_" + Date.now(), label: "Column " + i, type: "text", width: 15, align: "left", visible: true, role: "none" }); renderColumns(); renderItems(); renderPreview(); save(); };
 $("restoreColumnsBtn").onclick = () => { if (confirm("Restore the default five columns?")) { state.columns = defaultColumns(); renderColumns(); renderItems(); renderPreview(); save(); } };
+
+// Inline "+ Add item" control rendered directly on the invoice canvas table
+// (see preview.js) — both its empty-state row and its trailing "add
+// another" row use the same .add-item-btn class. Delegated on document
+// (rather than bound per-button) since preview.js rebuilds #pItems'
+// innerHTML on every render, which would otherwise silently drop a
+// directly-bound listener the next time the table redraws.
+document.addEventListener("click", e => {
+  if (e.target.closest(".add-item-btn")) addItem();
+});
 
 /* --- Logo upload --- */
 $("logoFile").onchange = e => { const f = e.target.files && e.target.files[0]; if (f) handleLogoFile(f, e.target); };
