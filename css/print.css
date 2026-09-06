@@ -108,6 +108,7 @@
   .logotools{display:none!important}
   .add-item-btn{display:none!important}
   .add-item-row{display:none!important}
+  .item-actions-col{display:none!important}
   .invoice input::placeholder,.invoice textarea::placeholder{color:transparent!important}
   .status{background-image:none!important;padding:5px 9px!important}
   /* Force background colors/fills to print consistently across Chrome, Edge,

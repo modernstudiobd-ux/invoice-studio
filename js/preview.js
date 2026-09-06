@@ -87,11 +87,28 @@ export function renderPreview() {
   if (dueDateSection) dueDateSection.classList.toggle("print-hide-empty", !dueDateVal);
 
   let visible = state.columns.filter(c => c.visible);
-  { let raw = visible.map(c => Math.max(5, num(c.width))), sum = raw.reduce((a, b) => a + b, 0) || 1; $("pCols").innerHTML = raw.map(w => `<col style="width:${(w / sum * 100).toFixed(2)}%">`).join(""); }
-  $("pHeaders").innerHTML = visible.map(c => `<th class="${alignClass(c.align)}"><span class="col-label-text">${esc(c.label)}</span></th>`).join("");
+  const isPreviewMode = document.body.classList.contains("canvas-preview-mode");
+  // Edit mode reserves a narrow trailing column for the per-row remove
+  // button (see .item-actions-col below) — 6% taken off the visible
+  // columns' own share, not added on top, so the table still fits exactly
+  // within the page width. Preview drops that column entirely: it isn't
+  // real invoice content, so a page-accurate preview shouldn't reserve
+  // space for it (print.css already excludes it from print the same way).
+  {
+    let raw = visible.map(c => Math.max(5, num(c.width))), sum = raw.reduce((a, b) => a + b, 0) || 1;
+    const scale = isPreviewMode ? 100 : 94;
+    let colsHtml = raw.map(w => `<col style="width:${(w / sum * scale).toFixed(2)}%">`).join("");
+    if (!isPreviewMode) colsHtml += `<col style="width:6%">`;
+    $("pCols").innerHTML = colsHtml;
+  }
+  {
+    let headersHtml = visible.map(c => `<th class="${alignClass(c.align)}"><span class="col-label-text">${esc(c.label)}</span></th>`).join("");
+    if (!isPreviewMode) headersHtml += `<th class="item-actions-col" aria-hidden="true"></th>`;
+    $("pHeaders").innerHTML = headersHtml;
+  }
 
   let body = $("pItems"); body.innerHTML = "";
-  const colCount = Math.max(1, visible.length);
+  const colCount = Math.max(1, visible.length + (isPreviewMode ? 0 : 1));
   if (!state.items.length) {
     // Empty state: the old plain "No line items added." text gave no way to
     // actually add one from the canvas itself — the only real control was
@@ -102,19 +119,38 @@ export function renderPreview() {
     // toolbar is (see .add-item-btn in invoice.css / print.css).
     body.innerHTML = `<tr><td class="empty" colspan="${colCount}">No line items added.<br><button type="button" class="add-item-btn">+ Add item</button></td></tr>`;
   } else {
-    state.items.forEach((item) => {
+    state.items.forEach((item, idx) => {
       let tr = document.createElement("tr");
       tr.className = "inv-item-row";
-      tr.innerHTML = visible.map(c => `<td class="${alignClass(c.align)}">${fmtCell(itemValue(item, c), c)}</td>`).join("");
+      // Edit mode: every cell except a computed "Amount" column is a real
+      // input living right in the table — the same "content lives directly
+      // on the document" approach every other field on the canvas already
+      // uses — instead of only being reachable through the sidebar's Items
+      // tab cards. Preview keeps the old plain, formatted text (a faithful
+      // dry run of Print/PDF, which is never interactive either way).
+      let cellsHtml = visible.map(c => {
+        if (isPreviewMode || c.role === "amount") {
+          return `<td class="${alignClass(c.align)}">${fmtCell(itemValue(item, c), c)}</td>`;
+        }
+        const inputType = ["number", "currency", "percentage"].includes(c.type) ? "number" : c.type === "date" ? "date" : "text";
+        const stepAttr = inputType === "number" ? ' step="0.01"' : "";
+        return `<td class="${alignClass(c.align)}"><input type="${inputType}"${stepAttr} class="item-cell-input" data-idx="${idx}" data-key="${esc(c.key)}" value="${esc(item[c.key] ?? "")}" aria-label="${esc(c.label)}, item ${idx + 1}"></td>`;
+      }).join("");
+      if (!isPreviewMode) {
+        cellsHtml += `<td class="item-actions-col"><button type="button" class="item-remove-btn" data-idx="${idx}" aria-label="Remove item ${idx + 1}" title="Remove item">×</button></td>`;
+      }
+      tr.innerHTML = cellsHtml;
       body.appendChild(tr);
     });
-    // Trailing "add another" row — kept out of print/PDF (it's not
-    // content) and out of Preview mode via the same rule that hides the
-    // empty-state button above.
-    let addRow = document.createElement("tr");
-    addRow.className = "add-item-row";
-    addRow.innerHTML = `<td colspan="${colCount}"><button type="button" class="add-item-btn">+ Add item</button></td>`;
-    body.appendChild(addRow);
+    if (!isPreviewMode) {
+      // Trailing "add another" row — kept out of print/PDF (it's not
+      // content) and out of Preview mode via the same rule that hides the
+      // empty-state button above.
+      let addRow = document.createElement("tr");
+      addRow.className = "add-item-row";
+      addRow.innerHTML = `<td colspan="${colCount}"><button type="button" class="add-item-btn">+ Add item</button></td>`;
+      body.appendChild(addRow);
+    }
   }
 
   let t = calc();
@@ -137,6 +173,36 @@ export function renderPreview() {
   }
   autoGrowAll();
   fitInvoiceCanvas();
+}
+
+// Updates one item's computed "Amount" cell + the invoice totals in place,
+// without touching any <input> element's DOM node — used on every keystroke
+// in a canvas item-cell-input (js/main.js) instead of the full renderPreview()
+// above. renderPreview() rebuilds #pItems' innerHTML from scratch on every
+// call, which would otherwise destroy and recreate the very input the person
+// is actively typing into, yanking focus and the caret out from under them
+// after every single character.
+export function refreshItemRowAndTotals(idx) {
+  const item = state.items[idx];
+  if (item) {
+    const row = document.querySelectorAll("#pItems .inv-item-row")[idx];
+    if (row) {
+      const visible = state.columns.filter(c => c.visible);
+      visible.forEach((c, i) => {
+        if (c.role !== "amount") return;
+        const cell = row.children[i];
+        if (cell) cell.textContent = fmtCell(itemValue(item, c), c);
+      });
+    }
+  }
+  let t = calc();
+  setText($("pSubtotal"), money(t.subtotal));
+  setText($("pDiscount"), "−" + money(t.disc));
+  setText($("pTax"), money(t.tax));
+  setText($("pTotal"), money(t.total)); setText($("pBalance"), money(t.total));
+  $("discountRow").classList.toggle("print-hide-empty", !t.disc);
+  $("taxRow").classList.toggle("print-hide-empty", !t.tax);
+  $("shippingRow").classList.toggle("print-hide-empty", !t.ship);
 }
 
 // Textareas living on the canvas (company/client address, notes, payment
@@ -432,7 +498,7 @@ export function fitInvoiceCanvas() {
   const isPreviewMode = document.body.classList.contains("canvas-preview-mode");
   // Page count is only meaningful in Preview (a faithful dry run of the
   // physical page): computed there for both the wrapper height and the
-  // "N pages" labels below. Draft always reports/renders as a single,
+  // "N pages" labels below. Edit always reports/renders as a single,
   // auto-height page since it isn't paginating anything.
   const pageCount = isPreviewMode ? Math.max(1, Math.ceil(contentH / naturalH - 0.01)) : 1;   // small epsilon
                                                                                                  // avoids a false
@@ -445,7 +511,7 @@ export function fitInvoiceCanvas() {
     renderPageBreaks(inv, naturalH, pageCount);
     wrap.style.height = Math.ceil(pageCount * naturalH * total) + "px";
   } else {
-    // Draft is an editing form, not a page mock-up: size the wrapper to
+    // Edit is an editing form, not a page mock-up: size the wrapper to
     // exactly however tall the fields actually are (no footer, no
     // min-height — see invoice.css), so it ends right after the last field
     // like an ordinary form instead of reserving blank space out to the

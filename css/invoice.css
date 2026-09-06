@@ -95,13 +95,13 @@
    (between the button toolbar and this whole bar) does. */
 .canvasbar .toolbar-divider{margin-left:0}
 /* "A4 portrait preview · N pages" only makes sense as a description of the
-   Preview mode (a faithful dry run of Print/PDF output) — in Draft mode the
+   Preview mode (a faithful dry run of Print/PDF output) — in Edit mode the
    canvas isn't a page-accurate preview (it still shows every optional
    field's placeholder, even ones left blank), so the label only shows once
    Preview is switched on. */
 #previewMeta{display:none}
 body.canvas-preview-mode #previewMeta{display:inline-flex}
-/* Draft/Preview canvas switch (js/layout.js setCanvasMode): Draft (default)
+/* Edit/Preview canvas switch (js/layout.js setCanvasMode): Edit (default)
    shows every optional row/field so it's clear what's available to fill
    in, even when empty (see the "— " / "Add value" placeholders preview.js
    renders for them). Preview strips those empty optional rows exactly like
@@ -132,18 +132,18 @@ body.canvas-preview-mode .invoice select:focus{outline:none}
 body.canvas-preview-mode .invoice input[type=number]::-webkit-outer-spin-button,
 body.canvas-preview-mode .invoice input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 body.canvas-preview-mode .invoice input[type=date]::-webkit-calendar-picker-indicator{display:none}
-/* Draft is an editing form, not a page-accurate mock-up — it shouldn't be
+/* Edit is an editing form, not a page-accurate mock-up — it shouldn't be
    held open to a fixed A4/Letter height (min-height, set below on the base
    .invoice rule) when the actual fields don't fill one, since that leaves a
    dead gap of blank "page" below the last field instead of the canvas
    simply ending there like an ordinary form. Preview keeps the fixed page
    height (a faithful dry run of Print/PDF, which really does paginate to
-   the physical page size) — only Draft relaxes it; js/preview.js's
-   fitInvoiceCanvas() sizes the wrapper to match on the Draft side so
+   the physical page size) — only Edit relaxes it; js/preview.js's
+   fitInvoiceCanvas() sizes the wrapper to match on the Edit side so
    nothing beyond the real content is reserved. The footer likewise only
    belongs to that page-accurate view (and to the repeating print/PDF
    footer built separately in applyPrintTableWrap): it has nothing to
-   attach to at the bottom of an auto-height Draft canvas, so it's hidden
+   attach to at the bottom of an auto-height Edit canvas, so it's hidden
    there and reappears once Preview is switched on.*/
 body:not(.canvas-preview-mode) .invoice{min-height:0}
 body:not(.canvas-preview-mode) .footer{display:none}
@@ -190,7 +190,7 @@ body:not(.canvas-preview-mode) .footer{display:none}
 .money-input{width:5.5em;text-align:right}
 
 /* Logo upload/height/position controls — not invoice content, so they're
-   hidden from print/PDF (print.css) and from the Draft/Preview canvas
+   hidden from print/PDF (print.css) and from the Edit/Preview canvas
    switch's Preview mode (invoice.css, alongside every other print-only
    exclusion) the same way the old inline-edit affordances always were. */
 .logoboxwrap{display:flex;flex-direction:column;align-items:flex-start;gap:5px;flex:none}
@@ -219,6 +219,19 @@ body.canvas-preview-mode .logotools{display:none}
 .add-item-row td{text-align:center;padding:8px 7px!important}
 body.canvas-preview-mode .add-item-btn{display:none}
 body.canvas-preview-mode .add-item-row{display:none}
+/* Editable item cells + per-row remove button (js/preview.js, Edit mode
+   only — Preview always falls back to plain formatted text, see
+   isPreviewMode there). The inputs reuse the exact same "looks like plain
+   invoice text" reset every other canvas field already gets from the base
+   ".invoice input" rule above, so a line item reads identically whether
+   it's an <input> (Edit) or plain text (Preview/print) — only .item-actions-col
+   needs its own layout (a narrow, centered slot for the "×" button) since
+   nothing else on the canvas has an equivalent trailing icon-only column. */
+.item-actions-col{width:6%;text-align:center!important;padding:4px!important}
+.item-remove-btn{width:22px;height:22px;line-height:1;border:1px solid #e4a5a0;border-radius:5px;background:#fff5f4;color:#b42318;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.item-remove-btn:hover{background:#fef3f2;border-color:#d92d20}
+.item-remove-btn:focus-visible{outline:2px solid #b42318;outline-offset:1px}
+th.item-actions-col{background:transparent!important;border:0!important}
 .statusbalance{margin-top:10px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}.statusbalance .balance{margin-top:0;width:100%}
 .billrow{margin:14px 0}.label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#667085;font-weight:850;margin-bottom:4px}.clientname{font-size:14px;font-weight:850;margin-bottom:3px}.status{display:inline-flex;flex:none;white-space:nowrap;text-align:center;padding:5px 22px 5px 9px;border-radius:999px;font-size:9.5px;font-weight:850;border:1px solid #abefc6;background-color:#ecfdf3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;background-size:11px;color:#18794e}
 .invtable{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px}.invtable th{padding:7px}.invtable th{text-transform:none;letter-spacing:.04em;font-size:8.5px;background:#f4f6f9;color:#344054;border:1px solid #cfd6e0;text-align:left}.invtable td{padding:7px;border:1px solid #d7dde6;vertical-align:top;overflow-wrap:anywhere}.invtable .right{text-align:right}.invtable .center{text-align:center}.empty{text-align:center;color:#667085;padding:18px!important}

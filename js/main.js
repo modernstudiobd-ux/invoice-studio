@@ -6,10 +6,10 @@
 import { $, uid } from "./dom.js";
 import { APP_VERSION, BUILD_DATE, BUILD_STRING } from "./version.js";
 import { state, fields, defaultColumns, KEY, DEFAULT_ACCENT, serialize } from "./state.js";
-import { today, plusDays } from "./format.js";
+import { today, plusDays, num } from "./format.js";
 import { toast } from "./toast.js";
 import { setAccent, applyOptionalColor, clearOptionalColor, applyAllOptionalColors } from "./accent.js";
-import { renderPreview, fitInvoiceCanvas } from "./preview.js";
+import { renderPreview, fitInvoiceCanvas, refreshItemRowAndTotals } from "./preview.js";
 import { renderColumns } from "./columns.js";
 import { renderItems, addItem } from "./items.js";
 import { renderToggles } from "./toggles.js";
@@ -56,14 +56,42 @@ $("clearItemsBtn").onclick = () => { if (confirm("Remove all line items?")) { st
 $("addColumnBtn").onclick = () => { let i = state.columns.length + 1; state.columns.push({ id: uid(), key: "column_" + Date.now(), label: "Column " + i, type: "text", width: 15, align: "left", visible: true, role: "none" }); renderColumns(); renderItems(); renderPreview(); save(); };
 $("restoreColumnsBtn").onclick = () => { if (confirm("Restore the default five columns?")) { state.columns = defaultColumns(); renderColumns(); renderItems(); renderPreview(); save(); } };
 
-// Inline "+ Add item" control rendered directly on the invoice canvas table
-// (see preview.js) — both its empty-state row and its trailing "add
-// another" row use the same .add-item-btn class. Delegated on document
-// (rather than bound per-button) since preview.js rebuilds #pItems'
-// innerHTML on every render, which would otherwise silently drop a
-// directly-bound listener the next time the table redraws.
+// Inline item editing directly on the invoice canvas table (see preview.js):
+// the "+ Add item" button (empty-state and trailing "add another" row),
+// each row's "×" remove button, and every editable cell's <input>. All
+// delegated on document — never bound per-element — since preview.js
+// rebuilds #pItems' innerHTML on every full render, which would otherwise
+// silently drop a directly-bound listener (or, worse for the input case,
+// destroy the very element the person just attached a listener to) the
+// next time the table redraws.
 document.addEventListener("click", e => {
-  if (e.target.closest(".add-item-btn")) addItem();
+  if (e.target.closest(".add-item-btn")) { addItem(); return; }
+  const removeBtn = e.target.closest(".item-remove-btn");
+  if (removeBtn) {
+    const idx = Number(removeBtn.dataset.idx);
+    if (Number.isInteger(idx) && state.items[idx] !== undefined) {
+      state.items.splice(idx, 1);
+      renderItems(); renderPreview(); save();
+    }
+  }
+});
+// Typing into a canvas item cell only patches that item's data + the
+// derived Amount cell/totals in place (refreshItemRowAndTotals) instead of
+// calling the full renderPreview() every other canvas field triggers —
+// renderPreview() would rebuild #pItems from scratch on every keystroke,
+// yanking focus and the caret out of the input the person is actively
+// typing in.
+document.addEventListener("input", e => {
+  const el = e.target.closest(".item-cell-input");
+  if (!el) return;
+  const idx = Number(el.dataset.idx);
+  const item = state.items[idx];
+  if (!item) return;
+  const col = state.columns.find(c => c.key === el.dataset.key);
+  item[el.dataset.key] = col && ["number", "currency", "percentage"].includes(col.type) ? num(el.value) : el.value;
+  refreshItemRowAndTotals(idx);
+  renderItems();
+  save();
 });
 
 /* --- Logo upload --- */

@@ -3,7 +3,7 @@
 // and the phone bottom-bar "more actions" popover. No invoice business logic.
 
 import { $ } from "./dom.js";
-import { fitInvoiceCanvas } from "./preview.js";
+import { renderPreview } from "./preview.js";
 
 const sidebarResizer = $("sidebarResizer"), appRoot = $("appRoot");
 let resizingSidebar = false;
@@ -136,7 +136,7 @@ function setFullscreenPreview(on) {
 expandPreviewBtn.addEventListener("click", () => setFullscreenPreview(true));
 exitFullscreenBtn.addEventListener("click", () => setFullscreenPreview(false));
 
-// Draft / Preview canvas switch — "Draft" (default) shows every optional
+// Edit / Preview canvas switch — "Edit" (default) shows every optional
 // field/row even when left blank (see the placeholder text preview.js
 // renders for them, e.g. "—" / "Add value"), so it's clear what's
 // available to fill in on the Details tab; "Preview" hides those empty
@@ -146,7 +146,7 @@ exitFullscreenBtn.addEventListener("click", () => setFullscreenPreview(false));
 // approximation of it. That includes being genuinely non-editable, the
 // same way a real print preview is: setCanvasEditable() below locks every
 // real field living directly on the document (see setInvoiceFieldsEditable)
-// the instant Preview turns on, and unlocks them the instant Draft
+// the instant Preview turns on, and unlocks them the instant Edit
 // returns — editing still happens freely through the sidebar's Items/
 // Table Columns/Design tabs and the page-setup toolbar, none of which are
 // part of the document itself.
@@ -178,12 +178,14 @@ export function setCanvasMode(mode) {
   canvasModeEditBtn.setAttribute("aria-selected", String(!isPreview));
   canvasModePreviewBtn.classList.toggle("active", isPreview);
   canvasModePreviewBtn.setAttribute("aria-selected", String(isPreview));
+  // Edit and Preview also render the line-items table differently (real
+  // <input>s + a remove column vs. plain formatted text — see preview.js),
+  // on top of sizing the canvas wrapper differently (auto-height form vs.
+  // fixed page multiples). renderPreview() rebuilds both and ends by
+  // calling fitInvoiceCanvas() itself, so it fully replaces the narrower
+  // fitInvoiceCanvas()-only call this used to make.
+  renderPreview();
   setInvoiceFieldsEditable(!isPreview);
-  // Draft and Preview size the canvas wrapper differently (auto-height form
-  // vs. fixed page multiples — see fitInvoiceCanvas in preview.js), so the
-  // wrapper needs re-measuring the instant the mode actually changes, not
-  // just on the next unrelated re-render/resize.
-  fitInvoiceCanvas();
 }
 canvasModeEditBtn.addEventListener("click", () => setCanvasMode("edit"));
 canvasModePreviewBtn.addEventListener("click", () => setCanvasMode("preview"));

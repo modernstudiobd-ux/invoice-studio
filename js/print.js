@@ -5,7 +5,7 @@
 
 import { $ } from "./dom.js";
 import { applyPaperSize } from "./state.js";
-import { setPrintGuard, fitInvoiceCanvas, applyPrintTableWrap, clearPrintTableWrap } from "./preview.js";
+import { setPrintGuard, fitInvoiceCanvas, renderPreview, applyPrintTableWrap, clearPrintTableWrap } from "./preview.js";
 
 export function printInvoice(suggestedName) {
   const invoice = $("invoice");
@@ -19,6 +19,17 @@ export function printInvoice(suggestedName) {
   // document.title becomes the print dialog's/PDF's suggested filename in
   // most browsers when printing or choosing "Save as PDF" as the destination.
   if (suggestedName) document.title = suggestedName;
+  // Edit mode's item rows are real <input> elements (see preview.js) plus a
+  // "remove item" column — real editing affordances, not invoice content,
+  // so print/PDF must never show them regardless of which canvas mode is
+  // currently on screen. Temporarily flipping the same canvas-preview-mode
+  // class Preview itself uses makes renderPreview() rebuild the items table
+  // back into its plain, formatted, non-interactive form (exactly what
+  // Preview already shows) for the print, then flips back and rebuilds it
+  // into editable inputs again afterward if Edit was the mode the person
+  // was actually in.
+  const wasEditMode = !document.body.classList.contains("canvas-preview-mode");
+  if (wasEditMode) { document.body.classList.add("canvas-preview-mode"); renderPreview(); }
   // Stop fitInvoiceCanvas() from reacting to the .canvaswrap resize below —
   // see the comment on setPrintGuard/fitInvoiceCanvas in preview.js. Without
   // this, the ResizeObserver in main.js re-applies the on-screen "shrink to
@@ -51,7 +62,15 @@ export function printInvoice(suggestedName) {
     document.title = oldTitle;
     clearPrintTableWrap();
     setPrintGuard(false);
-    fitInvoiceCanvas();   // re-fit the real on-screen preview now that the guard is off
+    if (wasEditMode) {
+      // Flip back to Edit's own item rendering (real inputs + remove
+      // column) now that the print/PDF output (always plain, per the
+      // temporary switch above) has been captured.
+      document.body.classList.remove("canvas-preview-mode");
+      renderPreview();   // also re-fits the canvas (renderPreview ends with fitInvoiceCanvas)
+    } else {
+      fitInvoiceCanvas();   // re-fit the real on-screen preview now that the guard is off
+    }
   };
   // afterprint fires once the print dialog actually closes, in every
   // browser that supports it — the primary restore trigger. window
