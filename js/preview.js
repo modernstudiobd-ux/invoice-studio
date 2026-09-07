@@ -172,6 +172,7 @@ export function renderPreview() {
     img.removeAttribute("src"); box.classList.remove("has-logo");
   }
   autoGrowAll();
+  sizeInvoiceNumberInput();
   fitInvoiceCanvas();
 }
 
@@ -211,6 +212,34 @@ export function refreshItemRowAndTotals(idx) {
 // there's no way to size a <textarea> to its content in CSS alone.
 function autoGrow(el) { if (!el) return; el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
 function autoGrowAll() { document.querySelectorAll("#invoice textarea").forEach(autoGrow); }
+
+// #invoiceNumber next to the "#" prefix (see .invno in invoice.css) has the
+// same problem textareas do: a plain text <input> has no CSS-only way to
+// shrink-wrap its own value. Unlike a CSS width, though, width:auto/
+// min-content/fit-content all fall back to the browser's own ~20-character
+// default box for a text input regardless — which is exactly why "#" and a
+// short number like "INV-1001" used to end up with a wide gap of empty
+// input box between them. This measures the current value's actual
+// rendered width with a hidden same-font mirror element and sets the
+// input's width to match, so it hugs "#" the way a plain "#INV-1001"
+// heading would.
+let invNumMirror = null;
+function sizeInvoiceNumberInput() {
+  const el = $("invoiceNumber");
+  if (!el) return;
+  if (!invNumMirror) {
+    invNumMirror = document.createElement("span");
+    invNumMirror.style.cssText = "position:absolute;visibility:hidden;white-space:pre;left:-9999px;top:-9999px;";
+    document.body.appendChild(invNumMirror);
+  }
+  const cs = getComputedStyle(el);
+  invNumMirror.style.font = cs.font;
+  invNumMirror.style.letterSpacing = cs.letterSpacing;
+  invNumMirror.textContent = el.value || el.placeholder || "";
+  // +3px caret slack so the last character/caret never looks clipped;
+  // 18px floor keeps the field tappable/clickable even when empty.
+  el.style.width = Math.max(invNumMirror.offsetWidth + 3, 18) + "px";
+}
 
 // Print (see print.js) temporarily resizes .canvaswrap to its natural,
 // unscaled size right before calling window.print(). That resize is itself

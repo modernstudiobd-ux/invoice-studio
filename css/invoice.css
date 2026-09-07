@@ -180,14 +180,42 @@ body:not(.canvas-preview-mode) .footer{display:none}
 .metaText input,.metaText textarea{display:block;margin:1px 0}
 .invtitle h2 input{text-align:right}
 .invno{display:flex;align-items:baseline;justify-content:flex-end;gap:2px}
-.invno input{width:auto;min-width:3ch;text-align:right}
+/* #invoiceNumber's actual on-screen width is set by JS (sizeInvoiceNumberInput
+   in preview.js) — a plain text <input> has no CSS-only way to shrink-wrap
+   its own value (width:auto/min-content/fit-content all fall back to the
+   browser's ~20-character default box for text inputs, not the value's
+   rendered length), which is exactly what used to leave a wide gap of empty
+   input box between "#" and a short invoice number. This just sets a sane
+   floor so the field never collapses to nothing while typing/empty. */
+.invno input{width:3ch;min-width:3ch;text-align:right}
 .hashprefix{flex:none}
 .metatable td:first-child input{text-align:left}
 .metatable td:last-child input{text-align:right;font-weight:700}
 .balance span{display:inline-flex;flex:1}
 .sumrow span{display:flex;align-items:baseline;gap:4px}
-.pct-input{width:2.6em;text-align:center;flex:none}
-.money-input{width:5.5em;text-align:right}
+/* input.pct-input/input.money-input (not just .pct-input/.money-input): the
+   base ".invoice input,.invoice textarea,.invoice select{width:100%}" rule a
+   few lines up is a class+type selector, specificity (0,1,1) — a bare class
+   selector like ".pct-input" alone is only (0,1,0) and always loses that
+   fight regardless of source order, which is exactly why Discount/Tax used
+   to render ~139px wide (100% of their flex container) instead of the
+   intended ~2.6em, crushing the "%" sign and the computed amount right up
+   against each other with no visible gap. Matching specificity here (also
+   0,1,1, but declared later, which wins CSS's tie-break) restores the
+   narrow, fixed widths these two were always meant to have.*/
+.invoice input.pct-input{width:3.2em;text-align:center;flex:none}
+.invoice input.money-input{width:5.5em;text-align:right}
+/* Hide the native number spin buttons on these two: at their intended
+   narrow width the up/down arrows ate most of the box, leaving barely
+   enough room for the digits themselves (e.g. "12.5" rendering clipped to
+   "2.5"). The app already supplies its own "%"/currency-symbol affordance
+   next to each field, so the spinner isn't needed — same treatment
+   body.canvas-preview-mode already gave every number input, just not
+   conditional on Preview here since these two never needed the spinner in
+   Edit mode either. */
+.invoice input.pct-input::-webkit-outer-spin-button,.invoice input.pct-input::-webkit-inner-spin-button,
+.invoice input.money-input::-webkit-outer-spin-button,.invoice input.money-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.invoice input.pct-input,.invoice input.money-input{-moz-appearance:textfield}
 
 /* Logo upload/height/position controls — not invoice content, so they're
    hidden from print/PDF (print.css) and from the Edit/Preview canvas
