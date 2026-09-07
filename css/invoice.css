@@ -199,7 +199,26 @@ body:not(.canvas-preview-mode) .footer{display:none}
 .hashprefix{flex:none}
 .metatable td:first-child input{text-align:left}
 .metatable td:last-child input{text-align:right;font-weight:700}
-.balance span{display:inline-flex;flex:1}
+/* .balance's label ("Balance due") is a real <input> living inside
+   .invtitle (text-align:right — correct for the invoice title/number/dates
+   above it, which really are right-aligned) — the base ".invoice input{
+   text-align:inherit}" rule was carrying that inherited right-alignment
+   all the way down to this label too, so its text hugged the *right* edge
+   of its own flex:1 span, landing right up against the amount with zero
+   gap between them ("Balance due$0.00"). This label is conceptually a
+   left-aligned caption for the amount next to it, not part of the
+   right-aligned title block, so it gets its own explicit left alignment;
+   the span still grows to fill the row (flex:1) so the amount stays
+   pinned to the far right, but the label's text now sits at the *start*
+   of that space instead of the end, opening up a real, natural gap that
+   scales with however much room is left over — not a fixed width tied to
+   one label length, one currency symbol, or one amount's digit count. */
+.balance span{display:inline-flex;flex:1;text-align:left}
+/* Belt-and-suspenders minimum: on the rare label+amount combination long
+   enough to leave little/no leftover space for the above to work with, a
+   real gap is still guaranteed here rather than relying purely on
+   left-over flex space. */
+.balance{gap:8px}
 .sumrow span{display:flex;align-items:baseline;gap:4px}
 /* input.pct-input/input.money-input (not just .pct-input/.money-input): the
    base ".invoice input,.invoice textarea,.invoice select{width:100%}" rule a
