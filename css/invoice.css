@@ -112,8 +112,16 @@ body.canvas-preview-mode .invoice .print-hide-empty{display:none!important}
    faithful dry run of the actual Print/PDF output, so the on-screen-only
    form chrome (dashed fillable-field underline, the status select's
    dropdown arrow, empty-field placeholder text) is hidden here too,
-   alongside the logo upload toolbar hidden below. */
-body.canvas-preview-mode .invoice input::placeholder,body.canvas-preview-mode .invoice textarea::placeholder{color:transparent!important}
+   alongside the logo upload toolbar hidden below. Excludes every
+   "[id^=label]" field (Bill to, Invoice note, Payment details, Terms,
+   INVOICE title, Balance due, and the Invoice date/Due date/Reference row
+   labels): those use their placeholder as their actual default *content*
+   (see main.js's fields-array comment — typing over one renames it, e.g.
+   "Bill to" → "Client info"), not as a "fill this in" hint, so hiding it
+   the same way as a real empty-value hint used to make headings like
+   "BILL TO" disappear from Preview entirely. */
+body.canvas-preview-mode .invoice input:not([id^="label"])::placeholder,
+body.canvas-preview-mode .invoice textarea::placeholder{color:transparent!important}
 body.canvas-preview-mode .status{background-image:none!important;padding:5px 9px!important}
 /* Preview is a genuine read-only print preview, not a second editing
    surface — js/layout.js's setCanvasMode() marks every real field on the
