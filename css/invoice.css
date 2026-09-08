@@ -162,7 +162,7 @@ body:not(.canvas-preview-mode) .footer{display:none}
 .invoice{--template-accent:var(--accent);width:var(--page-w);min-height:var(--page-h);margin:0;background:var(--invoice-bg,#fff);box-shadow:0 18px 55px rgba(16,24,40,.14);padding:12mm 12mm 11mm;position:relative;overflow:hidden;font-family:var(--font-modern)}
 .invoice .section-hidden{display:none!important}.inv-header{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;background:var(--header-bg,transparent);border-radius:10px}.invoice.has-header-bg:not(.template-medical) .inv-header{padding:14px 16px;margin:0 0 14px}
 .invoice.has-header-text .inv-header .companyname,.invoice.has-header-text .inv-header .metaText,.invoice.has-header-text .inv-header .invtitle h2,.invoice.has-header-text .inv-header .invno,.invoice.has-header-text .inv-header .metatable td{color:var(--header-text)!important}
-.companywrap{display:flex;gap:12px;align-items:flex-start}.invoice.logo-position-left .companywrap{flex-direction:row;align-items:flex-start}.invoice.logo-position-above .companywrap{flex-direction:column;align-items:flex-start}.logobox{display:inline-flex;align-items:center;justify-content:center;flex:none}.logobox:not(.has-logo){width:var(--logo-h,48px);height:var(--logo-h,48px);border:1px solid #d7dde6;border-radius:10px;background:#f7f9fc}.logobox img{display:none;max-height:var(--logo-h,48px);max-width:220px;width:auto;height:auto;object-fit:contain}.logobox.has-logo img{display:block}.logobox.has-logo .logofallback{display:none}.logofallback{width:100%;height:100%;border-radius:11px;background:var(--template-accent);color:#fff;font-size:calc(var(--logo-h,48px)*0.42);font-weight:900;display:grid;place-items:center}.companyname{font-size:20px;font-weight:800;margin:1px 0 5px}.metaText{font-size:10.5px;color:#485568;line-height:1.4}.metaText>div{white-space:pre-line}.invtitle{text-align:right}.invtitle h2{margin:0;font-size:34px;font-weight:300;letter-spacing:.04em}.invno{font-size:15px;color:#667085;font-weight:700;margin-top:3px}.metatable{width:100%;margin-top:10px;border-collapse:collapse;font-size:10.5px}.metatable td{padding:2.5px 0}.metatable td:first-child{text-align:left;color:#667085;padding-right:14px;white-space:nowrap;width:1%}.metatable td:last-child{text-align:right;font-weight:700}.balance{margin-top:10px;background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.14);border-radius:8px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800}.balance span{color:var(--total-color,#1f2937)}.balance strong{font-size:18px;color:var(--total-color,#18181b)}
+.companywrap{display:flex;gap:12px;align-items:flex-start}.invoice.logo-position-left .companywrap{flex-direction:row;align-items:flex-start}.invoice.logo-position-above .companywrap{flex-direction:column;align-items:flex-start}.logobox{display:inline-flex;align-items:center;justify-content:center;flex:none}.logobox:not(.has-logo){width:var(--logo-h,48px);height:var(--logo-h,48px);border:1px solid #d7dde6;border-radius:10px;background:#f7f9fc}.logobox img{display:none;max-height:var(--logo-h,48px);max-width:220px;width:auto;height:auto;object-fit:contain}.logobox.has-logo img{display:block}.logobox.has-logo .logofallback{display:none}.logofallback{width:100%;height:100%;border-radius:11px;background:var(--template-accent);color:#fff;font-size:calc(var(--logo-h,48px)*0.42);font-weight:900;display:grid;place-items:center}.companyname{font-size:20px;font-weight:800;margin:1px 0 5px}.invoice .metaText{font-size:10.5px;color:#485568;line-height:1.4}.metaText>div{white-space:pre-line}.invtitle{text-align:right}.invtitle h2{margin:0;font-size:34px;font-weight:300;letter-spacing:.04em}.invno{font-size:15px;color:#667085;font-weight:700;margin-top:3px}.metatable{width:100%;margin-top:10px;border-collapse:collapse;font-size:10.5px}.metatable td{padding:2.5px 0}.metatable td:first-child{text-align:left;color:#667085;padding-right:14px;white-space:nowrap;width:1%}.metatable td:last-child{text-align:right;font-weight:700}.balance{margin-top:10px;background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.14);border-radius:8px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800}.balance span{color:var(--total-color,#1f2937)}.balance strong{font-size:18px;color:var(--total-color,#18181b)}
 
 /* ---- Canvas form fields --------------------------------------------------
    Every field on the invoice (v3.15+) is a real <input>/<textarea>/<select>
@@ -175,7 +175,27 @@ body:not(.canvas-preview-mode) .footer{display:none}
    (border, background, native font) so each field looks exactly like the
    plain invoice text it replaced — no added visual styling of its own,
    just the browser's normal focus ring so it's still clear what's
-   selected. */
+   selected.
+
+   ROOT CAUSE (fixed) of oversized Notes/Payment details/Terms text:
+   "font:inherit" below is a shorthand — it resets font-size (and family/
+   weight/line-height) to whatever the element's OWN PARENT computes to,
+   ignoring any other rule that also targets the element itself. That's
+   fine for #companyReg/#companyVat/#companyAddress etc., where ".metaText"
+   is a wrapping <div> around them (so "inherit" correctly picks up that
+   div's 10.5px) — but #notes/#paymentDetails/#terms put ".metaText"
+   directly ON the <textarea>, and ".metaText{font-size:10.5px}" (a single
+   class, specificity 0,1,0) can never win against this "font:inherit"
+   rule (class+type, specificity 0,1,1) on that same element, no matter
+   the source order. So those three fell through to inheriting their
+   *parent's* (.notebox / .paymentgrid>div, neither of which set a
+   font-size) font-size instead — all the way up to .invoice's own base
+   16px, roughly 50% larger than every other piece of meta text on the
+   document, in every template (none of them override .metaText's
+   font-size either). Fixed at the source, line 165: ".metaText" is now
+   ".invoice .metaText" (specificity 0,2,0), which safely beats this
+   "font:inherit" rule's 0,1,1 regardless of which element ".metaText" is
+   applied to or what order the rules appear in. */
 .invoice input,.invoice textarea,.invoice select{font:inherit;color:inherit;letter-spacing:inherit;text-align:inherit;background:transparent;border:none;border-radius:0;padding:0;margin:0;width:100%;box-sizing:border-box}
 .invoice input,.invoice select{appearance:none;-webkit-appearance:none}
 .invoice input[type=range]{appearance:auto;-webkit-appearance:auto;width:auto}
