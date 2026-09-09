@@ -86,6 +86,27 @@ export function renderPreview() {
   if (invoiceDateSection) invoiceDateSection.classList.toggle("print-hide-empty", !invoiceDateVal);
   if (dueDateSection) dueDateSection.classList.toggle("print-hide-empty", !dueDateVal);
 
+  // Company/client detail lines (registration no., VAT, address, phone,
+  // email, website, contact name) have no on/off "section" switch of their
+  // own the way Notes/Terms/Payment do above — each is just its own line,
+  // shown or not purely based on whether something was actually typed into
+  // it. Left blank, each used to still render as an empty <input>/
+  // <textarea>: invisible (no border/background — see the base ".invoice
+  // input" reset a few files over) but still a real block-level element
+  // (".metaText input,.metaText textarea{display:block}") reserving its
+  // own line-height and margin regardless, so several blank ones in a row
+  // stacked into a noticeable dead gap with nothing visibly there. Toggling
+  // print-hide-empty per field (not on the whole company/client block)
+  // means someone who filled in just an address and skipped the rest sees
+  // exactly the lines they filled, each other line fully collapsed rather
+  // than merely invisible — same display:none mechanism, and therefore the
+  // same Preview/print-only scoping, as every other optional field above.
+  ["companyName", "companyReg", "companyVat", "companyAddress", "companyPhone", "companyEmail", "companyWebsite",
+   "clientName", "clientContact", "clientTax", "clientAddress", "clientEmail"].forEach(id => {
+    const el = $(id);
+    if (el) el.classList.toggle("print-hide-empty", !el.value.trim());
+  });
+
   let visible = state.columns.filter(c => c.visible);
   const isPreviewMode = document.body.classList.contains("canvas-preview-mode");
   // Edit mode reserves a narrow trailing column for the per-row remove
