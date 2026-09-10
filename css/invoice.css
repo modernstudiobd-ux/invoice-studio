@@ -270,13 +270,55 @@ body:not(.canvas-preview-mode) .footer{display:none}
    exclusion) the same way the old inline-edit affordances always were. */
 .logoboxwrap{display:flex;flex-direction:column;align-items:flex-start;gap:5px;flex:none}
 .logotools{display:flex;flex-wrap:wrap;align-items:center;gap:5px;max-width:200px}
-.logotools-btn{font:600 9px/1 var(--font,inherit);padding:3px 7px;border:1px solid #d7dde6;border-radius:5px;background:#fff;color:#475467;cursor:pointer;white-space:nowrap}
-.logotools-btn:hover{background:#f7f9fc}
-.logotools-range{display:inline-flex;align-items:center;gap:4px;font-size:9px;color:#667085}
-.logotools-range input[type=range]{width:52px}
-.invoice select.logotools-select{font-size:9px;padding:2px 4px;border:1px solid #d7dde6;border-radius:5px;background:#fff;color:#475467;width:auto}
-.logotools-hint{font-size:8px;color:#98a2b3;flex-basis:100%}
 body.canvas-preview-mode .logotools{display:none}
+
+/* Logo settings — a single "Logo settings" trigger opens a compact,
+   professional-editor-style property panel (same floating-panel pattern as
+   the History/Templates dropdowns in the toolbar above: see
+   .logo-settings-dropdown/.logo-settings-panel below and js/layout.js)
+   instead of a permanent row of controls crowding the invoice header. */
+.logo-settings-dropdown{position:relative}
+.logo-settings-trigger{display:inline-flex;align-items:center;gap:5px;font:700 9.5px/1 var(--font-modern,inherit);padding:5px 9px;border:1px solid #d7dde6;border-radius:7px;background:#fff;color:#475467;cursor:pointer;white-space:nowrap;box-shadow:var(--shadow-sm);transition:border-color .12s ease,box-shadow .12s ease,transform .12s ease}
+.logo-settings-trigger .icon{width:12px;height:12px;margin:0}
+.logo-settings-trigger:hover{border-color:#c2c9d6;box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.logo-settings-trigger[aria-expanded=true]{border-color:var(--app-accent);color:var(--app-accent)}
+.logo-settings-panel{width:min(280px,calc(100vw - 32px));padding:13px}
+.logo-settings-section{margin-bottom:12px}
+.logo-settings-section:last-of-type{margin-bottom:0}
+.logo-settings-section>label,.logo-settings-label-row label{display:block;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.04em;color:#475467;margin-bottom:6px}
+.logo-settings-uploadrow{display:flex;gap:6px;align-items:center}
+.logo-settings-uploadrow .btn{flex:1 1 auto}
+.logo-settings-uploadrow .btn.icon{flex:none}
+.logotools-hint{display:block;font-size:9.5px;color:#98a2b3;margin-top:6px;line-height:1.4}
+/* Size — a slider + a synced number field (two ways to set the same exact
+   value, the standard pairing in professional design/photo tools) plus a
+   permanently-locked padlock indicator: only *height* is ever settable, and
+   width always follows it automatically via the logo image's own
+   object-fit:contain (see .logobox img below) rather than exposing an
+   independent width control, so the logo can never be stretched out of
+   proportion the way an unlocked W/H pair could be. */
+.logo-settings-label-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.logo-settings-label-row label{margin-bottom:0}
+.logo-lock-indicator{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;color:#3a8a5e;background:rgba(58,138,94,.1);border-radius:6px;padding:2px 6px 2px 5px;text-transform:uppercase;letter-spacing:.03em}
+.logo-lock-indicator .icon{width:10px;height:10px;margin:0}
+.logo-size-controls{display:flex;align-items:center;gap:8px}
+.logo-size-controls input[type=range]{flex:1 1 auto;accent-color:var(--app-accent)}
+.logo-size-number{display:flex;align-items:center;gap:3px;border:1px solid #d7dce5;border-radius:7px;padding:3px 3px 3px 7px;flex:none;background:#fff}
+.logo-size-number input{width:34px;border:0;padding:0;font-size:11px;font-weight:700;color:var(--ink);text-align:right;min-height:0;background:transparent}
+.logo-size-number input:focus{outline:0;box-shadow:none}
+.logo-size-number span{font-size:9.5px;color:#98a2b3;padding-right:2px}
+.logo-size-meta{display:block;font-size:9.5px;color:#98a2b3;margin-top:6px}
+/* Position — a 3-way segmented control (visual twin of .canvasmode-switch
+   in the main toolbar, for the same "toggle between mutually exclusive
+   states" convention) drives the real #logoPosition <select> that the rest
+   of the app (state.js/preview.js) already reads, so no data-layer change
+   was needed to modernize this from a dropdown into buttons. */
+.logo-position-switch{display:flex;gap:2px;background:#eef0f7;padding:3px;border-radius:9px}
+.logo-position-btn{flex:1 1 0;border:0;background:transparent;border-radius:6px;padding:6px 4px;font-size:10.5px;font-weight:750;color:var(--muted);cursor:pointer;transition:background-color .15s ease,color .15s ease,box-shadow .15s ease}
+.logo-position-btn.active{background:#fff;color:var(--app-accent);box-shadow:var(--shadow-sm)}
+.logo-position-btn:not(.active):hover{color:var(--ink)}
+.logo-settings-footer{display:flex;justify-content:flex-end;padding-top:2px}
+.logo-settings-footer .btn{width:100%;justify-content:center}
 /* Inline "+ Add item" control on the invoice canvas table (js/preview.js):
    a real, clickable way to add a line item right where an empty (or
    in-progress) items table naturally draws the eye, instead of only via

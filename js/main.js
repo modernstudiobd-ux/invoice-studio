@@ -94,10 +94,45 @@ document.addEventListener("input", e => {
   save();
 });
 
-/* --- Logo upload --- */
+/* --- Logo upload + settings panel --- */
 $("logoFile").onchange = e => { const f = e.target.files && e.target.files[0]; if (f) handleLogoFile(f, e.target); };
 $("removeLogoBtn").onclick = () => removeLogo();
 $("resetLogoSizeBtn").onclick = () => { $("logoHeight").value = naturalLogoHeight(); renderPreview(); save(); toast(state.logoNatural ? "Logo reset to its original size." : "Logo size reset to default."); };
+// The Size number field is a second, precise way to set the same
+// #logoHeight value the slider drives — never an independent width, so the
+// logo's proportions (enforced by object-fit:contain in invoice.css) can
+// never be distorted by resizing. Re-dispatching a real "input" event on
+// #logoHeight (rather than duplicating its logic here) lets it go through
+// the exact same generic `fields` binding every other tracked field
+// already uses (see the fields.forEach block near the top of this file).
+{
+  const logoHeightNumberEl = $("logoHeightValue"), logoHeightRangeEl = $("logoHeight");
+  const commitLogoHeightNumber = () => {
+    const clamped = Math.max(24, Math.min(160, num(logoHeightNumberEl.value) || naturalLogoHeight()));
+    logoHeightNumberEl.value = clamped;
+    if (String(clamped) !== logoHeightRangeEl.value) {
+      logoHeightRangeEl.value = clamped;
+      logoHeightRangeEl.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  };
+  logoHeightNumberEl.addEventListener("input", commitLogoHeightNumber);
+  logoHeightNumberEl.addEventListener("blur", commitLogoHeightNumber);
+}
+// Position segmented control (Auto/Left/Above) — writes into the real,
+// still-authoritative #logoPosition <select> (kept off-screen so
+// state.js/preview.js/serialize() need no changes) and dispatches a real
+// "change" event so it flows through the same generic `fields` binding as
+// every other tracked field.
+{
+  const logoPositionSelectEl = $("logoPosition");
+  document.querySelectorAll(".logo-position-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (logoPositionSelectEl.value === btn.dataset.pos) return;
+      logoPositionSelectEl.value = btn.dataset.pos;
+      logoPositionSelectEl.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  });
+}
 $("resetColorBtn").onclick = () => { setAccent(DEFAULT_ACCENT); OPTIONAL_COLOR_IDS.forEach(clearOptionalColor); renderPreview(); save(); toast("Colors reset."); };
 
 /* --- Print / JSON export-import / reset --- */

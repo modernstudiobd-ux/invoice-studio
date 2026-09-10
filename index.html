@@ -192,27 +192,7 @@
   <div class="tabpane" id="tab-lineitems" role="tabpanel" aria-labelledby="tabbtn-lineitems">
     <section class="panel">
       <div class="panelhead"><h2>Line items</h2><button class="btn small" id="addItemBtn">+ Add item</button></div>
-      <div class="importbox">
-        <button class="btn small" id="importSheetBtn">Import CSV / Excel</button>
-        <button class="btn small danger" id="clearItemsBtn">Clear all</button>
-        <input id="sheetFile" class="hidden" type="file" accept=".csv,.xlsx,.xls">
-      </div>
-      <p class="hint">Spreadsheet columns are matched against your current column names and common aliases.</p>
-      <details class="importhelp">
-        <summary>How to set up your CSV / Excel file ▸</summary>
-        <div class="importhelp-body">
-          <p>Put one line item per row, with a header row on top naming each column. The importer matches your headers against your current <a href="#" data-goto-tab="items">table columns</a> by name — plus these common aliases, so close variations still match automatically:</p>
-          <ul>
-            <li><strong>SKU</strong> — also matches: Item code, Product code, Code</li>
-            <li><strong>Description</strong> — also matches: Name, Item, Product, Course name</li>
-            <li><strong>Quantity</strong> — also matches: Qty, Net qty, Net quantity</li>
-            <li><strong>Rate</strong> — also matches: Unit price, Price, Unit rate</li>
-            <li><strong>Amount</strong> — also matches: Total, Line total</li>
-          </ul>
-          <p>Column order in the file doesn't matter — only the header names do. If a row has an Amount but no Rate, the rate is calculated for you (Amount ÷ Quantity). Missing Quantity defaults to 1. Any extra columns in the file that don't match are simply ignored.</p>
-          <p class="hint" style="margin:6px 0 0">Accepted formats: .csv, .xlsx, .xls</p>
-        </div>
-      </details>
+      <p class="hint">Add items directly below, or use <strong>Import Items</strong> in the toolbar above the invoice to bring them in from a CSV or Excel spreadsheet.</p>
       <div id="itemsEditor"></div>
     </section>
   </div>
@@ -299,6 +279,36 @@
          <div id="templatesList" style="margin-top:8px"></div>
        </div>
      </div>
+     <div class="history-dropdown">
+       <button class="btn small" id="importToggleBtn" aria-haspopup="true" aria-expanded="false" aria-controls="importPanel" title="Import line items from a CSV or Excel file"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import Items</button>
+       <div class="history-panel" id="importPanel" role="dialog" aria-label="Import line items">
+         <div class="history-panel-head">
+           <h2>Import line items</h2>
+         </div>
+         <span class="hint">Import a CSV or Excel spreadsheet — its columns are matched to your current table columns (and common aliases) automatically.</span>
+         <button class="btn small primary" id="importSheetBtn" type="button" style="width:100%;margin-top:8px"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import CSV / Excel</button>
+         <input id="sheetFile" class="hidden" type="file" accept=".csv,.xlsx,.xls">
+         <details class="importhelp">
+           <summary>How to set up your CSV / Excel file ▸</summary>
+           <div class="importhelp-body">
+             <p>Put one line item per row, with a header row on top naming each column. The importer matches your headers against your current <a href="#" data-goto-tab="items">table columns</a> by name — plus these common aliases, so close variations still match automatically:</p>
+             <ul>
+               <li><strong>SKU</strong> — also matches: Item code, Product code, Code</li>
+               <li><strong>Description</strong> — also matches: Name, Item, Product, Course name</li>
+               <li><strong>Quantity</strong> — also matches: Qty, Net qty, Net quantity</li>
+               <li><strong>Rate</strong> — also matches: Unit price, Price, Unit rate</li>
+               <li><strong>Amount</strong> — also matches: Total, Line total</li>
+             </ul>
+             <p>Column order in the file doesn't matter — only the header names do. If a row has an Amount but no Rate, the rate is calculated for you (Amount ÷ Quantity). Missing Quantity defaults to 1. Any extra columns in the file that don't match are simply ignored.</p>
+             <p class="hint" style="margin:6px 0 0">Accepted formats: .csv, .xlsx, .xls</p>
+           </div>
+         </details>
+         <div class="danger-zone">
+           <div class="danger-zone-label">Danger zone</div>
+           <button class="btn small danger" id="clearItemsBtn" type="button" style="width:100%" title="Remove every line item from this invoice">Clear all line items</button>
+         </div>
+       </div>
+     </div>
      <button class="btn small" id="newInvoiceBtn" title="Clear client and items; keeps company profile and design">+ New invoice</button>
    </div>
  </div>
@@ -341,21 +351,53 @@
             <img id="pLogo" alt="Company logo">
             <div class="logofallback" id="pLogoFallback">Y</div>
           </div>
-          <div class="logotools">
-            <label class="logotools-btn" for="logoFile">Upload logo</label>
-            <input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="visually-hidden">
-            <button type="button" class="logotools-btn" id="removeLogoBtn">Remove</button>
-            <button type="button" class="logotools-btn" id="resetLogoSizeBtn">Reset size</button>
-            <label class="logotools-range" title="Logo height">
-              <input id="logoHeight" type="range" min="24" max="160" value="48">
-              <span id="logoHeightValue">48</span>
-            </label>
-            <select id="logoPosition" class="logotools-select" title="Logo position">
-              <option value="">Auto position</option>
-              <option value="left">Left of name</option>
-              <option value="above">Above name</option>
-            </select>
-            <span class="logotools-hint" id="logoHint"></span>
+          <div class="logotools logo-settings-dropdown">
+            <button type="button" class="logo-settings-trigger" id="logoSettingsBtn" aria-haspopup="true" aria-expanded="false" aria-controls="logoSettingsPanel" title="Edit logo"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>Logo settings</button>
+            <div class="history-panel logo-settings-panel" id="logoSettingsPanel" role="dialog" aria-label="Logo settings">
+              <div class="history-panel-head"><h2>Logo</h2></div>
+
+              <div class="logo-settings-section">
+                <div class="logo-settings-uploadrow">
+                  <label class="btn small primary" for="logoFile"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload</label>
+                  <input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="visually-hidden">
+                  <button type="button" class="btn small icon" id="removeLogoBtn" title="Remove logo" aria-label="Remove logo"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+                </div>
+                <span class="logotools-hint" id="logoHint">PNG, JPG, WEBP or SVG. Maximum 3 MB.</span>
+              </div>
+
+              <div class="logo-settings-section">
+                <div class="logo-settings-label-row">
+                  <label for="logoHeightValue">Size</label>
+                  <span class="logo-lock-indicator" title="Proportions are always locked — width scales automatically with height so the logo can never be stretched or distorted."><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Locked</span>
+                </div>
+                <div class="logo-size-controls">
+                  <input id="logoHeight" type="range" min="24" max="160" value="48" aria-label="Logo height">
+                  <div class="logo-size-number">
+                    <input id="logoHeightValue" type="number" min="24" max="160" value="48" aria-label="Logo height in pixels">
+                    <span aria-hidden="true">px</span>
+                  </div>
+                </div>
+                <span class="logo-size-meta" id="logoSizeMeta">Upload a logo to see its size</span>
+              </div>
+
+              <div class="logo-settings-section">
+                <label id="logoPositionLabel">Position</label>
+                <div class="logo-position-switch" role="tablist" aria-labelledby="logoPositionLabel">
+                  <button type="button" class="logo-position-btn" data-pos="" role="tab" title="Center the logo automatically">Auto</button>
+                  <button type="button" class="logo-position-btn" data-pos="left" role="tab" title="Place the logo to the left of the company name">Left</button>
+                  <button type="button" class="logo-position-btn" data-pos="above" role="tab" title="Place the logo above the company name">Above</button>
+                </div>
+                <select id="logoPosition" class="visually-hidden" tabindex="-1" aria-hidden="true">
+                  <option value="">Auto position</option>
+                  <option value="left">Left of name</option>
+                  <option value="above">Above name</option>
+                </select>
+              </div>
+
+              <div class="logo-settings-footer">
+                <button type="button" class="btn small" id="resetLogoSizeBtn"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Reset to original size</button>
+              </div>
+            </div>
           </div>
         </div>
         <div>

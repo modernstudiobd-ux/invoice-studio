@@ -215,7 +215,7 @@ const historyToggleBtn = $("historyToggleBtn"), historyPanel = $("historyPanel")
 // overflow-x:auto — see the comment on .history-panel in base.css). On
 // phone widths the panel is centered via its own CSS media query instead,
 // so any inline position from a previous desktop placement is cleared.
-function positionDropdownPanel(panel, toggleBtn) {
+function positionDropdownPanel(panel, toggleBtn, maxWidth = 360) {
   if (phoneQuery.matches) {
     panel.style.top = "";
     panel.style.left = "";
@@ -223,7 +223,7 @@ function positionDropdownPanel(panel, toggleBtn) {
     return;
   }
   const r = toggleBtn.getBoundingClientRect();
-  const width = Math.min(360, window.innerWidth - 32);
+  const width = Math.min(maxWidth, window.innerWidth - 32);
   let left = r.left + r.width / 2 - width / 2;
   left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
   panel.style.width = width + "px";
@@ -234,16 +234,18 @@ function positionDropdownPanel(panel, toggleBtn) {
 // visually anchored to where its button used to be, so just close it —
 // simpler and safer than recomputing position continuously on scroll.
 const toolbarRowEl = document.querySelector(".toolbar-row");
-if (toolbarRowEl) toolbarRowEl.addEventListener("scroll", () => { closeHistoryPanel(); closeTemplatesPanel(); }, { passive: true });
+if (toolbarRowEl) toolbarRowEl.addEventListener("scroll", () => { closeHistoryPanel(); closeTemplatesPanel(); closeImportPanel(); closeLogoSettingsPanel(); }, { passive: true });
 
 export function closeHistoryPanel() {
   historyPanel.classList.remove("open");
   historyToggleBtn.setAttribute("aria-expanded", "false");
-  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !templatesPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
+  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !templatesPanel.classList.contains("open") && !importPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
 }
 historyToggleBtn.addEventListener("click", e => {
   e.stopPropagation();
   closeTemplatesPanel();
+  closeImportPanel();
+  closeLogoSettingsPanel();
   const open = historyPanel.classList.toggle("open");
   historyToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
   if (open) positionDropdownPanel(historyPanel, historyToggleBtn);
@@ -265,11 +267,13 @@ const templatesToggleBtn = $("templatesToggleBtn"), templatesPanel = $("template
 export function closeTemplatesPanel() {
   templatesPanel.classList.remove("open");
   templatesToggleBtn.setAttribute("aria-expanded", "false");
-  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !historyPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
+  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !historyPanel.classList.contains("open") && !importPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
 }
 templatesToggleBtn.addEventListener("click", e => {
   e.stopPropagation();
   closeHistoryPanel();
+  closeImportPanel();
+  closeLogoSettingsPanel();
   const open = templatesPanel.classList.toggle("open");
   templatesToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
   if (open) positionDropdownPanel(templatesPanel, templatesToggleBtn);
@@ -281,6 +285,61 @@ templatesToggleBtn.addEventListener("click", e => {
 });
 document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(templatesPanel) && !path.includes(templatesToggleBtn)) closeTemplatesPanel(); });
 drawerOverlay.addEventListener("click", closeTemplatesPanel);
+
+// "Import Items" dropdown (CSV/Excel import + its how-to tutorial + the
+// destructive "Clear all line items" action) — same floating-panel pattern
+// as History/Templates above, now living in the main Edit Canvas toolbar
+// instead of buried in the Items tab, where an import/clear action is
+// easy to miss and doesn't read as belonging to the canvas toolbar at all.
+const importToggleBtn = $("importToggleBtn"), importPanel = $("importPanel");
+export function closeImportPanel() {
+  importPanel.classList.remove("open");
+  importToggleBtn.setAttribute("aria-expanded", "false");
+  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !historyPanel.classList.contains("open") && !templatesPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
+}
+importToggleBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  closeHistoryPanel();
+  closeTemplatesPanel();
+  closeLogoSettingsPanel();
+  const open = importPanel.classList.toggle("open");
+  importToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) positionDropdownPanel(importPanel, importToggleBtn);
+  if (phoneQuery.matches) {
+    mobileDrawer.classList.remove("open");
+    hamburgerBtn.setAttribute("aria-expanded", "false");
+    drawerOverlay.classList.toggle("show", open);
+  }
+});
+document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(importPanel) && !path.includes(importToggleBtn)) closeImportPanel(); });
+drawerOverlay.addEventListener("click", closeImportPanel);
+// Both actions inside are one-shot (open a file picker, or clear-with-
+// confirm) rather than a list of items to keep working through, so — same
+// convention as the phone "more actions" popover — close the panel right
+// after either is clicked instead of leaving it open.
+importPanel.querySelectorAll("button").forEach(b => b.addEventListener("click", closeImportPanel));
+
+// Logo settings popover, anchored to the "Logo settings" trigger next to
+// the logo on the invoice canvas itself (not the toolbar row above it) —
+// same floating-panel pattern again, so selecting/resizing/positioning the
+// logo follows the same "click to open a small property panel" convention
+// as every other tool in the app instead of a permanent row of controls
+// crowding the invoice header at all times.
+const logoSettingsBtn = $("logoSettingsBtn"), logoSettingsPanel = $("logoSettingsPanel");
+export function closeLogoSettingsPanel() {
+  logoSettingsPanel.classList.remove("open");
+  logoSettingsBtn.setAttribute("aria-expanded", "false");
+}
+logoSettingsBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  closeHistoryPanel();
+  closeTemplatesPanel();
+  closeImportPanel();
+  const open = logoSettingsPanel.classList.toggle("open");
+  logoSettingsBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) positionDropdownPanel(logoSettingsPanel, logoSettingsBtn, 280);
+});
+document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(logoSettingsPanel) && !path.includes(logoSettingsBtn)) closeLogoSettingsPanel(); });
 
 // Collapsible sections — tap a panel heading to expand/collapse it (every
 // width now; less-used panels start collapsed by default — see main.js —

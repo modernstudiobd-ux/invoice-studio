@@ -186,7 +186,24 @@ export function renderPreview() {
   let img = $("pLogo"), box = img.closest(".logobox");
   const logoSize = Math.max(24, Math.min(160, num($("logoHeight").value) || 48));
   inv.style.setProperty("--logo-h", logoSize + "px");
-  $("logoHeightValue").textContent = logoSize;
+  // Keeps the logo settings panel's own controls (number field, computed
+  // width readout, position segmented buttons) in sync with the real
+  // #logoHeight/#logoPosition values on every render — including renders
+  // triggered indirectly by undo/redo, loading a saved invoice, or applying
+  // a brand template, none of which go through this panel's own input
+  // handlers (see main.js) to get here.
+  const logoHeightNumberEl = $("logoHeightValue");
+  if (logoHeightNumberEl && document.activeElement !== logoHeightNumberEl) logoHeightNumberEl.value = logoSize;
+  const logoSizeMetaEl = $("logoSizeMeta");
+  if (logoSizeMetaEl) {
+    if (state.logo && state.logoNatural && state.logoNatural.w && state.logoNatural.h) {
+      const width = Math.round(Math.min(220, logoSize * (state.logoNatural.w / state.logoNatural.h)));
+      logoSizeMetaEl.textContent = "Actual size: " + width + " × " + logoSize + " px";
+    } else {
+      logoSizeMetaEl.textContent = "Upload a logo to see its size";
+    }
+  }
+  document.querySelectorAll(".logo-position-btn").forEach(b => b.classList.toggle("active", b.dataset.pos === logoPos));
   if (state.logo) {
     img.src = state.logo; box.classList.add("has-logo");
   } else {

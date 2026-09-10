@@ -115,6 +115,7 @@
      printed/PDF document, which should read exactly like the old static
      invoice did. */
   .logotools{display:none!important}
+  .logo-settings-panel{display:none!important}
   .add-item-btn{display:none!important}
   .add-item-row{display:none!important}
   .item-actions-col{display:none!important}
