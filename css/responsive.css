@@ -108,9 +108,11 @@
   .drawer-toolbar-slot .history-dropdown{width:100%}
   .drawer-toolbar-slot #historyToggleBtn{width:100%}
 
-  /* The History panel opens as its own centered card on phone widths — the
-     drawer is too narrow to anchor a dropdown under the button. */
-  .history-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(360px,calc(100vw - 32px));max-height:75vh;z-index:55}
+  /* Every floating panel opens as its own centered card on phone widths —
+     the drawer is too narrow to anchor a dropdown under its button. z-index
+     is inherited from the base .history-panel rule (100), which already
+     clears the drawer (50) and its overlay (49). */
+  .history-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(360px,calc(100vw - 32px));max-height:75vh}
 
   /* Fullscreen preview — hides all chrome and gives the invoice the entire
      viewport, with a single floating close button to get back. */

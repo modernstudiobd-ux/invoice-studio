@@ -117,7 +117,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
    the toolbar instead of letting it float below it. Fixed positioning
    with JS-computed coordinates escapes that clipping entirely. The mobile
    media query below still overrides this into simple centered-fixed. */
-.history-panel{display:none;position:fixed;z-index:40;width:min(360px,calc(100vw - 32px));max-height:70vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);padding:12px}
+/* #floatingLayer (end of <body>) holds every one of these panels — see the
+   long comment there for why they can't live inside the buttons/toolbars
+   that open them. z-index:100 clears every other layer in the app (toast
+   99, fullscreen-exit 60, mobile drawer 50) so a panel is never hidden
+   behind app chrome regardless of viewport width. */
+#floatingLayer{position:relative;z-index:100}
+.history-panel{display:none;position:fixed;z-index:100;width:min(360px,calc(100vw - 32px));max-height:70vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);padding:12px}
 .history-panel.open{display:block}
 .history-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .history-panel-head h2{font-size:13px;margin:0}

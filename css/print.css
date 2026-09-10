@@ -115,7 +115,11 @@
      printed/PDF document, which should read exactly like the old static
      invoice did. */
   .logotools{display:none!important}
-  .logo-settings-panel{display:none!important}
+  /* Belt-and-braces: hides every floating panel (Saved Invoices, Brand
+     Templates, Import Items, Logo settings) outright at print time, in case
+     one was left open — none of them should ever appear on the printed/PDF
+     output. */
+  #floatingLayer{display:none!important}
   .add-item-btn{display:none!important}
   .add-item-row{display:none!important}
   .item-actions-col{display:none!important}

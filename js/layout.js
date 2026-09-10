@@ -212,9 +212,13 @@ const historyToggleBtn = $("historyToggleBtn"), historyPanel = $("historyPanel")
 // Anchors a .history-panel below its toggle button using fixed positioning
 // computed from the button's actual on-screen position, instead of relying
 // on CSS position:absolute (which was getting clipped by .toolbar-row's
-// overflow-x:auto — see the comment on .history-panel in base.css). On
-// phone widths the panel is centered via its own CSS media query instead,
-// so any inline position from a previous desktop placement is cleared.
+// overflow-x:auto — see the comment on .history-panel in base.css). The
+// panel itself always lives in #floatingLayer, a direct child of <body>
+// with no transformed ancestor, so these viewport-relative coordinates
+// always land correctly — see the comment on #floatingLayer in index.html.
+// On phone widths the panel is centered via its own CSS media query
+// instead, so any inline position from a previous desktop placement is
+// cleared.
 function positionDropdownPanel(panel, toggleBtn, maxWidth = 360) {
   if (phoneQuery.matches) {
     panel.style.top = "";
@@ -228,13 +232,35 @@ function positionDropdownPanel(panel, toggleBtn, maxWidth = 360) {
   left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
   panel.style.width = width + "px";
   panel.style.left = left + "px";
-  panel.style.top = (r.bottom + 8) + "px";
+  // Prefer opening below the button; flip above it when there isn't enough
+  // room underneath (e.g. the toolbar sits near the bottom of a short
+  // window) so the panel never renders partly off the bottom edge.
+  const gap = 8;
+  const estimatedHeight = Math.min(panel.scrollHeight || 320, window.innerHeight * 0.7);
+  const spaceBelow = window.innerHeight - r.bottom - gap;
+  if (spaceBelow < estimatedHeight && r.top > estimatedHeight) {
+    panel.style.top = Math.max(gap, r.top - estimatedHeight - gap) + "px";
+  } else {
+    panel.style.top = (r.bottom + gap) + "px";
+  }
 }
-// Horizontally scrolling the toolbar row would leave an already-open panel
-// visually anchored to where its button used to be, so just close it —
-// simpler and safer than recomputing position continuously on scroll.
+// Horizontally scrolling the toolbar row, or resizing the window, would
+// leave an already-open panel visually anchored to where its button used
+// to be, so just close it — simpler and safer than recomputing position
+// continuously on scroll/resize.
 const toolbarRowEl = document.querySelector(".toolbar-row");
-if (toolbarRowEl) toolbarRowEl.addEventListener("scroll", () => { closeHistoryPanel(); closeTemplatesPanel(); closeImportPanel(); closeLogoSettingsPanel(); }, { passive: true });
+function closeAllFloatingPanels() { closeHistoryPanel(); closeTemplatesPanel(); closeImportPanel(); closeLogoSettingsPanel(); }
+if (toolbarRowEl) toolbarRowEl.addEventListener("scroll", closeAllFloatingPanels, { passive: true });
+window.addEventListener("resize", closeAllFloatingPanels);
+// Escape closes whichever floating panel is open and returns focus to its
+// trigger button — standard keyboard behavior for popovers/menus.
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  if (historyPanel.classList.contains("open")) { closeHistoryPanel(); historyToggleBtn.focus(); }
+  else if (templatesPanel.classList.contains("open")) { closeTemplatesPanel(); templatesToggleBtn.focus(); }
+  else if (importPanel.classList.contains("open")) { closeImportPanel(); importToggleBtn.focus(); }
+  else if (logoSettingsPanel.classList.contains("open")) { closeLogoSettingsPanel(); logoSettingsBtn.focus(); }
+});
 
 export function closeHistoryPanel() {
   historyPanel.classList.remove("open");
