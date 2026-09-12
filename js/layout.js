@@ -386,9 +386,10 @@ logoSettingsBtn.addEventListener("click", e => {
 });
 document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(logoSettingsPanel) && !path.includes(logoSettingsBtn)) closeLogoSettingsPanel(); });
 
-// Collapsible sections — tap a panel heading to expand/collapse it (every
-// width now; less-used panels start collapsed by default — see main.js —
-// so the sidebar itself takes up less room without losing any control).
+// Collapsible sections — tap a panel heading to expand/collapse it. Color
+// and Show/hide sections both start expanded (see index.html) since their
+// controls are commonly needed right away; collapsing is still available
+// per-panel for anyone who wants to tuck a section away.
 document.querySelectorAll(".panelhead").forEach(h => {
   h.addEventListener("click", () => {
     const panel = h.closest(".panel");

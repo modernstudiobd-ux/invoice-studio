@@ -131,6 +131,7 @@
      true — see js/preview.js), but hiding it here too costs nothing and
      matches how every other piece of editing-only chrome above is handled. */
   .col-drag-handle,.col-menu-btn,.col-resize-handle,.col-actions-head,.col-drop-indicator{display:none!important}
+  .table-toolbar{display:none!important}
   .invoice input:not([id^="label"])::placeholder,.invoice textarea::placeholder{color:transparent!important}
   .status{background-image:none!important;padding:5px 9px!important}
   /* Force background colors/fills to print consistently across Chrome, Edge,
