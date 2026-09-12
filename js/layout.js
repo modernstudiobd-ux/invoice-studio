@@ -1,15 +1,15 @@
-// layout.js — all the "app chrome" wiring: resizable/collapsible sidebar,
-// desktop tabs, mobile edit/preview switcher + drawer + fullscreen preview,
-// and the phone bottom-bar "more actions" popover. No invoice business logic.
+// layout.js — all the "app chrome" wiring: resizable sidebar, desktop tabs,
+// mobile edit/preview switcher + drawer + fullscreen preview, and the phone
+// bottom-bar "more actions" popover. No invoice business logic.
 
 import { $ } from "./dom.js";
 import { renderPreview } from "./preview.js";
-import { renderColumnManagerList, closeColSettings } from "./columnCanvas.js";
+import { closeColSettings } from "./columnCanvas.js";
 
 const sidebarResizer = $("sidebarResizer"), appRoot = $("appRoot");
 let resizingSidebar = false;
 const savedSidebarWidth = Number(localStorage.getItem("invoiceStudio.sidebarWidth"));
-if (savedSidebarWidth >= 320 && savedSidebarWidth <= 720) {
+if (savedSidebarWidth >= 260 && savedSidebarWidth <= 720) {
   document.documentElement.style.setProperty("--sidebar-width", savedSidebarWidth + "px");
 }
 sidebarResizer.addEventListener("mousedown", e => {
@@ -21,7 +21,7 @@ sidebarResizer.addEventListener("mousedown", e => {
 });
 window.addEventListener("mousemove", e => {
   if (!resizingSidebar) return;
-  const width = Math.max(320, Math.min(720, e.clientX));
+  const width = Math.max(260, Math.min(720, e.clientX));
   document.documentElement.style.setProperty("--sidebar-width", width + "px");
   localStorage.setItem("invoiceStudio.sidebarWidth", String(width));
 });
@@ -32,20 +32,9 @@ window.addEventListener("mouseup", () => {
   sidebarResizer.classList.remove("dragging");
 });
 sidebarResizer.addEventListener("dblclick", () => {
-  document.documentElement.style.setProperty("--sidebar-width", "430px");
-  localStorage.setItem("invoiceStudio.sidebarWidth", "430");
+  document.documentElement.style.setProperty("--sidebar-width", "300px");
+  localStorage.setItem("invoiceStudio.sidebarWidth", "300");
 });
-
-const sidebarToggleBtn = $("sidebarToggleBtn");
-export function setSidebarCollapsed(collapsed) {
-  appRoot.classList.toggle("sidebar-collapsed", collapsed);
-  sidebarToggleBtn.textContent = collapsed ? "›" : "‹";
-  sidebarToggleBtn.title = collapsed ? "Expand sidebar" : "Collapse sidebar";
-  sidebarToggleBtn.setAttribute("aria-label", sidebarToggleBtn.title);
-  localStorage.setItem("invoiceStudio.sidebarCollapsed", collapsed ? "1" : "0");
-}
-sidebarToggleBtn.addEventListener("click", () => setSidebarCollapsed(!appRoot.classList.contains("sidebar-collapsed")));
-setSidebarCollapsed(localStorage.getItem("invoiceStudio.sidebarCollapsed") === "1");
 
 const mvEditBtn = $("mvEditBtn"), mvPreviewBtn = $("mvPreviewBtn");
 export function setMobileView(view) {
@@ -125,9 +114,9 @@ exitFullscreenBtn.addEventListener("click", () => setFullscreenPreview(false));
 // same way a real print preview is: setCanvasEditable() below locks every
 // real field living directly on the document (see setInvoiceFieldsEditable)
 // the instant Preview turns on, and unlocks them the instant Edit
-// returns — editing still happens freely through the sidebar's Items/
-// Table Columns/Design tabs and the page-setup toolbar, none of which are
-// part of the document itself.
+// returns — editing still happens freely through the left sidebar's Design
+// tools and the Right Sidebar's Page setup/Alignment/Template/Currency,
+// none of which are part of the document itself.
 const canvasModeEditBtn = $("canvasModeEditBtn"), canvasModePreviewBtn = $("canvasModePreviewBtn");
 
 // Locks/unlocks every real form field living on the invoice document
@@ -156,11 +145,11 @@ export function setCanvasMode(mode) {
   canvasModeEditBtn.setAttribute("aria-selected", String(!isPreview));
   canvasModePreviewBtn.classList.toggle("active", isPreview);
   canvasModePreviewBtn.setAttribute("aria-selected", String(isPreview));
-  // Column editing (the per-header "⋮" popover and the "Columns" manager
-  // panel) only makes sense in Edit mode — Preview shows the read-only,
-  // faithful dry run of the printed document, so close both the instant it
-  // turns on rather than leaving them floating over a now-uneditable table.
-  if (isPreview) { closeManageColumnsPanel(); closeColSettings(); }
+  // Column editing (the per-header "⋮" popover) only makes sense in Edit
+  // mode — Preview shows the read-only, faithful dry run of the printed
+  // document, so close it the instant Preview turns on rather than leaving
+  // it floating over a now-uneditable table.
+  if (isPreview) closeColSettings();
   // Edit and Preview also render the line-items table differently (real
   // <input>s + a remove column vs. plain formatted text — see preview.js),
   // on top of sizing the canvas wrapper differently (auto-height form vs.
@@ -202,11 +191,28 @@ const historyToggleBtn = $("historyToggleBtn"), historyPanel = $("historyPanel")
 // On phone widths the panel is centered via its own CSS media query
 // instead, so any inline position from a previous desktop placement is
 // cleared.
+//
+// max-height is set here too, computed from the *actual* remaining space
+// between the panel and the nearest viewport edge — not a flat CSS value —
+// so a panel can never render partly past the bottom (or top) of the
+// screen with no way to scroll the hidden part into view. That used to
+// happen with the CSV/Excel import tutorial: opening its <details> grows
+// the panel's content after this function had already run once, and a
+// static "max-height:70vh" doesn't know where the panel's top edge is, so
+// it could still push the bottom of the panel off-screen even though the
+// panel's own overflow:auto had nothing to scroll (the content fit inside
+// 70vh, just not inside the space actually left below the panel's top).
+// Re-running this function (see the "toggle" listener on .importhelp
+// below) re-measures both the flip decision and the max-height against
+// real, current space, so the fix holds regardless of window size or how
+// much the tutorial content grows.
 function positionDropdownPanel(panel, toggleBtn, maxWidth = 360) {
   if (phoneQuery.matches) {
     panel.style.top = "";
+    panel.style.bottom = "";
     panel.style.left = "";
     panel.style.width = "";
+    panel.style.maxHeight = "";
     return;
   }
   const r = toggleBtn.getBoundingClientRect();
@@ -218,13 +224,21 @@ function positionDropdownPanel(panel, toggleBtn, maxWidth = 360) {
   // Prefer opening below the button; flip above it when there isn't enough
   // room underneath (e.g. the toolbar sits near the bottom of a short
   // window) so the panel never renders partly off the bottom edge.
-  const gap = 8;
-  const estimatedHeight = Math.min(panel.scrollHeight || 320, window.innerHeight * 0.7);
+  const gap = 8, minHeight = 160;
   const spaceBelow = window.innerHeight - r.bottom - gap;
-  if (spaceBelow < estimatedHeight && r.top > estimatedHeight) {
-    panel.style.top = Math.max(gap, r.top - estimatedHeight - gap) + "px";
+  const spaceAbove = r.top - gap;
+  const openAbove = spaceBelow < minHeight && spaceAbove > spaceBelow;
+  if (openAbove) {
+    // Anchored by "bottom" (distance from the viewport's bottom edge) so
+    // the panel's own top always lands exactly at spaceAbove regardless of
+    // its real height — no need to predict that height up front.
+    panel.style.top = "";
+    panel.style.bottom = (window.innerHeight - r.top + gap) + "px";
+    panel.style.maxHeight = Math.max(minHeight, spaceAbove) + "px";
   } else {
+    panel.style.bottom = "";
     panel.style.top = (r.bottom + gap) + "px";
+    panel.style.maxHeight = Math.max(minHeight, spaceBelow) + "px";
   }
 }
 // Horizontally scrolling the toolbar row, or resizing the window, would
@@ -232,7 +246,7 @@ function positionDropdownPanel(panel, toggleBtn, maxWidth = 360) {
 // to be, so just close it — simpler and safer than recomputing position
 // continuously on scroll/resize.
 const toolbarRowEl = document.querySelector(".toolbar-row");
-function closeAllFloatingPanels() { closeHistoryPanel(); closeTemplatesPanel(); closeImportPanel(); closeManageColumnsPanel(); closeLogoSettingsPanel(); }
+function closeAllFloatingPanels() { closeHistoryPanel(); closeTemplatesPanel(); closeImportPanel(); closeLogoSettingsPanel(); }
 if (toolbarRowEl) toolbarRowEl.addEventListener("scroll", closeAllFloatingPanels, { passive: true });
 window.addEventListener("resize", closeAllFloatingPanels);
 // Escape closes whichever floating panel is open and returns focus to its
@@ -242,7 +256,6 @@ document.addEventListener("keydown", e => {
   if (historyPanel.classList.contains("open")) { closeHistoryPanel(); historyToggleBtn.focus(); }
   else if (templatesPanel.classList.contains("open")) { closeTemplatesPanel(); templatesToggleBtn.focus(); }
   else if (importPanel.classList.contains("open")) { closeImportPanel(); importToggleBtn.focus(); }
-  else if (manageColumnsPanel.classList.contains("open")) { closeManageColumnsPanel(); manageColumnsToggleBtn.focus(); }
   else if (logoSettingsPanel.classList.contains("open")) { closeLogoSettingsPanel(); logoSettingsBtn.focus(); }
 });
 
@@ -255,7 +268,6 @@ historyToggleBtn.addEventListener("click", e => {
   e.stopPropagation();
   closeTemplatesPanel();
   closeImportPanel();
-  closeManageColumnsPanel();
   closeLogoSettingsPanel();
   const open = historyPanel.classList.toggle("open");
   historyToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
@@ -284,7 +296,6 @@ templatesToggleBtn.addEventListener("click", e => {
   e.stopPropagation();
   closeHistoryPanel();
   closeImportPanel();
-  closeManageColumnsPanel();
   closeLogoSettingsPanel();
   const open = templatesPanel.classList.toggle("open");
   templatesToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
@@ -313,7 +324,6 @@ importToggleBtn.addEventListener("click", e => {
   e.stopPropagation();
   closeHistoryPanel();
   closeTemplatesPanel();
-  closeManageColumnsPanel();
   closeLogoSettingsPanel();
   const open = importPanel.classList.toggle("open");
   importToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
@@ -331,37 +341,17 @@ drawerOverlay.addEventListener("click", closeImportPanel);
 // convention as the phone "more actions" popover — close the panel right
 // after either is clicked instead of leaving it open.
 importPanel.querySelectorAll("button").forEach(b => b.addEventListener("click", closeImportPanel));
-
-// "Columns" dropdown — same floating-panel pattern again, for the fuller
-// table-column editor (js/columnCanvas.js owns the header-cell controls
-// that handle most column edits directly on the canvas table; this panel
-// is for bulk work and for re-showing a column that was hidden, since a
-// hidden column has no header left to click). Its list is re-rendered on
-// every open so it always reflects whatever was just changed via drag,
-// resize, rename or the per-column "⋮" popover on the table itself.
-const manageColumnsToggleBtn = $("manageColumnsToggleBtn"), manageColumnsPanel = $("manageColumnsPanel");
-export function closeManageColumnsPanel() {
-  manageColumnsPanel.classList.remove("open");
-  manageColumnsToggleBtn.setAttribute("aria-expanded", "false");
-  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !historyPanel.classList.contains("open") && !templatesPanel.classList.contains("open") && !importPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
+// Re-run positioning when the CSV/Excel tutorial accordion opens or closes:
+// it changes the panel's content height well after positionDropdownPanel()
+// first ran (on open), so without this the panel's remembered position/
+// max-height goes stale the moment the tutorial expands — see the long
+// comment on positionDropdownPanel() above for the full story.
+const importHelpDetails = importPanel.querySelector(".importhelp");
+if (importHelpDetails) {
+  importHelpDetails.addEventListener("toggle", () => {
+    if (importPanel.classList.contains("open")) positionDropdownPanel(importPanel, importToggleBtn);
+  });
 }
-manageColumnsToggleBtn.addEventListener("click", e => {
-  e.stopPropagation();
-  closeHistoryPanel();
-  closeTemplatesPanel();
-  closeImportPanel();
-  closeLogoSettingsPanel();
-  const open = manageColumnsPanel.classList.toggle("open");
-  manageColumnsToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
-  if (open) { renderColumnManagerList(); positionDropdownPanel(manageColumnsPanel, manageColumnsToggleBtn); }
-  if (phoneQuery.matches) {
-    mobileDrawer.classList.remove("open");
-    hamburgerBtn.setAttribute("aria-expanded", "false");
-    drawerOverlay.classList.toggle("show", open);
-  }
-});
-document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(manageColumnsPanel) && !path.includes(manageColumnsToggleBtn)) closeManageColumnsPanel(); });
-drawerOverlay.addEventListener("click", closeManageColumnsPanel);
 
 // Logo settings popover, anchored to the "Logo settings" trigger next to
 // the logo on the invoice canvas itself (not the toolbar row above it) —
@@ -379,7 +369,6 @@ logoSettingsBtn.addEventListener("click", e => {
   closeHistoryPanel();
   closeTemplatesPanel();
   closeImportPanel();
-  closeManageColumnsPanel();
   const open = logoSettingsPanel.classList.toggle("open");
   logoSettingsBtn.setAttribute("aria-expanded", open ? "true" : "false");
   if (open) positionDropdownPanel(logoSettingsPanel, logoSettingsBtn, 280);

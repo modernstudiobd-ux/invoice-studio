@@ -48,8 +48,8 @@
 @media print{
   html,body{background:#fff}
   .appheader,.toast{display:none!important}
-  .sidebar,.sidebar-resizer,.canvasbar{display:none!important}
-  .mobileview-toggle,.mobile-drawer,.drawer-overlay,.fullscreen-exit,.sidebar-toggle,.actions{display:none!important}
+  .sidebar,.sidebar-resizer,.canvasbar,.right-sidebar{display:none!important}
+  .mobileview-toggle,.mobile-drawer,.drawer-overlay,.fullscreen-exit,.actions{display:none!important}
   .invoice-toolbar,.page-break-line,.page-break-chip{display:none!important}
   .toolbar-row{display:none!important}
   .app{display:block!important}

@@ -10,7 +10,7 @@ import { today, plusDays, num } from "./format.js";
 import { toast } from "./toast.js";
 import { setAccent, applyOptionalColor, clearOptionalColor, applyAllOptionalColors } from "./accent.js";
 import { renderPreview, fitInvoiceCanvas, refreshItemRowAndTotals } from "./preview.js";
-import { initColumnCanvas, renderColumnManagerList } from "./columnCanvas.js";
+import { initColumnCanvas } from "./columnCanvas.js";
 import { addItem } from "./items.js";
 import { renderToggles } from "./toggles.js";
 import { save, undo, redo, pushEditHistory, updateUndoRedoButtons } from "./persistence.js";
@@ -54,10 +54,9 @@ OPTIONAL_COLOR_IDS.forEach(id => {
 $("clearItemsBtn").onclick = () => { if (confirm("Remove all line items?")) { state.items = []; renderPreview(); save(); } };
 
 /* --- Table columns: all add/remove/rename/reorder/resize/show-hide/
-   settings controls now live directly on the invoice canvas table (its
-   header row) plus the "Columns" toolbar button above it — see
-   js/columnCanvas.js, which wires its own add/restore buttons (now inside
-   #manageColumnsPanel) and every delegated header interaction. --- */
+   settings controls live directly on the invoice canvas table (its header
+   row + the trailing "+" cell) — see js/columnCanvas.js, which wires every
+   delegated header interaction. --- */
 initColumnCanvas();
 
 // Inline item editing directly on the invoice canvas table (see preview.js):
@@ -176,7 +175,7 @@ $("dueDate").value = plusDays(today(), 14);
 if (!$("logoHeight").value) $("logoHeight").value = "48";
 setAccent(DEFAULT_ACCENT);
 applyAllOptionalColors();
-renderToggles(); renderPreview(); renderColumnManagerList();
+renderToggles(); renderPreview();
 
 {
   const canvasWrapEl = document.querySelector(".canvaswrap");

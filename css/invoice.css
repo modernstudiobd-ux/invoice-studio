@@ -3,24 +3,20 @@
    for accurate print/PDF output, while this wrapper lets it scale down as one
    modular unit to fit any viewport width instead of forcing horizontal scrolling. */
 .canvaswrap{width:100%;max-width:var(--page-w);margin:0 auto;position:relative}
-/* Quick-settings bar — Template + Currency, the two settings changed most
-   often, kept one tap away at all times (both mobile Form and Preview views,
-   and above the two-column layout on desktop) instead of buried in a
-   sidebar tab (see js/quickbar.js). Sits above everything, full-width, so
-   it never depends on which panel is currently visible. */
-.quickbar{display:flex;gap:18px;flex-wrap:wrap;align-items:center;background:#fff;border-bottom:1px solid var(--line);padding:8px 16px}
-.quickbar:empty{display:none;border:0;padding:0}
-.quickbar-field{display:flex;align-items:center;gap:7px;flex:0 1 auto;margin:0;white-space:nowrap}
-.quickbar-field label{font-size:8.5px;margin-bottom:0;flex:none}
-.quickbar-field select{min-height:32px;padding:5px 8px;font-size:12px;width:auto}
 /* Searchable currency combobox — a text input + filtered listbox layered
    over the real (visually hidden) #currency <select>, which stays the
    source of truth so every other module keeps reading/writing it exactly
-   as before. See js/currencySearch.js. */
+   as before. See js/currencySearch.js. Lives in the Right Sidebar's
+   Currency panel (index.html). */
 .currency-field{position:relative}
-.combobox{position:relative;min-width:190px}
-.combobox-input{min-height:32px;padding:5px 26px 5px 8px;font-size:12px;width:100%;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-family:inherit;cursor:text}
-.combobox-input:focus{outline:2px solid var(--app-accent);outline-offset:1px;border-color:var(--app-accent)}
+.combobox{position:relative;min-width:0}
+/* Specificity note: this lives inside a Right Sidebar .field now (index.html),
+   and the generic ".field input" rule (base.css) also matches this <input> —
+   the extra ".combobox" ancestor class here (two classes vs. one class+type)
+   keeps this rule winning, so the caret's reserved right-padding and rounded
+   corners aren't silently overridden by the generic field style. */
+.combobox .combobox-input{min-height:32px;padding:5px 26px 5px 8px;font-size:12px;width:100%;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-family:inherit;cursor:text}
+.combobox .combobox-input:focus{outline:2px solid var(--app-accent);outline-offset:1px;border-color:var(--app-accent)}
 .combobox-caret{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);cursor:pointer;transition:transform .15s ease}
 .combobox.open .combobox-caret{transform:translateY(-50%) rotate(180deg)}
 .combobox-list{position:absolute;top:calc(100% + 6px);left:0;right:0;min-width:260px;max-height:280px;overflow-y:auto;margin:0;padding:5px;list-style:none;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow-lg);z-index:50;display:none}
@@ -32,13 +28,7 @@
 .combobox-option.selected::after{content:"✓";float:right;margin-left:8px}
 .combobox-empty{font-size:12px;color:var(--muted);padding:10px 8px;text-align:center}
 @media (max-width:640px){
-  .combobox{min-width:0}
   .combobox-list{min-width:0}
-}
-@media (max-width:640px){
-  .quickbar{padding-top:calc(8px + env(safe-area-inset-top))}
-  .quickbar-field{flex:1 1 45%;flex-direction:column;align-items:stretch;gap:2px;white-space:normal}
-  .quickbar-field select{width:100%}
 }
 /* Unified toolbar row — Save/Duplicate/Saved invoices/Templates on the
    left, then a vertical divider, then Edit⇄Preview + Zoom pushed to the
@@ -64,23 +54,15 @@
 .canvasbar{display:flex;justify-content:flex-start;align-items:center;gap:14px;flex-wrap:nowrap}.canvasbar .meta{font-size:11px;color:var(--muted);display:inline-flex;align-items:center;white-space:nowrap}
 .canvasbar-right{display:flex;align-items:center;gap:12px;flex:none}
 .canvasbar-right .actions{flex-wrap:nowrap;margin-bottom:0}
-/* Page setup — Paper size + Notes alignment, shown as plain inline
-   dropdowns on the toolbar's right side (alongside Edit/Preview + Zoom)
-   rather than tucked behind a button/popover. Styled to match the zoom
-   buttons on the same row (border, radius, shadow) so the row reads as
-   one consistent control cluster. */
-.pagesetup-inline{display:flex;align-items:center;gap:6px;flex:none}
-.toolbar-select{min-height:0;height:27px;padding:0 22px 0 9px;font-size:11px;font-weight:750;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);cursor:pointer;width:auto;max-width:118px;text-overflow:ellipsis}
-.toolbar-select:hover{border-color:#c2c9d6}
-.toolbar-select:focus{outline:2px solid var(--app-accent);outline-offset:1px}
 /* The real #currency <select> underneath the searchable combobox must stay
    fully invisible AND non-interactive — otherwise generic rules elsewhere
-   (e.g. ".quickbar-field select") can leak real width/padding onto it
-   (they win over the single-class ".visually-hidden" on specificity), which
-   gives it a real clickable box that can sit on top of the search input or
-   its arrow and silently steal clicks/focus meant for the combobox. The ID
-   selector here guarantees this always wins, regardless of what else
-   targets "select" elsewhere in the stylesheet, now or in the future. */
+   (e.g. ".field select" in the Right Sidebar it now lives in) can leak real
+   width/padding onto it (they win over the single-class ".visually-hidden"
+   on specificity), which gives it a real clickable box that can sit on top
+   of the search input or its arrow and silently steal clicks/focus meant
+   for the combobox. The ID selector here guarantees this always wins,
+   regardless of what else targets "select" elsewhere in the stylesheet,
+   now or in the future. */
 #currency{position:absolute!important;width:1px!important;height:1px!important;min-width:0!important;min-height:0!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;pointer-events:none!important}
 .canvasmode-switch{flex:none}
 /* Pushes the divider (and everything after it — the Edit/Preview switch +
@@ -89,11 +71,6 @@
    the divider, not evenly across every gap in the row. */
 .toolbar-divider{width:1px;align-self:stretch;background:var(--line);margin-left:auto;flex:none}
 @media (max-width:640px){ .toolbar-divider{display:none} }
-/* A second divider nested inside .canvasbar (between Page setup and
-   Edit/Preview) needs to sit flush against its neighbors, not push
-   everything after it to the far right the way the top-level divider
-   (between the button toolbar and this whole bar) does. */
-.canvasbar .toolbar-divider{margin-left:0}
 /* "A4 portrait preview · N pages" only makes sense as a description of the
    Preview mode (a faithful dry run of Print/PDF output) — in Edit mode the
    canvas isn't a page-accurate preview (it still shows every optional
@@ -101,14 +78,6 @@
    Preview is switched on. */
 #previewMeta{display:none}
 body.canvas-preview-mode #previewMeta{display:inline-flex}
-/* "Columns" toolbar button (js/columnCanvas.js + js/layout.js) only makes
-   sense in Edit mode — Preview is the read-only, faithful dry run of the
-   printed document, so hide the trigger the same way the canvas's own
-   "+ Add item" controls already disappear in Preview (see .add-item-btn
-   above). setCanvasMode() in layout.js also proactively closes the panel
-   the instant Preview turns on, so this is belt-and-braces, not the only
-   thing keeping the panel from being left open behind a hidden button. */
-body.canvas-preview-mode #manageColumnsToggleBtn{display:none}
 /* Edit/Preview canvas switch (js/layout.js setCanvasMode): Edit (default)
    shows every optional row/field so it's clear what's available to fill
    in, even when empty (see the "— " / "Add value" placeholders preview.js

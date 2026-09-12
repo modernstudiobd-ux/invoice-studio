@@ -25,111 +25,15 @@
 <style id="pageSizeCSS"></style>
 </head>
 <body>
-<!-- Unified app header: brand identity + the two most-changed settings
-     (Template, Currency) in one slim bar, instead of two separate stacked
-     header rows. Lives outside #appRoot so it stays visible above both
-     mobile Form/Preview views and above the two-column desktop layout. -->
+<!-- Unified app header: brand identity only. Template, Currency, Page setup
+     and Alignment used to live here / in the canvas toolbar — all four now
+     live together in the Right Sidebar (#rightSidebar) as part of the Edit
+     Canvas layout, so there's one place to find canvas/document settings
+     instead of three. Lives outside #appRoot so it stays visible above both
+     mobile Form/Preview views and above the desktop layout. -->
 <header class="appheader" id="appHeader">
   <div class="topbar">
     <div class="brand"><div class="mark">I</div><div><h1>Invoice Studio Pro</h1><p>Columns, spreadsheet imports and live design · drag right edge to resize</p></div></div>
-  </div>
-  <div class="quickbar" id="quickbar">
-  <div class="field quickbar-field"><label for="template">Template</label>
-    <select id="template">
-      <optgroup label="General">
-        <option value="modern">Modern Professional</option>
-        <option value="classic">Classic Business</option>
-        <option value="compact">Compact Minimal</option>
-        <option value="apple">Apple-inspired</option>
-        <option value="freelancer">Freelancer</option>
-        <option value="dark">Dark Mode</option>
-      </optgroup>
-      <optgroup label="Industry">
-        <option value="corporate">Corporate</option>
-        <option value="luxury">Luxury</option>
-        <option value="agency">Creative Agency</option>
-        <option value="construction">Construction</option>
-        <option value="medical">Medical</option>
-        <option value="legal">Legal</option>
-        <option value="realestate">Real Estate</option>
-        <option value="restaurant">Restaurant</option>
-        <option value="retail">Retail</option>
-        <option value="technology">Technology</option>
-        <option value="manufacturing">Manufacturing</option>
-      </optgroup>
-    </select>
-  </div>
-  <div class="field quickbar-field currency-field">
-    <label for="currencySearchInput">Currency</label>
-    <div class="combobox" id="currencyCombo">
-      <input type="text" id="currencySearchInput" class="combobox-input" role="combobox" aria-expanded="false" aria-controls="currencyListbox" aria-autocomplete="list" aria-haspopup="listbox" autocomplete="off" spellcheck="false" placeholder="Search currency…">
-      <svg class="combobox-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
-      <ul class="combobox-list" id="currencyListbox" role="listbox" aria-label="Currency"></ul>
-      <select id="currency" class="visually-hidden" tabindex="-1" aria-hidden="true">
-      <optgroup label="Americas">
-        <option value="USD" selected>USD - US Dollar</option>
-        <option value="CAD">CAD - Canadian Dollar</option>
-        <option value="MXN">MXN - Mexican Peso</option>
-        <option value="BRL">BRL - Brazilian Real</option>
-        <option value="ARS">ARS - Argentine Peso</option>
-        <option value="CLP">CLP - Chilean Peso</option>
-        <option value="COP">COP - Colombian Peso</option>
-        <option value="PEN">PEN - Peruvian Sol</option>
-        <option value="UYU">UYU - Uruguayan Peso</option>
-        <option value="JMD">JMD - Jamaican Dollar</option>
-      </optgroup>
-      <optgroup label="Europe">
-        <option value="EUR">EUR - Euro</option>
-        <option value="GBP">GBP - British Pound</option>
-        <option value="CHF">CHF - Swiss Franc</option>
-        <option value="SEK">SEK - Swedish Krona</option>
-        <option value="NOK">NOK - Norwegian Krone</option>
-        <option value="DKK">DKK - Danish Krone</option>
-        <option value="PLN">PLN - Polish Zloty</option>
-        <option value="CZK">CZK - Czech Koruna</option>
-        <option value="HUF">HUF - Hungarian Forint</option>
-        <option value="RON">RON - Romanian Leu</option>
-        <option value="UAH">UAH - Ukrainian Hryvnia</option>
-        <option value="RUB">RUB - Russian Ruble</option>
-        <option value="TRY">TRY - Turkish Lira</option>
-      </optgroup>
-      <optgroup label="Middle East & Africa">
-        <option value="AED">AED - UAE Dirham</option>
-        <option value="SAR">SAR - Saudi Riyal</option>
-        <option value="QAR">QAR - Qatari Riyal</option>
-        <option value="KWD">KWD - Kuwaiti Dinar</option>
-        <option value="BHD">BHD - Bahraini Dinar</option>
-        <option value="OMR">OMR - Omani Rial</option>
-        <option value="ILS">ILS - Israeli Shekel</option>
-        <option value="EGP">EGP - Egyptian Pound</option>
-        <option value="ZAR">ZAR - South African Rand</option>
-        <option value="NGN">NGN - Nigerian Naira</option>
-        <option value="KES">KES - Kenyan Shilling</option>
-        <option value="GHS">GHS - Ghanaian Cedi</option>
-      </optgroup>
-      <optgroup label="Asia Pacific">
-        <option value="AUD">AUD - Australian Dollar</option>
-        <option value="NZD">NZD - New Zealand Dollar</option>
-        <option value="JPY">JPY - Japanese Yen</option>
-        <option value="CNY">CNY - Chinese Yuan</option>
-        <option value="HKD">HKD - Hong Kong Dollar</option>
-        <option value="TWD">TWD - Taiwan Dollar</option>
-        <option value="KRW">KRW - South Korean Won</option>
-        <option value="SGD">SGD - Singapore Dollar</option>
-        <option value="INR">INR - Indian Rupee</option>
-        <option value="PKR">PKR - Pakistani Rupee</option>
-        <option value="BDT">BDT - Bangladeshi Taka</option>
-        <option value="LKR">LKR - Sri Lankan Rupee</option>
-        <option value="NPR">NPR - Nepalese Rupee</option>
-        <option value="IDR">IDR - Indonesian Rupiah</option>
-        <option value="MYR">MYR - Malaysian Ringgit</option>
-        <option value="PHP">PHP - Philippine Peso</option>
-        <option value="THB">THB - Thai Baht</option>
-        <option value="VND">VND - Vietnamese Dong</option>
-      </optgroup>
-    </select>
-    </div>
-  </div>
   </div>
 </header>
 <div class="mobileview-toggle" id="mobileViewToggle" role="tablist" aria-label="Switch between editor and preview">
@@ -229,7 +133,6 @@
   </div>
 </aside>
 <div class="sidebar-resizer" id="sidebarResizer" title="Drag to resize sidebar"></div>
-<button class="sidebar-toggle" id="sidebarToggleBtn" title="Collapse sidebar" aria-label="Collapse sidebar">‹</button>
 
 <main class="workspace">
  <div class="toolbar-row" id="toolbarRow">
@@ -253,21 +156,6 @@
  </div>
  <span class="toolbar-divider" aria-hidden="true"></span>
  <div class="canvasbar">
-   <div class="pagesetup-inline" title="Page setup — affects screen, print and PDF">
-     <label class="visually-hidden" for="paperSize">Paper size</label>
-     <select id="paperSize" class="toolbar-select">
-       <option value="a4">A4</option>
-       <option value="letter">US Letter</option>
-     </select>
-     <label class="visually-hidden" for="notesAlign">Note / payment / terms text alignment</label>
-     <select id="notesAlign" class="toolbar-select">
-       <option value="left">Align: Left</option>
-       <option value="center">Align: Middle</option>
-       <option value="right">Align: Right</option>
-     </select>
-   </div>
-   <button type="button" class="btn small" id="manageColumnsToggleBtn" aria-haspopup="true" aria-expanded="false" aria-controls="manageColumnsPanel" title="Add, remove, reorder, resize or hide table columns"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/></svg> Columns</button>
-   <span class="toolbar-divider" aria-hidden="true"></span>
    <div class="canvasmode-switch" role="tablist" aria-label="Edit or preview the invoice">
      <button type="button" class="canvasmode-btn active" id="canvasModeEditBtn" role="tab" aria-selected="true" title="Show every optional field, even ones left blank, and edit line items directly"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m17 3 4 4L7 21H3v-4Z"/></svg> Edit</button>
      <button type="button" class="canvasmode-btn" id="canvasModePreviewBtn" role="tab" aria-selected="false" title="Hide empty optional fields, like the printed/PDF output"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Preview</button>
@@ -385,6 +273,141 @@
   </article>
  </div>
 </main>
+<!-- Right Sidebar — canvas/document-level settings (Page setup, Alignment,
+     Template, Currency): the ones that shape the invoice document itself
+     rather than its color scheme (Design, left sidebar) or its content
+     (the canvas). Grouped here, once, as their own part of the Edit Canvas
+     layout — Template and Currency used to live in the header quickbar and
+     Page setup/Alignment in the canvas toolbar; all four now live in
+     exactly one place. Never shown in Preview/Print (see .right-sidebar in
+     print.css, and the mobile Form/Preview rules in responsive.css). -->
+<aside class="right-sidebar" id="rightSidebar" aria-label="Canvas settings">
+  <section class="panel">
+    <div class="panelhead"><h2>Page setup</h2></div>
+    <div class="field">
+      <label for="paperSize">Paper size</label>
+      <select id="paperSize">
+        <option value="a4">A4</option>
+        <option value="letter">US Letter</option>
+      </select>
+    </div>
+    <span class="hint">Affects screen, print and PDF.</span>
+  </section>
+  <section class="panel">
+    <div class="panelhead"><h2>Alignment</h2></div>
+    <div class="field">
+      <label for="notesAlign">Note / payment / terms text</label>
+      <select id="notesAlign">
+        <option value="left">Left</option>
+        <option value="center">Middle</option>
+        <option value="right">Right</option>
+      </select>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panelhead"><h2>Template</h2></div>
+    <div class="field">
+      <label for="template">Template</label>
+      <select id="template">
+        <optgroup label="General">
+          <option value="modern">Modern Professional</option>
+          <option value="classic">Classic Business</option>
+          <option value="compact">Compact Minimal</option>
+          <option value="apple">Apple-inspired</option>
+          <option value="freelancer">Freelancer</option>
+          <option value="dark">Dark Mode</option>
+        </optgroup>
+        <optgroup label="Industry">
+          <option value="corporate">Corporate</option>
+          <option value="luxury">Luxury</option>
+          <option value="agency">Creative Agency</option>
+          <option value="construction">Construction</option>
+          <option value="medical">Medical</option>
+          <option value="legal">Legal</option>
+          <option value="realestate">Real Estate</option>
+          <option value="restaurant">Restaurant</option>
+          <option value="retail">Retail</option>
+          <option value="technology">Technology</option>
+          <option value="manufacturing">Manufacturing</option>
+        </optgroup>
+      </select>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panelhead"><h2>Currency</h2></div>
+    <div class="field currency-field">
+      <label for="currencySearchInput">Currency</label>
+      <div class="combobox" id="currencyCombo">
+        <input type="text" id="currencySearchInput" class="combobox-input" role="combobox" aria-expanded="false" aria-controls="currencyListbox" aria-autocomplete="list" aria-haspopup="listbox" autocomplete="off" spellcheck="false" placeholder="Search currency…">
+        <svg class="combobox-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
+        <ul class="combobox-list" id="currencyListbox" role="listbox" aria-label="Currency"></ul>
+        <select id="currency" class="visually-hidden" tabindex="-1" aria-hidden="true">
+        <optgroup label="Americas">
+          <option value="USD" selected>USD - US Dollar</option>
+          <option value="CAD">CAD - Canadian Dollar</option>
+          <option value="MXN">MXN - Mexican Peso</option>
+          <option value="BRL">BRL - Brazilian Real</option>
+          <option value="ARS">ARS - Argentine Peso</option>
+          <option value="CLP">CLP - Chilean Peso</option>
+          <option value="COP">COP - Colombian Peso</option>
+          <option value="PEN">PEN - Peruvian Sol</option>
+          <option value="UYU">UYU - Uruguayan Peso</option>
+          <option value="JMD">JMD - Jamaican Dollar</option>
+        </optgroup>
+        <optgroup label="Europe">
+          <option value="EUR">EUR - Euro</option>
+          <option value="GBP">GBP - British Pound</option>
+          <option value="CHF">CHF - Swiss Franc</option>
+          <option value="SEK">SEK - Swedish Krona</option>
+          <option value="NOK">NOK - Norwegian Krone</option>
+          <option value="DKK">DKK - Danish Krone</option>
+          <option value="PLN">PLN - Polish Zloty</option>
+          <option value="CZK">CZK - Czech Koruna</option>
+          <option value="HUF">HUF - Hungarian Forint</option>
+          <option value="RON">RON - Romanian Leu</option>
+          <option value="UAH">UAH - Ukrainian Hryvnia</option>
+          <option value="RUB">RUB - Russian Ruble</option>
+          <option value="TRY">TRY - Turkish Lira</option>
+        </optgroup>
+        <optgroup label="Middle East & Africa">
+          <option value="AED">AED - UAE Dirham</option>
+          <option value="SAR">SAR - Saudi Riyal</option>
+          <option value="QAR">QAR - Qatari Riyal</option>
+          <option value="KWD">KWD - Kuwaiti Dinar</option>
+          <option value="BHD">BHD - Bahraini Dinar</option>
+          <option value="OMR">OMR - Omani Rial</option>
+          <option value="ILS">ILS - Israeli Shekel</option>
+          <option value="EGP">EGP - Egyptian Pound</option>
+          <option value="ZAR">ZAR - South African Rand</option>
+          <option value="NGN">NGN - Nigerian Naira</option>
+          <option value="KES">KES - Kenyan Shilling</option>
+          <option value="GHS">GHS - Ghanaian Cedi</option>
+        </optgroup>
+        <optgroup label="Asia Pacific">
+          <option value="AUD">AUD - Australian Dollar</option>
+          <option value="NZD">NZD - New Zealand Dollar</option>
+          <option value="JPY">JPY - Japanese Yen</option>
+          <option value="CNY">CNY - Chinese Yuan</option>
+          <option value="HKD">HKD - Hong Kong Dollar</option>
+          <option value="TWD">TWD - Taiwan Dollar</option>
+          <option value="KRW">KRW - South Korean Won</option>
+          <option value="SGD">SGD - Singapore Dollar</option>
+          <option value="INR">INR - Indian Rupee</option>
+          <option value="PKR">PKR - Pakistani Rupee</option>
+          <option value="BDT">BDT - Bangladeshi Taka</option>
+          <option value="LKR">LKR - Sri Lankan Rupee</option>
+          <option value="NPR">NPR - Nepalese Rupee</option>
+          <option value="IDR">IDR - Indonesian Rupiah</option>
+          <option value="MYR">MYR - Malaysian Ringgit</option>
+          <option value="PHP">PHP - Philippine Peso</option>
+          <option value="THB">THB - Thai Baht</option>
+          <option value="VND">VND - Vietnamese Dong</option>
+        </optgroup>
+        </select>
+      </div>
+    </div>
+  </section>
+</aside>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -449,32 +472,21 @@
     <details class="importhelp">
       <summary>How to set up your CSV / Excel file ▸</summary>
       <div class="importhelp-body">
-        <p>Put one line item per row, with a header row on top naming each column. The importer matches your headers against your current table columns (editable directly on the invoice table above) by name — plus these common aliases, so close variations still match automatically:</p>
-        <ul>
-          <li><strong>SKU</strong> — also matches: Item code, Product code, Code</li>
-          <li><strong>Description</strong> — also matches: Name, Item, Product, Course name</li>
-          <li><strong>Quantity</strong> — also matches: Qty, Net qty, Net quantity</li>
-          <li><strong>Rate</strong> — also matches: Unit price, Price, Unit rate</li>
-          <li><strong>Amount</strong> — also matches: Total, Line total</li>
+        <p>One line item per row, with a header row on top. Headers are matched by name, plus these aliases:</p>
+        <ul class="importhelp-list">
+          <li><strong>SKU</strong><span class="importhelp-aliases">Item code, Product code, Code</span></li>
+          <li><strong>Description</strong><span class="importhelp-aliases">Name, Item, Product, Course name</span></li>
+          <li><strong>Quantity</strong><span class="importhelp-aliases">Qty, Net qty, Net quantity — defaults to 1</span></li>
+          <li><strong>Rate</strong><span class="importhelp-aliases">Unit price, Price, Unit rate — or Amount ÷ Quantity</span></li>
+          <li><strong>Amount</strong><span class="importhelp-aliases">Total, Line total</span></li>
         </ul>
-        <p>Column order in the file doesn't matter — only the header names do. If a row has an Amount but no Rate, the rate is calculated for you (Amount ÷ Quantity). Missing Quantity defaults to 1. Any extra columns in the file that don't match are simply ignored.</p>
-        <p class="hint" style="margin:6px 0 0">Accepted formats: .csv, .xlsx, .xls</p>
+        <p class="hint" style="margin:6px 0 0">Column order and extra columns don't matter. Accepted: .csv, .xlsx, .xls</p>
       </div>
     </details>
     <div class="danger-zone">
       <div class="danger-zone-label">Danger zone</div>
       <button class="btn small danger" id="clearItemsBtn" type="button" style="width:100%" title="Remove every line item from this invoice">Clear all line items</button>
     </div>
-  </div>
-
-  <div class="history-panel" id="manageColumnsPanel" role="dialog" aria-label="Manage table columns">
-    <div class="history-panel-head">
-      <h2>Table columns</h2>
-      <button class="btn small" id="restoreColumnsBtn" type="button">Restore defaults</button>
-    </div>
-    <span class="hint">Add, remove, rename, reorder, resize, align or hide columns — one column can be assigned as Quantity, Rate, and Amount. Changes update the invoice table immediately. You can also drag a column header or its right edge directly on the table to reorder or resize it.</span>
-    <button class="btn small primary" id="addColumnBtn" type="button" style="width:100%;margin-top:8px">+ Add column</button>
-    <div id="columnManagerList" style="margin-top:8px"></div>
   </div>
 
   <!-- Per-column settings popover — opened from the "⋮" button rendered on

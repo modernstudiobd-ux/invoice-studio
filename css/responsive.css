@@ -1,14 +1,13 @@
-/* Responsive behavior — mobile edit/preview switcher, sidebar collapse, tablet/phone breakpoints */
-/* App header — brand + quickbar sit side by side down to tablet width; on
-   phones the subtitle line is dropped and the header stacks so Template/
-   Currency stay full-width and easy to tap. */
+/* Responsive behavior — mobile edit/preview switcher, tablet/phone breakpoints */
+/* App header — brand-only now (Template/Currency moved to the right
+   sidebar); on phones the subtitle line is dropped, then restored once the
+   header stacks and has the vertical room for it again. */
 @media (max-width:900px){
   .appheader .brand p{display:none}
 }
 @media (max-width:640px){
   .appheader{flex-direction:column;align-items:stretch;gap:8px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top))}
   .appheader .brand p{display:block}
-  .appheader .quickbar{width:100%}
   .appheader .topbar{flex-wrap:wrap;row-gap:6px}
 }
 /* Mobile edit/preview switcher — Mobile tier only (≤640px). Tablet (641–1080px)
@@ -25,40 +24,38 @@
   .tabs{display:none}
 }
 
-/* Desktop sidebar collapse — a slim floating toggle that hides the sidebar
-   entirely and hands its width back to the preview; desktop only (matches
-   the same 1080px breakpoint the sidebar-resizer already uses). */
-.sidebar-toggle{display:none}
-@media (min-width:1081px){
-  .sidebar-toggle{display:grid;place-items:center;position:fixed;top:16px;left:calc(var(--sidebar-width) - 15px);width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:#fff;box-shadow:0 4px 14px rgba(16,24,40,.14);z-index:20;font-size:13px;color:var(--ink);transition:left .18s ease}
-  .app.sidebar-collapsed{grid-template-columns:0 minmax(0,1fr)}
-  .app.sidebar-collapsed .sidebar{padding:0;border-right:0}
-  .app.sidebar-collapsed .sidebar>*{display:none}
-  .app.sidebar-collapsed .sidebar-resizer{display:none}
-  .app.sidebar-collapsed .sidebar-toggle{left:14px}
-}
-
-/* Responsive breakpoints — the sidebar and workspace are independent modules
-   that reflow from a two-column layout into a stacked layout as space shrinks. */
+/* Responsive breakpoints — the left sidebar, canvas workspace and right
+   sidebar are independent modules that reflow from a three-column layout
+   into a stacked layout as space shrinks. */
 @media (max-width:1080px){
   .app{grid-template-columns:1fr}
   .sidebar{position:static;height:auto;max-height:60vh;border-right:0;border-bottom:1px solid var(--line)}
   .sidebar-resizer{display:none}
   .workspace{padding:16px}
+  .right-sidebar{position:static;height:auto;max-height:60vh;border-left:0;border-top:1px solid var(--line)}
 }
 @media (max-width:640px){
   .grid2,.grid3,.itemgrid{grid-template-columns:1fr}
   .topbar{flex-direction:column;align-items:flex-start;gap:8px}
   .sidebar{padding:12px}
   .workspace{padding:12px}
+  .right-sidebar{padding:12px}
 
   /* Native single-panel body: the visible panel (Form or Preview) fills all
      remaining height below the top bar; the hidden one is fully removed from
      flow (see view-edit/view-preview rules above), not just scroll-limited. */
   body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
   .app{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
-  .sidebar,.workspace{flex:1 1 auto;min-height:0;max-height:none;height:auto;overflow:auto}
+  .sidebar,.workspace,.right-sidebar{flex:1 1 auto;min-height:0;max-height:none;height:auto;overflow:auto}
   .sidebar{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  .right-sidebar{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  /* The right sidebar holds canvas/document settings (Page setup,
+     Alignment, Template, Currency), so it belongs with the canvas: shown
+     together with the "Preview" tab (the actual editable invoice), hidden
+     together with the "Form" tab (the Design settings sidebar) — same
+     pairing #appRoot.view-edit/.view-preview already apply to .workspace
+     just below. */
+  #appRoot.view-edit .right-sidebar{display:none}
 
   /* Fixed bottom action bar — thumb-reachable primary actions, native-app style.
      Same buttons/IDs as desktop, just repositioned + the long tail tucked

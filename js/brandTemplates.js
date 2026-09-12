@@ -14,7 +14,6 @@
 import { $, esc, uid } from "./dom.js";
 import { state, fields, defaultColumns, defaultSections, defaultLabels, LEGACY_LABEL_MAP } from "./state.js";
 import { setAccent, applyAllOptionalColors } from "./accent.js";
-import { renderColumnManagerList } from "./columnCanvas.js";
 import { renderToggles } from "./toggles.js";
 import { renderPreview } from "./preview.js";
 import { save } from "./persistence.js";
@@ -101,7 +100,7 @@ export function applyBrandTemplate(id) {
   state.sections = { ...defaultSections(), ...(d.sections && typeof d.sections === "object" ? d.sections : {}) };
   setAccent($("accentHex").value);
   applyAllOptionalColors();
-  renderColumnManagerList(); renderToggles(); renderPreview(); save();
+  renderToggles(); renderPreview(); save();
   toast(`Loaded "${entry.name}" — client, items and invoice number are unchanged.`);
   closeTemplatesPanel();
 }
