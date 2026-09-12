@@ -5,13 +5,13 @@
 
 import { $, uid } from "./dom.js";
 import { APP_VERSION, BUILD_DATE, BUILD_STRING } from "./version.js";
-import { state, fields, defaultColumns, KEY, DEFAULT_ACCENT, serialize } from "./state.js";
+import { state, fields, KEY, DEFAULT_ACCENT, serialize } from "./state.js";
 import { today, plusDays, num } from "./format.js";
 import { toast } from "./toast.js";
 import { setAccent, applyOptionalColor, clearOptionalColor, applyAllOptionalColors } from "./accent.js";
 import { renderPreview, fitInvoiceCanvas, refreshItemRowAndTotals } from "./preview.js";
-import { renderColumns } from "./columns.js";
-import { renderItems, addItem } from "./items.js";
+import { initColumnCanvas, renderColumnManagerList } from "./columnCanvas.js";
+import { addItem } from "./items.js";
 import { renderToggles } from "./toggles.js";
 import { save, undo, redo, pushEditHistory, updateUndoRedoButtons } from "./persistence.js";
 import { load } from "./invoiceData.js";
@@ -50,11 +50,15 @@ OPTIONAL_COLOR_IDS.forEach(id => {
   $(id + "Clear").onclick = () => { clearOptionalColor(id); renderPreview(); save(); };
 });
 
-/* --- Items / columns quick actions --- */
-$("addItemBtn").onclick = () => addItem();
-$("clearItemsBtn").onclick = () => { if (confirm("Remove all line items?")) { state.items = []; renderItems(); renderPreview(); save(); } };
-$("addColumnBtn").onclick = () => { let i = state.columns.length + 1; state.columns.push({ id: uid(), key: "column_" + Date.now(), label: "Column " + i, type: "text", width: 15, align: "left", visible: true, role: "none" }); renderColumns(); renderItems(); renderPreview(); save(); };
-$("restoreColumnsBtn").onclick = () => { if (confirm("Restore the default five columns?")) { state.columns = defaultColumns(); renderColumns(); renderItems(); renderPreview(); save(); } };
+/* --- Items quick actions --- */
+$("clearItemsBtn").onclick = () => { if (confirm("Remove all line items?")) { state.items = []; renderPreview(); save(); } };
+
+/* --- Table columns: all add/remove/rename/reorder/resize/show-hide/
+   settings controls now live directly on the invoice canvas table (its
+   header row) plus the "Columns" toolbar button above it — see
+   js/columnCanvas.js, which wires its own add/restore buttons (now inside
+   #manageColumnsPanel) and every delegated header interaction. --- */
+initColumnCanvas();
 
 // Inline item editing directly on the invoice canvas table (see preview.js):
 // the "+ Add item" button (empty-state and trailing "add another" row),
@@ -71,7 +75,7 @@ document.addEventListener("click", e => {
     const idx = Number(removeBtn.dataset.idx);
     if (Number.isInteger(idx) && state.items[idx] !== undefined) {
       state.items.splice(idx, 1);
-      renderItems(); renderPreview(); save();
+      renderPreview(); save();
     }
   }
 });
@@ -90,7 +94,6 @@ document.addEventListener("input", e => {
   const col = state.columns.find(c => c.key === el.dataset.key);
   item[el.dataset.key] = col && ["number", "currency", "percentage"].includes(col.type) ? num(el.value) : el.value;
   refreshItemRowAndTotals(idx);
-  renderItems();
   save();
 });
 
@@ -157,7 +160,7 @@ $("sheetFile").onchange = async e => {
     let items = mapRows(rows);
     if (!items.length) throw Error("No usable invoice rows were found.");
     state.items = items;
-    renderItems(); renderPreview(); save();
+    renderPreview(); save();
     toast(items.length + " items imported.");
   } catch (err) { toast(err.message); }
   e.target.value = "";
@@ -173,7 +176,7 @@ $("dueDate").value = plusDays(today(), 14);
 if (!$("logoHeight").value) $("logoHeight").value = "48";
 setAccent(DEFAULT_ACCENT);
 applyAllOptionalColors();
-renderColumns(); renderItems(); renderToggles(); renderPreview();
+renderToggles(); renderPreview(); renderColumnManagerList();
 
 {
   const canvasWrapEl = document.querySelector(".canvaswrap");

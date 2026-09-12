@@ -101,6 +101,14 @@
    Preview is switched on. */
 #previewMeta{display:none}
 body.canvas-preview-mode #previewMeta{display:inline-flex}
+/* "Columns" toolbar button (js/columnCanvas.js + js/layout.js) only makes
+   sense in Edit mode — Preview is the read-only, faithful dry run of the
+   printed document, so hide the trigger the same way the canvas's own
+   "+ Add item" controls already disappear in Preview (see .add-item-btn
+   above). setCanvasMode() in layout.js also proactively closes the panel
+   the instant Preview turns on, so this is belt-and-braces, not the only
+   thing keeping the panel from being left open behind a hidden button. */
+body.canvas-preview-mode #manageColumnsToggleBtn{display:none}
 /* Edit/Preview canvas switch (js/layout.js setCanvasMode): Edit (default)
    shows every optional row/field so it's clear what's available to fill
    in, even when empty (see the "— " / "Add value" placeholders preview.js
@@ -353,6 +361,47 @@ th.item-actions-col{background:transparent!important;border:0!important}
 .statusbalance{margin-top:10px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}.statusbalance .balance{margin-top:0;width:100%}
 .billrow{margin:14px 0}.label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#667085;font-weight:850;margin-bottom:4px}.clientname{font-size:14px;font-weight:850;margin-bottom:3px}.status{display:inline-flex;flex:none;white-space:nowrap;text-align:center;padding:5px 22px 5px 9px;border-radius:999px;font-size:9.5px;font-weight:850;border:1px solid #abefc6;background-color:#ecfdf3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;background-size:11px;color:#18794e}
 .invtable{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px}.invtable th{padding:7px}.invtable th{text-transform:none;letter-spacing:.04em;font-size:8.5px;background:#f4f6f9;color:#344054;border:1px solid #cfd6e0;text-align:left}.invtable td{padding:7px;border:1px solid #d7dde6;vertical-align:top;overflow-wrap:anywhere}.invtable .right{text-align:right}.invtable .center{text-align:center}.empty{text-align:center;color:#667085;padding:18px!important}
+
+/* Editable table-column headers (js/columnCanvas.js), Edit mode only —
+   Preview/print keep the old plain <span class="col-label-text"> header
+   (see preview.js), so none of this ever reaches Preview or print output;
+   print.css also excludes it by class, belt-and-braces, the same way it
+   already excludes .item-actions-col/.add-item-btn. Each header cell reuses
+   the narrow 6%-wide slot math the per-row remove button already uses
+   (padding-left for the drag grip, padding-right for the resize handle,
+   both absolutely positioned so they never eat into the heading input's
+   own width) instead of adding new columns to the table. */
+.col-head-cell{position:relative;padding-left:16px!important;padding-right:8px!important;overflow:visible}
+.col-drag-handle{position:absolute;left:1px;top:50%;transform:translateY(-50%);width:14px;height:18px;display:flex;align-items:center;justify-content:center;color:#98a2b3;cursor:grab;touch-action:none;border-radius:3px}
+.col-drag-handle:hover{color:#667085;background:#e9ecf2}
+.col-drag-handle:focus-visible{outline:2px solid var(--app-accent);outline-offset:1px}
+.col-drag-handle .icon{width:12px;height:12px}
+.col-head-cell.col-dragging{opacity:.45}
+.col-head-row{display:flex;align-items:center;gap:2px;min-width:0}
+.col-label-input{flex:1;min-width:0;font:inherit;color:inherit;letter-spacing:inherit;background:transparent;border:none;border-radius:2px;padding:1px 2px;text-transform:none}
+.col-label-input:hover{background:rgba(16,24,40,.05)}
+.col-label-input:focus{background:#fff;outline:2px solid var(--app-accent);outline-offset:0}
+.col-menu-btn{flex:none;width:15px;height:15px;line-height:1;border:none;border-radius:3px;background:transparent;color:#667085;font-size:12px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.col-menu-btn:hover,.col-menu-btn[aria-expanded="true"]{background:#e9ecf2;color:#344054}
+.col-resize-handle{position:absolute;right:-3px;top:0;bottom:0;width:7px;cursor:col-resize;touch-action:none;z-index:1}
+.col-resize-handle:hover,.col-resize-handle.resizing{background:rgba(var(--app-accent-rgb),.25)}
+/* Trailing "+" header cell — the same reserved slot as .item-actions-col,
+   just with a real control in the header row specifically. */
+.col-actions-head{background:transparent!important;border:0!important}
+.col-add-btn{width:20px;height:20px;line-height:1;border:1px dashed #b6bfcc;border-radius:5px;background:#fbfcfe;color:var(--app-accent);font-size:13px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.col-add-btn:hover{background:#f2f4f7;border-color:#98a2b3}
+.col-add-btn:focus-visible{outline:2px solid var(--app-accent);outline-offset:1px}
+/* Drop indicator shown while dragging a header to reorder it — lives in
+   #floatingLayer (position:fixed, viewport coordinates), the same place
+   every other floating popover in the app lives, so it's never mis-placed
+   by #invoice's own zoom transform (see the #floatingLayer comment in
+   index.html) and always draws above the table regardless of scroll/zoom. */
+.col-drop-indicator{display:none;position:fixed;width:3px;background:var(--app-accent);border-radius:2px;z-index:120;pointer-events:none}
+/* Per-column "⋮" settings popover (js/columnCanvas.js) reuses the same
+   .history-panel look as every other floating popover in the app. */
+.col-settings-panel .field{margin-bottom:9px}
+.col-settings-panel .field:last-of-type{margin-bottom:0}
+
 .bottomgrid{display:grid;grid-template-columns:1fr 240px;gap:18px;margin-top:12px}.notebox{border:1px solid #d8dee7;border-radius:8px;padding:9px;background:#fbfcfe;min-height:72px}.summary{border-top:2px solid #344054;padding-top:5px}.sumrow{display:flex;justify-content:space-between;gap:14px;padding:3px 0;font-size:10.5px}.sumrow span:first-child{color:#667085}.sumrow.total{border-top:1px solid #d0d5dd;margin-top:3px;padding-top:7px;font-size:14px;font-weight:850}.paymentgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;border-top:1px solid #d9dee7;margin-top:14px;padding-top:11px}.footer{position:absolute;bottom:var(--footer-bottom,9mm);left:var(--footer-left,12mm);right:var(--footer-right,12mm);display:flex;justify-content:space-between;font-size:8.5px;color:#667085}
 .invoice.notes-align-left .notebox,.invoice.notes-align-left .paymentgrid>div{text-align:left}
 .invoice.notes-align-center .notebox,.invoice.notes-align-center .paymentgrid>div{text-align:center}

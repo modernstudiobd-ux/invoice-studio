@@ -4,6 +4,7 @@
 
 import { $ } from "./dom.js";
 import { renderPreview } from "./preview.js";
+import { renderColumnManagerList, closeColSettings } from "./columnCanvas.js";
 
 const sidebarResizer = $("sidebarResizer"), appRoot = $("appRoot");
 let resizingSidebar = false;
@@ -59,39 +60,18 @@ mvEditBtn.addEventListener("click", () => setMobileView("edit"));
 mvPreviewBtn.addEventListener("click", () => setMobileView("preview"));
 setMobileView("edit");
 
-const tabButtons = Array.from(document.querySelectorAll(".tab"));
-export function activateTab(b, focus) {
-  tabButtons.forEach(x => { let on = x === b; x.classList.toggle("active", on); x.setAttribute("aria-selected", on ? "true" : "false"); x.tabIndex = on ? 0 : -1; });
-  document.querySelectorAll(".tabpane").forEach(x => x.classList.toggle("active", x.id === "tab-" + b.dataset.tab));
-  if (focus) b.focus();
-}
-tabButtons.forEach((b, i) => {
-  b.onclick = () => activateTab(b, false);
-  b.addEventListener("keydown", e => {
-    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
-    e.preventDefault();
-    let next = i;
-    if (e.key === "ArrowLeft") next = (i - 1 + tabButtons.length) % tabButtons.length;
-    else if (e.key === "ArrowRight") next = (i + 1) % tabButtons.length;
-    else if (e.key === "Home") next = 0;
-    else if (e.key === "End") next = tabButtons.length - 1;
-    activateTab(tabButtons[next], true);
-  });
-});
-
-// In-text links that jump to another tab (e.g. "table columns" inside the
-// CSV/Excel import help panel, pointing back to the Table Columns tab).
-document.addEventListener("click", e => {
-  const link = e.target.closest("[data-goto-tab]");
-  if (!link) return;
-  e.preventDefault();
-  const tabBtn = $("tabbtn-" + link.dataset.gotoTab);
-  if (tabBtn) activateTab(tabBtn, true);
-});
+// Sidebar tab strip (Design/Table Columns/Items) has been removed — Design
+// is the only sidebar section left, so there's nothing left to switch
+// between there. The hamburger drawer's "Design" item below still exists
+// (it also holds the "Invoice actions" shortcuts on phone), it just no
+// longer needs to activate a tab — only to switch the phone Form/Preview
+// view and close itself.
 
 /* --- Mobile chrome (additive UI-only wiring; no business logic here) --- */
 
-// Hamburger drawer: switches Details/Items/Design via the existing activateTab().
+// Hamburger drawer: on phone, opens the sidebar's Design section + the
+// Invoice actions shortcuts (Save/Duplicate/History/New invoice — see
+// #invoiceToolbarSlot below).
 const hamburgerBtn = $("hamburgerBtn"), mobileDrawer = $("mobileDrawer"), drawerOverlay = $("drawerOverlay"), drawerCloseBtn = $("drawerCloseBtn");
 const drawerItems = Array.from(document.querySelectorAll(".drawer-item"));
 function openDrawer() { mobileDrawer.classList.add("open"); drawerOverlay.classList.add("show"); mobileDrawer.setAttribute("aria-hidden", "false"); hamburgerBtn.setAttribute("aria-expanded", "true"); }
@@ -100,8 +80,6 @@ hamburgerBtn.addEventListener("click", openDrawer);
 drawerCloseBtn.addEventListener("click", closeDrawer);
 drawerOverlay.addEventListener("click", closeDrawer);
 drawerItems.forEach(btn => btn.addEventListener("click", () => {
-  const tabBtn = $("tabbtn-" + btn.dataset.tab);
-  if (tabBtn) activateTab(tabBtn, false);
   drawerItems.forEach(x => x.classList.toggle("active", x === btn));
   setMobileView("edit");
   closeDrawer();
@@ -178,6 +156,11 @@ export function setCanvasMode(mode) {
   canvasModeEditBtn.setAttribute("aria-selected", String(!isPreview));
   canvasModePreviewBtn.classList.toggle("active", isPreview);
   canvasModePreviewBtn.setAttribute("aria-selected", String(isPreview));
+  // Column editing (the per-header "⋮" popover and the "Columns" manager
+  // panel) only makes sense in Edit mode — Preview shows the read-only,
+  // faithful dry run of the printed document, so close both the instant it
+  // turns on rather than leaving them floating over a now-uneditable table.
+  if (isPreview) { closeManageColumnsPanel(); closeColSettings(); }
   // Edit and Preview also render the line-items table differently (real
   // <input>s + a remove column vs. plain formatted text — see preview.js),
   // on top of sizing the canvas wrapper differently (auto-height form vs.
@@ -249,7 +232,7 @@ function positionDropdownPanel(panel, toggleBtn, maxWidth = 360) {
 // to be, so just close it — simpler and safer than recomputing position
 // continuously on scroll/resize.
 const toolbarRowEl = document.querySelector(".toolbar-row");
-function closeAllFloatingPanels() { closeHistoryPanel(); closeTemplatesPanel(); closeImportPanel(); closeLogoSettingsPanel(); }
+function closeAllFloatingPanels() { closeHistoryPanel(); closeTemplatesPanel(); closeImportPanel(); closeManageColumnsPanel(); closeLogoSettingsPanel(); }
 if (toolbarRowEl) toolbarRowEl.addEventListener("scroll", closeAllFloatingPanels, { passive: true });
 window.addEventListener("resize", closeAllFloatingPanels);
 // Escape closes whichever floating panel is open and returns focus to its
@@ -259,6 +242,7 @@ document.addEventListener("keydown", e => {
   if (historyPanel.classList.contains("open")) { closeHistoryPanel(); historyToggleBtn.focus(); }
   else if (templatesPanel.classList.contains("open")) { closeTemplatesPanel(); templatesToggleBtn.focus(); }
   else if (importPanel.classList.contains("open")) { closeImportPanel(); importToggleBtn.focus(); }
+  else if (manageColumnsPanel.classList.contains("open")) { closeManageColumnsPanel(); manageColumnsToggleBtn.focus(); }
   else if (logoSettingsPanel.classList.contains("open")) { closeLogoSettingsPanel(); logoSettingsBtn.focus(); }
 });
 
@@ -271,6 +255,7 @@ historyToggleBtn.addEventListener("click", e => {
   e.stopPropagation();
   closeTemplatesPanel();
   closeImportPanel();
+  closeManageColumnsPanel();
   closeLogoSettingsPanel();
   const open = historyPanel.classList.toggle("open");
   historyToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
@@ -299,6 +284,7 @@ templatesToggleBtn.addEventListener("click", e => {
   e.stopPropagation();
   closeHistoryPanel();
   closeImportPanel();
+  closeManageColumnsPanel();
   closeLogoSettingsPanel();
   const open = templatesPanel.classList.toggle("open");
   templatesToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
@@ -327,6 +313,7 @@ importToggleBtn.addEventListener("click", e => {
   e.stopPropagation();
   closeHistoryPanel();
   closeTemplatesPanel();
+  closeManageColumnsPanel();
   closeLogoSettingsPanel();
   const open = importPanel.classList.toggle("open");
   importToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
@@ -345,6 +332,37 @@ drawerOverlay.addEventListener("click", closeImportPanel);
 // after either is clicked instead of leaving it open.
 importPanel.querySelectorAll("button").forEach(b => b.addEventListener("click", closeImportPanel));
 
+// "Columns" dropdown — same floating-panel pattern again, for the fuller
+// table-column editor (js/columnCanvas.js owns the header-cell controls
+// that handle most column edits directly on the canvas table; this panel
+// is for bulk work and for re-showing a column that was hidden, since a
+// hidden column has no header left to click). Its list is re-rendered on
+// every open so it always reflects whatever was just changed via drag,
+// resize, rename or the per-column "⋮" popover on the table itself.
+const manageColumnsToggleBtn = $("manageColumnsToggleBtn"), manageColumnsPanel = $("manageColumnsPanel");
+export function closeManageColumnsPanel() {
+  manageColumnsPanel.classList.remove("open");
+  manageColumnsToggleBtn.setAttribute("aria-expanded", "false");
+  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !historyPanel.classList.contains("open") && !templatesPanel.classList.contains("open") && !importPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
+}
+manageColumnsToggleBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  closeHistoryPanel();
+  closeTemplatesPanel();
+  closeImportPanel();
+  closeLogoSettingsPanel();
+  const open = manageColumnsPanel.classList.toggle("open");
+  manageColumnsToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) { renderColumnManagerList(); positionDropdownPanel(manageColumnsPanel, manageColumnsToggleBtn); }
+  if (phoneQuery.matches) {
+    mobileDrawer.classList.remove("open");
+    hamburgerBtn.setAttribute("aria-expanded", "false");
+    drawerOverlay.classList.toggle("show", open);
+  }
+});
+document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(manageColumnsPanel) && !path.includes(manageColumnsToggleBtn)) closeManageColumnsPanel(); });
+drawerOverlay.addEventListener("click", closeManageColumnsPanel);
+
 // Logo settings popover, anchored to the "Logo settings" trigger next to
 // the logo on the invoice canvas itself (not the toolbar row above it) —
 // same floating-panel pattern again, so selecting/resizing/positioning the
@@ -361,6 +379,7 @@ logoSettingsBtn.addEventListener("click", e => {
   closeHistoryPanel();
   closeTemplatesPanel();
   closeImportPanel();
+  closeManageColumnsPanel();
   const open = logoSettingsPanel.classList.toggle("open");
   logoSettingsBtn.setAttribute("aria-expanded", open ? "true" : "false");
   if (open) positionDropdownPanel(logoSettingsPanel, logoSettingsBtn, 280);

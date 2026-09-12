@@ -4,8 +4,7 @@
 import { $, uid } from "./dom.js";
 import { state, fields, defaultColumns, defaultSections, defaultLabels, LEGACY_LABEL_MAP } from "./state.js";
 import { setAccent, applyAllOptionalColors } from "./accent.js";
-import { renderColumns } from "./columns.js";
-import { renderItems } from "./items.js";
+import { renderColumnManagerList } from "./columnCanvas.js";
 import { renderToggles } from "./toggles.js";
 import { renderPreview } from "./preview.js";
 import { save } from "./persistence.js";
@@ -31,5 +30,5 @@ export function load(d) {
   state.columns = cleanColumns.length ? cleanColumns : defaultColumns();
   state.items = Array.isArray(d.items) ? d.items.filter(i => i && typeof i === "object") : [];
   state.sections = { ...defaultSections(), ...(d.sections && typeof d.sections === "object" ? d.sections : {}) };
-  setAccent($("accentHex").value); applyAllOptionalColors(); renderColumns(); renderItems(); renderToggles(); renderPreview(); save();
+  setAccent($("accentHex").value); applyAllOptionalColors(); renderColumnManagerList(); renderToggles(); renderPreview(); save();
 }

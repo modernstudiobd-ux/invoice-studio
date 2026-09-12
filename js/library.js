@@ -8,9 +8,9 @@ import { calc } from "./calc.js";
 import { toast } from "./toast.js";
 import { load } from "./invoiceData.js";
 import { renderPreview } from "./preview.js";
-import { renderItems } from "./items.js";
+
 import { save } from "./persistence.js";
-import { activateTab, setMobileView, closeHistoryPanel } from "./layout.js";
+import { setMobileView, closeHistoryPanel } from "./layout.js";
 
 export const LIBRARY_KEY = "invoiceStudio.library.v1", CURRENT_ID_KEY = "invoiceStudio.currentId.v1";
 
@@ -80,8 +80,6 @@ export function openInvoiceById(id) {
   setCurrentId(id);
   load(entry.snapshot);
   renderHistory();
-  const tabBtn = $("tabbtn-design");
-  if (tabBtn) activateTab(tabBtn, false);
   setMobileView("edit");
   closeHistoryPanel();
   toast("Opened " + (entry.invoiceNumber || "invoice") + ".");
@@ -150,7 +148,7 @@ export function newInvoice() {
   $("discount").value = "0"; $("tax").value = "0"; $("shipping").value = "0";
   $("notes").value = "";
   state.items = [];
-  renderItems(); renderPreview(); save();
+  renderPreview(); save();
   renderHistory();
   toast("New invoice started — " + $("invoiceNumber").value);
 }

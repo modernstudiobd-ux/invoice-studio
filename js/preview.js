@@ -6,6 +6,7 @@ import { money, alignClass, fmtCell, num } from "./format.js";
 import { calc, itemValue } from "./calc.js";
 import { applyAllOptionalColors } from "./accent.js";
 import { syncCurrencyDisplay } from "./currencySearch.js";
+import { buildColumnHeaderHtml, buildAddColumnHeaderHtml } from "./columnCanvas.js";
 
 // Writes text into a preview element — a thin wrapper kept mainly so every
 // preview text update goes through one place (guards against a missing
@@ -123,8 +124,15 @@ export function renderPreview() {
     $("pCols").innerHTML = colsHtml;
   }
   {
-    let headersHtml = visible.map(c => `<th class="${alignClass(c.align)}"><span class="col-label-text">${esc(c.label)}</span></th>`).join("");
-    if (!isPreviewMode) headersHtml += `<th class="item-actions-col" aria-hidden="true"></th>`;
+    // Preview/print keep the old plain, non-interactive header text (a
+    // faithful dry run of the printed output). Edit mode's headers are real
+    // controls — rename in place, drag to reorder, drag the right edge to
+    // resize, "⋮" for type/alignment/role/hide/remove — see
+    // js/columnCanvas.js, which owns everything about column editing so it
+    // stays out of Preview/Print's own rendering path entirely.
+    let headersHtml = isPreviewMode
+      ? visible.map(c => `<th class="${alignClass(c.align)}"><span class="col-label-text">${esc(c.label)}</span></th>`).join("")
+      : visible.map(c => buildColumnHeaderHtml(c)).join("") + buildAddColumnHeaderHtml();
     $("pHeaders").innerHTML = headersHtml;
   }
 
