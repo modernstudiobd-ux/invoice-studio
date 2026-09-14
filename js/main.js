@@ -21,7 +21,7 @@ import { parseCSV, mapRows, ensureXLSX } from "./importSheet.js";
 import { printInvoice } from "./print.js";
 import { initInstallPrompt, registerServiceWorker } from "./install.js";
 import { naturalLogoHeight, handleLogoFile, removeLogo } from "./logo.js";
-// layout.js self-wires its own listeners on import (tabs, sidebar, mobile drawer, etc.)
+// layout.js self-wires its own listeners on import (sidebar resize, mobile view switch, floating panels, etc.)
 import "./layout.js";
 
 /* --- Form field bindings: any change to a tracked field re-renders +
@@ -195,16 +195,35 @@ renderHistory();
 renderBrandTemplates();
 
 /* --- Save / Duplicate / New / Undo / Redo buttons --- */
-let saveStatusTimer = null;
-function markSaved() {
+// #saveStatus is a persistent "autosaved just now / Xm ago" indicator (like
+// the reference UI's "Saved 2 min ago"), reflecting the continuous
+// autosave-on-every-edit that already happens via save() in
+// js/persistence.js — not a one-off flash tied to the "Save" button below.
+// That button does something more specific (snapshotting to Saved
+// Invoices, js/library.js), and keeps its own feedback via toast() instead,
+// so the two forms of "saved" aren't conflated.
+function formatSavedAgo(ts) {
+  const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+  if (s < 10) return "Saved just now";
+  if (s < 60) return `Saved ${s}s ago`;
+  const m = Math.round(s / 60);
+  if (m < 60) return `Saved ${m} min ago`;
+  const h = Math.round(m / 60);
+  return `Saved ${h}h ago`;
+}
+function refreshSaveStatus() {
   const el = $("saveStatus");
   if (!el) return;
-  el.textContent = "✓ Saved " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const ts = Number(localStorage.getItem("invoiceStudio.lastSavedAt"));
+  if (!ts) { el.classList.remove("show"); return; }
+  el.textContent = formatSavedAgo(ts);
   el.classList.add("show");
-  clearTimeout(saveStatusTimer);
-  saveStatusTimer = setTimeout(() => el.classList.remove("show"), 4000);
 }
-$("saveInvoiceBtn").onclick = () => { saveToHistory(); markSaved(); toast("Saved to Saved Invoices."); };
+window.addEventListener("invoicestudio:autosaved", refreshSaveStatus);
+refreshSaveStatus();
+setInterval(refreshSaveStatus, 15000);
+
+$("saveInvoiceBtn").onclick = () => { saveToHistory(); toast("Saved to Saved Invoices."); };
 $("duplicateInvoiceBtn").onclick = () => duplicateCurrentInvoice();
 $("newInvoiceBtn").onclick = () => newInvoice();
 $("clearHistoryBtn").onclick = () => clearLibrary();

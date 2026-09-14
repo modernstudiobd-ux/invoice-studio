@@ -6,7 +6,11 @@ import { KEY, serialize } from "./state.js";
 import { toast } from "./toast.js";
 
 export function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(serialize())); }
+  try {
+    localStorage.setItem(KEY, JSON.stringify(serialize()));
+    localStorage.setItem("invoiceStudio.lastSavedAt", String(Date.now()));
+    window.dispatchEvent(new CustomEvent("invoicestudio:autosaved"));
+  }
   catch { toast("Could not save locally — your browser's storage may be full (try a smaller logo)."); }
   pushEditHistory();
 }

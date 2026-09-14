@@ -1,16 +1,21 @@
 // layout.js — all the "app chrome" wiring: resizable sidebar, desktop tabs,
-// mobile edit/preview switcher + drawer + fullscreen preview, and the phone
-// bottom-bar "more actions" popover. No invoice business logic.
+// mobile edit/preview switcher + fullscreen preview, and the phone-width
+// overlay behind floating panels. No invoice business logic.
 
 import { $ } from "./dom.js";
-import { renderPreview } from "./preview.js";
+import { renderPreview, fitInvoiceCanvas } from "./preview.js";
 import { closeColSettings } from "./columnCanvas.js";
 
+// Resizes the Design panel (right sidebar) — moved here from the left nav
+// (see the comment on #sidebarResizer in index.html). Width is computed
+// from distance to the *right* edge of the window, since the resizer now
+// sits on the Design panel's left edge rather than the old left sidebar's
+// right edge.
 const sidebarResizer = $("sidebarResizer"), appRoot = $("appRoot");
 let resizingSidebar = false;
-const savedSidebarWidth = Number(localStorage.getItem("invoiceStudio.sidebarWidth"));
-if (savedSidebarWidth >= 260 && savedSidebarWidth <= 720) {
-  document.documentElement.style.setProperty("--sidebar-width", savedSidebarWidth + "px");
+const savedSidebarWidth = Number(localStorage.getItem("invoiceStudio.rightSidebarWidth"));
+if (savedSidebarWidth >= 240 && savedSidebarWidth <= 480) {
+  document.documentElement.style.setProperty("--right-sidebar-width", savedSidebarWidth + "px");
 }
 sidebarResizer.addEventListener("mousedown", e => {
   if (window.innerWidth <= 1180) return;
@@ -21,9 +26,9 @@ sidebarResizer.addEventListener("mousedown", e => {
 });
 window.addEventListener("mousemove", e => {
   if (!resizingSidebar) return;
-  const width = Math.max(260, Math.min(720, e.clientX));
-  document.documentElement.style.setProperty("--sidebar-width", width + "px");
-  localStorage.setItem("invoiceStudio.sidebarWidth", String(width));
+  const width = Math.max(240, Math.min(480, window.innerWidth - e.clientX));
+  document.documentElement.style.setProperty("--right-sidebar-width", width + "px");
+  localStorage.setItem("invoiceStudio.rightSidebarWidth", String(width));
 });
 window.addEventListener("mouseup", () => {
   if (!resizingSidebar) return;
@@ -32,8 +37,8 @@ window.addEventListener("mouseup", () => {
   sidebarResizer.classList.remove("dragging");
 });
 sidebarResizer.addEventListener("dblclick", () => {
-  document.documentElement.style.setProperty("--sidebar-width", "300px");
-  localStorage.setItem("invoiceStudio.sidebarWidth", "300");
+  document.documentElement.style.setProperty("--right-sidebar-width", "280px");
+  localStorage.setItem("invoiceStudio.rightSidebarWidth", "280");
 });
 
 const mvEditBtn = $("mvEditBtn"), mvPreviewBtn = $("mvPreviewBtn");
@@ -49,49 +54,16 @@ mvEditBtn.addEventListener("click", () => setMobileView("edit"));
 mvPreviewBtn.addEventListener("click", () => setMobileView("preview"));
 setMobileView("edit");
 
-// Sidebar tab strip (Design/Table Columns/Items) has been removed — Design
-// is the only sidebar section left, so there's nothing left to switch
-// between there. The hamburger drawer's "Design" item below still exists
-// (it also holds the "Invoice actions" shortcuts on phone), it just no
-// longer needs to activate a tab — only to switch the phone Form/Preview
-// view and close itself.
-
 /* --- Mobile chrome (additive UI-only wiring; no business logic here) --- */
 
-// Hamburger drawer: on phone, opens the sidebar's Design section + the
-// Invoice actions shortcuts (Save/Duplicate/History/New invoice — see
-// #invoiceToolbarSlot below).
-const hamburgerBtn = $("hamburgerBtn"), mobileDrawer = $("mobileDrawer"), drawerOverlay = $("drawerOverlay"), drawerCloseBtn = $("drawerCloseBtn");
-const drawerItems = Array.from(document.querySelectorAll(".drawer-item"));
-function openDrawer() { mobileDrawer.classList.add("open"); drawerOverlay.classList.add("show"); mobileDrawer.setAttribute("aria-hidden", "false"); hamburgerBtn.setAttribute("aria-expanded", "true"); }
-function closeDrawer() { mobileDrawer.classList.remove("open"); drawerOverlay.classList.remove("show"); mobileDrawer.setAttribute("aria-hidden", "true"); hamburgerBtn.setAttribute("aria-expanded", "false"); }
-hamburgerBtn.addEventListener("click", openDrawer);
-drawerCloseBtn.addEventListener("click", closeDrawer);
-drawerOverlay.addEventListener("click", closeDrawer);
-drawerItems.forEach(btn => btn.addEventListener("click", () => {
-  drawerItems.forEach(x => x.classList.toggle("active", x === btn));
-  setMobileView("edit");
-  closeDrawer();
-}));
-
-// Invoice actions (Save / Duplicate / History / New invoice): on phone widths
-// these move into the hamburger drawer instead of sitting in a row above the
-// preview, where they wrapped onto multiple lines and ate vertical space.
-// Desktop/tablet keep the original row above the canvas, untouched.
-const invoiceToolbar = $("invoiceToolbar"), invoiceToolbarAnchor = $("invoiceToolbarAnchor"), invoiceToolbarSlot = $("invoiceToolbarSlot");
+// On phone widths, every floating panel (Saved Invoices, Brand Templates,
+// Import Items) opens as its own centered card instead of anchored under
+// its button (too little room to anchor a dropdown in a single-column
+// layout) — see the .history-panel override in responsive.css. This dimmed
+// backdrop sits behind that card: tapping it dismisses the panel, the same
+// way tapping outside any dropdown already does on desktop.
+const panelOverlay = $("panelOverlay");
 const phoneQuery = window.matchMedia("(max-width:640px)");
-function placeInvoiceToolbar(isPhone) {
-  if (isPhone) invoiceToolbarSlot.appendChild(invoiceToolbar);
-  else invoiceToolbarAnchor.after(invoiceToolbar);
-}
-placeInvoiceToolbar(phoneQuery.matches);
-phoneQuery.addEventListener("change", e => placeInvoiceToolbar(e.matches));
-
-// Tapping Save/Duplicate/New invoice inside the drawer should feel like a
-// normal menu action: perform it, then dismiss the drawer.
-["saveInvoiceBtn", "duplicateInvoiceBtn", "newInvoiceBtn", "saveTemplateBtn"].forEach(id => {
-  $(id).addEventListener("click", () => { if (phoneQuery.matches) closeDrawer(); });
-});
 
 // Fullscreen preview: hides all mobile chrome and gives the invoice the full viewport.
 const expandPreviewBtn = $("expandPreviewBtn"), exitFullscreenBtn = $("exitFullscreenBtn");
@@ -162,7 +134,9 @@ export function setCanvasMode(mode) {
 canvasModeEditBtn.addEventListener("click", () => setCanvasMode("edit"));
 canvasModePreviewBtn.addEventListener("click", () => setCanvasMode("preview"));
 
-// Bottom-bar "more actions" popover — same Export/Import/Reset buttons, just tucked away on phone.
+// Header "more actions" overflow menu (Import JSON / Reset) — same
+// dropdown pattern as History/Templates below: toggle open, close on an
+// outside click or on picking one of its own buttons.
 const actionsMoreBtn = $("actionsMoreBtn"), actionsMorePanel = $("actionsMorePanel");
 function closeActionsMore() { actionsMorePanel.classList.remove("open"); actionsMoreBtn.setAttribute("aria-expanded", "false"); }
 actionsMoreBtn.addEventListener("click", e => {
@@ -176,10 +150,6 @@ actionsMoreBtn.addEventListener("click", e => {
 // would wrongly say "outside" in that case, since the original node is gone.
 document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(actionsMorePanel) && !path.includes(actionsMoreBtn)) closeActionsMore(); });
 actionsMorePanel.querySelectorAll("button").forEach(b => b.addEventListener("click", closeActionsMore));
-
-// Saved-invoices "History" dropdown, positioned above the preview alongside
-// Save/Duplicate/New invoice (replaces the old sidebar History tab).
-const historyToggleBtn = $("historyToggleBtn"), historyPanel = $("historyPanel");
 
 // Anchors a .history-panel below its toggle button using fixed positioning
 // computed from the button's actual on-screen position, instead of relying
@@ -241,101 +211,62 @@ function positionDropdownPanel(panel, toggleBtn, maxWidth = 360) {
     panel.style.maxHeight = Math.max(minHeight, spaceBelow) + "px";
   }
 }
-// Horizontally scrolling the toolbar row, or resizing the window, would
-// leave an already-open panel visually anchored to where its button used
-// to be, so just close it — simpler and safer than recomputing position
-// continuously on scroll/resize.
-const toolbarRowEl = document.querySelector(".toolbar-row");
-function closeAllFloatingPanels() { closeHistoryPanel(); closeTemplatesPanel(); closeImportPanel(); closeLogoSettingsPanel(); }
-if (toolbarRowEl) toolbarRowEl.addEventListener("scroll", closeAllFloatingPanels, { passive: true });
-window.addEventListener("resize", closeAllFloatingPanels);
-// Escape closes whichever floating panel is open and returns focus to its
-// trigger button — standard keyboard behavior for popovers/menus.
-document.addEventListener("keydown", e => {
-  if (e.key !== "Escape") return;
-  if (historyPanel.classList.contains("open")) { closeHistoryPanel(); historyToggleBtn.focus(); }
-  else if (templatesPanel.classList.contains("open")) { closeTemplatesPanel(); templatesToggleBtn.focus(); }
-  else if (importPanel.classList.contains("open")) { closeImportPanel(); importToggleBtn.focus(); }
-  else if (logoSettingsPanel.classList.contains("open")) { closeLogoSettingsPanel(); logoSettingsBtn.focus(); }
-});
 
-export function closeHistoryPanel() {
-  historyPanel.classList.remove("open");
-  historyToggleBtn.setAttribute("aria-expanded", "false");
-  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !templatesPanel.classList.contains("open") && !importPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
-}
-historyToggleBtn.addEventListener("click", e => {
-  e.stopPropagation();
-  closeTemplatesPanel();
-  closeImportPanel();
-  closeLogoSettingsPanel();
-  const open = historyPanel.classList.toggle("open");
-  historyToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
-  if (open) positionDropdownPanel(historyPanel, historyToggleBtn);
-  // On phone widths the panel opens as its own centered card (the drawer is
-  // too narrow to anchor a dropdown under the button), so hide the sections
-  // drawer but keep a dimmed backdrop behind the card.
-  if (phoneQuery.matches) {
-    mobileDrawer.classList.remove("open");
-    hamburgerBtn.setAttribute("aria-expanded", "false");
-    drawerOverlay.classList.toggle("show", open);
+// Every toolbar/nav "click to open a small floating panel" control (Saved
+// Invoices, Brand Templates, Import Items, Logo settings, Settings, Help &
+// Support) shares this one registry instead of each hand-wiring calls to
+// close every sibling by name — opening any one closes the rest, Escape
+// closes whichever is open, and a phone-width backdrop shows behind
+// whichever one is up, all from one place. New panels of this kind (like
+// Settings/Help below) just call registerDropdown() once instead of
+// touching four existing handlers to add themselves to each other's
+// "close my siblings" list.
+const dropdowns = [];
+function registerDropdown(toggleBtn, panel, { maxWidth = 360 } = {}) {
+  function close() {
+    panel.classList.remove("open");
+    toggleBtn.setAttribute("aria-expanded", "false");
+    if (phoneQuery.matches && !dropdowns.some(d => d.panel !== panel && d.panel.classList.contains("open"))) {
+      panelOverlay.classList.remove("show");
+    }
   }
-});
-document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(historyPanel) && !path.includes(historyToggleBtn)) closeHistoryPanel(); });
-drawerOverlay.addEventListener("click", closeHistoryPanel);
+  function open() {
+    dropdowns.forEach(d => { if (d.panel !== panel) d.close(); });
+    const nowOpen = panel.classList.toggle("open");
+    toggleBtn.setAttribute("aria-expanded", nowOpen ? "true" : "false");
+    if (nowOpen) positionDropdownPanel(panel, toggleBtn, maxWidth);
+    if (phoneQuery.matches) panelOverlay.classList.toggle("show", nowOpen);
+    return nowOpen;
+  }
+  toggleBtn.addEventListener("click", e => { e.stopPropagation(); open(); });
+  document.addEventListener("click", e => {
+    const path = e.composedPath();
+    if (!path.includes(panel) && !path.includes(toggleBtn)) close();
+  });
+  panelOverlay.addEventListener("click", close);
+  const entry = { toggleBtn, panel, open, close };
+  dropdowns.push(entry);
+  return entry;
+}
 
-// Brand "Templates" dropdown — same pattern as History above, for saving/
-// reusing company info + design across different companies/personal brands.
-const templatesToggleBtn = $("templatesToggleBtn"), templatesPanel = $("templatesPanel");
-export function closeTemplatesPanel() {
-  templatesPanel.classList.remove("open");
-  templatesToggleBtn.setAttribute("aria-expanded", "false");
-  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !historyPanel.classList.contains("open") && !importPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
-}
-templatesToggleBtn.addEventListener("click", e => {
-  e.stopPropagation();
-  closeHistoryPanel();
-  closeImportPanel();
-  closeLogoSettingsPanel();
-  const open = templatesPanel.classList.toggle("open");
-  templatesToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
-  if (open) positionDropdownPanel(templatesPanel, templatesToggleBtn);
-  if (phoneQuery.matches) {
-    mobileDrawer.classList.remove("open");
-    hamburgerBtn.setAttribute("aria-expanded", "false");
-    drawerOverlay.classList.toggle("show", open);
-  }
-});
-document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(templatesPanel) && !path.includes(templatesToggleBtn)) closeTemplatesPanel(); });
-drawerOverlay.addEventListener("click", closeTemplatesPanel);
+// Saved-invoices "History" dropdown, positioned above the preview alongside
+// Save/Duplicate/New invoice (replaces the old sidebar History tab).
+const historyEntry = registerDropdown($("historyToggleBtn"), $("historyPanel"));
+const historyToggleBtn = historyEntry.toggleBtn, historyPanel = historyEntry.panel;
+export function closeHistoryPanel() { historyEntry.close(); }
+
+// Brand "Templates" dropdown — same pattern, for saving/reusing company
+// info + design across different companies/personal brands.
+const templatesEntry = registerDropdown($("templatesToggleBtn"), $("templatesPanel"));
+const templatesToggleBtn = templatesEntry.toggleBtn, templatesPanel = templatesEntry.panel;
+export function closeTemplatesPanel() { templatesEntry.close(); }
 
 // "Import Items" dropdown (CSV/Excel import + its how-to tutorial + the
-// destructive "Clear all line items" action) — same floating-panel pattern
-// as History/Templates above, now living in the main Edit Canvas toolbar
-// instead of buried in the Items tab, where an import/clear action is
-// easy to miss and doesn't read as belonging to the canvas toolbar at all.
-const importToggleBtn = $("importToggleBtn"), importPanel = $("importPanel");
-export function closeImportPanel() {
-  importPanel.classList.remove("open");
-  importToggleBtn.setAttribute("aria-expanded", "false");
-  if (phoneQuery.matches && !mobileDrawer.classList.contains("open") && !historyPanel.classList.contains("open") && !templatesPanel.classList.contains("open")) drawerOverlay.classList.remove("show");
-}
-importToggleBtn.addEventListener("click", e => {
-  e.stopPropagation();
-  closeHistoryPanel();
-  closeTemplatesPanel();
-  closeLogoSettingsPanel();
-  const open = importPanel.classList.toggle("open");
-  importToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
-  if (open) positionDropdownPanel(importPanel, importToggleBtn);
-  if (phoneQuery.matches) {
-    mobileDrawer.classList.remove("open");
-    hamburgerBtn.setAttribute("aria-expanded", "false");
-    drawerOverlay.classList.toggle("show", open);
-  }
-});
-document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(importPanel) && !path.includes(importToggleBtn)) closeImportPanel(); });
-drawerOverlay.addEventListener("click", closeImportPanel);
+// destructive "Clear all line items" action) — lives in the line-items
+// table toolbar, right above the table it acts on.
+const importEntry = registerDropdown($("importToggleBtn"), $("importPanel"));
+const importToggleBtn = importEntry.toggleBtn, importPanel = importEntry.panel;
+export function closeImportPanel() { importEntry.close(); }
 // Both actions inside are one-shot (open a file picker, or clear-with-
 // confirm) rather than a list of items to keep working through, so — same
 // convention as the phone "more actions" popover — close the panel right
@@ -344,8 +275,7 @@ importPanel.querySelectorAll("button").forEach(b => b.addEventListener("click", 
 // Re-run positioning when the CSV/Excel tutorial accordion opens or closes:
 // it changes the panel's content height well after positionDropdownPanel()
 // first ran (on open), so without this the panel's remembered position/
-// max-height goes stale the moment the tutorial expands — see the long
-// comment on positionDropdownPanel() above for the full story.
+// max-height goes stale the moment the tutorial expands.
 const importHelpDetails = importPanel.querySelector(".importhelp");
 if (importHelpDetails) {
   importHelpDetails.addEventListener("toggle", () => {
@@ -359,21 +289,37 @@ if (importHelpDetails) {
 // logo follows the same "click to open a small property panel" convention
 // as every other tool in the app instead of a permanent row of controls
 // crowding the invoice header at all times.
-const logoSettingsBtn = $("logoSettingsBtn"), logoSettingsPanel = $("logoSettingsPanel");
-export function closeLogoSettingsPanel() {
-  logoSettingsPanel.classList.remove("open");
-  logoSettingsBtn.setAttribute("aria-expanded", "false");
-}
-logoSettingsBtn.addEventListener("click", e => {
-  e.stopPropagation();
-  closeHistoryPanel();
-  closeTemplatesPanel();
-  closeImportPanel();
-  const open = logoSettingsPanel.classList.toggle("open");
-  logoSettingsBtn.setAttribute("aria-expanded", open ? "true" : "false");
-  if (open) positionDropdownPanel(logoSettingsPanel, logoSettingsBtn, 280);
+const logoEntry = registerDropdown($("logoSettingsBtn"), $("logoSettingsPanel"), { maxWidth: 280 });
+const logoSettingsBtn = logoEntry.toggleBtn, logoSettingsPanel = logoEntry.panel;
+export function closeLogoSettingsPanel() { logoEntry.close(); }
+
+// Settings and Help & Support — the two remaining nav rows from the
+// reference UI. Neither wraps a hidden existing feature the way New
+// Invoice/Load Invoice/Brand Templates do, so each opens a small, honest
+// panel instead of pretending to control something that isn't there yet:
+// Settings says plainly that there's nothing to configure yet (every
+// preference that does exist already lives in the Design panel), and Help
+// is real, current documentation of this app's own less-obvious
+// interactions — not a placeholder link to a support channel that doesn't
+// exist.
+registerDropdown($("settingsToggleBtn"), $("settingsPanel"), { maxWidth: 300 });
+registerDropdown($("helpToggleBtn"), $("helpPanel"), { maxWidth: 320 });
+
+// Horizontally scrolling the toolbar row, or resizing the window, would
+// leave an already-open panel visually anchored to where its button used
+// to be, so just close it — simpler and safer than recomputing position
+// continuously on scroll/resize.
+const toolbarRowEl = document.querySelector(".toolbar-row");
+function closeAllFloatingPanels() { dropdowns.forEach(d => d.close()); }
+if (toolbarRowEl) toolbarRowEl.addEventListener("scroll", closeAllFloatingPanels, { passive: true });
+window.addEventListener("resize", closeAllFloatingPanels);
+// Escape closes whichever floating panel is open and returns focus to its
+// trigger button — standard keyboard behavior for popovers/menus.
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  const openEntry = dropdowns.find(d => d.panel.classList.contains("open"));
+  if (openEntry) { openEntry.close(); openEntry.toggleBtn.focus(); }
 });
-document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(logoSettingsPanel) && !path.includes(logoSettingsBtn)) closeLogoSettingsPanel(); });
 
 // Collapsible sections — tap a panel heading to expand/collapse it. Color
 // and Show/hide sections both start expanded (see index.html) since their
@@ -385,3 +331,18 @@ document.querySelectorAll(".panelhead").forEach(h => {
     if (panel) panel.classList.toggle("collapsed");
   });
 });
+
+// Right Sidebar ("Design") collapse — the reference UI shows a close (X)
+// in the panel's own header; closing it hands its width back to the
+// canvas, and the small "Design" toggle that appears in the canvas
+// toolbar (see .design-reopen-btn in index.html/invoice.css) brings it
+// back. Purely a layout/visibility toggle — nothing it contains changes.
+const rightSidebar = $("rightSidebar"), designCloseBtn = $("designCloseBtn"), designReopenBtn = $("designReopenBtn");
+function setDesignPanelOpen(open) {
+  appRoot.classList.toggle("design-closed", !open);
+  localStorage.setItem("invoiceStudio.designPanelOpen", open ? "1" : "0");
+  fitInvoiceCanvas();
+}
+if (designCloseBtn) designCloseBtn.addEventListener("click", () => setDesignPanelOpen(false));
+if (designReopenBtn) designReopenBtn.addEventListener("click", () => setDesignPanelOpen(true));
+setDesignPanelOpen(localStorage.getItem("invoiceStudio.designPanelOpen") !== "0");

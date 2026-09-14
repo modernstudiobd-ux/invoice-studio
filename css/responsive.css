@@ -1,7 +1,8 @@
 /* Responsive behavior — mobile edit/preview switcher, tablet/phone breakpoints */
-/* App header — brand-only now (Template/Currency moved to the right
-   sidebar); on phones the subtitle line is dropped, then restored once the
-   header stacks and has the vertical room for it again. */
+/* App header — brand-only now (Template/Currency moved to the canvas
+   toolbar, everything else to the Design panel); on phones the subtitle
+   line is dropped, then restored once the header stacks and has the
+   vertical room for it again. */
 @media (max-width:900px){
   .appheader .brand p{display:none}
 }
@@ -9,6 +10,8 @@
   .appheader{flex-direction:column;align-items:stretch;gap:8px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top))}
   .appheader .brand p{display:block}
   .appheader .topbar{flex-wrap:wrap;row-gap:6px}
+  .header-actions{width:100%}
+  .save-status{width:100%;justify-content:center;order:-1}
 }
 /* Mobile edit/preview switcher — Mobile tier only (≤640px). Tablet (641–1080px)
    keeps both panels stacked and visible; only true phone widths need to show
@@ -24,15 +27,16 @@
   .tabs{display:none}
 }
 
-/* Responsive breakpoints — the left sidebar, canvas workspace and right
-   sidebar are independent modules that reflow from a three-column layout
-   into a stacked layout as space shrinks. */
+/* Responsive breakpoints — the left nav, canvas workspace and Design panel
+   are independent modules that reflow from a three-column layout into a
+   stacked layout as space shrinks. */
 @media (max-width:1080px){
-  .app{grid-template-columns:1fr}
+  .app,.app.design-closed{grid-template-columns:1fr}
   .sidebar{position:static;height:auto;max-height:60vh;border-right:0;border-bottom:1px solid var(--line)}
   .sidebar-resizer{display:none}
   .workspace{padding:16px}
   .right-sidebar{position:static;height:auto;max-height:60vh;border-left:0;border-top:1px solid var(--line)}
+  .app.design-closed .right-sidebar{display:none}
 }
 @media (max-width:640px){
   .grid2,.grid3,.itemgrid{grid-template-columns:1fr}
@@ -49,67 +53,18 @@
   .sidebar,.workspace,.right-sidebar{flex:1 1 auto;min-height:0;max-height:none;height:auto;overflow:auto}
   .sidebar{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
   .right-sidebar{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
-  /* The right sidebar holds canvas/document settings (Page setup,
-     Alignment, Template, Currency), so it belongs with the canvas: shown
-     together with the "Preview" tab (the actual editable invoice), hidden
-     together with the "Form" tab (the Design settings sidebar) — same
-     pairing #appRoot.view-edit/.view-preview already apply to .workspace
-     just below. */
+  /* The right (Design) sidebar holds canvas/document settings (Page setup,
+     Alignment, Template, Colors, Show/Hide), so it belongs with the canvas:
+     shown together with the "Preview" tab (the actual editable invoice),
+     hidden together with the "Form" tab (the nav sidebar) — same pairing
+     #appRoot.view-edit/.view-preview already apply to .workspace below.
+     The manual close/reopen toggle (#designCloseBtn/#designReopenBtn)
+     still layers on top of this at any width. */
   #appRoot.view-edit .right-sidebar{display:none}
+  .design-reopen-btn{display:none!important}
 
-  /* Fixed bottom action bar — thumb-reachable primary actions, native-app style.
-     Same buttons/IDs as desktop, just repositioned + the long tail tucked
-     behind a "more" popover so the bar stays clean at phone width. */
-  .actions{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);padding:9px 10px calc(9px + env(safe-area-inset-bottom));margin:0;box-shadow:0 -6px 20px rgba(16,24,40,.08);width:auto}
-  .actions .btn{flex:1 1 0}
-  .actions #jsonFile{flex:none}
-  .actions-more-toggle{display:grid!important;place-items:center;flex:0 0 auto!important;width:40px;padding:0!important}
-  .actions-more{position:absolute;right:10px;bottom:calc(100% + 8px);background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 14px 34px rgba(16,24,40,.18);padding:6px;display:none;flex-direction:column;gap:4px;min-width:170px}
-  .actions-more.open{display:flex}
-  .actions-more .btn{width:100%;text-align:left}
-
-  /* Collapsible sections now apply at every width (see .panelhead/.panel.collapsed
-     in base.css) — nothing phone-specific needed here anymore. */
-
-  /* Card-based line items — roomier touch targets on phone. */
-  .itemcard{padding:12px;border-radius:12px}
-  .itemtop strong{font-size:12.5px}
-  .itemtop .btn{min-height:32px}
-  .columnrow{padding:11px}
-
-  /* Hamburger / expand icon buttons inside the mobile top bar. */
-  .mtb-icon{flex:none;width:44px;height:44px;padding:0;display:grid;place-items:center;font-size:15px;border-radius:9px}
-
-  /* Slide-in drawer for switching Details / Items / Design sections. */
-  .drawer-overlay{display:block;position:fixed;inset:0;background:rgba(16,24,40,.4);z-index:49;opacity:0;pointer-events:none;transition:opacity .18s ease}
-  .drawer-overlay.show{opacity:1;pointer-events:auto}
-  .mobile-drawer{display:flex;position:fixed;top:0;bottom:0;left:0;width:min(78vw,300px);background:#fff;z-index:50;box-shadow:0 0 40px rgba(16,24,40,.22);transform:translateX(-100%);transition:transform .2s ease;flex-direction:column;padding:calc(14px + env(safe-area-inset-top)) 14px 14px}
-  .mobile-drawer.open{transform:translateX(0)}
-  .drawer-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-  .drawer-head strong{font-size:14px}
-  .drawer-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:10px;padding:11px 10px;font-size:13.5px;font-weight:750;color:var(--ink)}
-  .drawer-item:hover{background:#f4f6f9}
-  .drawer-item.active{background:rgba(var(--app-accent-rgb),.08);color:var(--app-accent);border-color:rgba(var(--app-accent-rgb),.16)}
-
-  /* Invoice actions (Save / Duplicate / History / New invoice) live inside
-     the drawer on phone widths instead of a cramped row above the preview. */
-  .drawer-divider{height:1px;background:var(--line);margin:12px 2px 10px;flex:none}
-  .drawer-section-label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin:0 2px 8px}
-  .drawer-toolbar-slot{display:flex;flex-direction:column;gap:2px}
-  .drawer-toolbar-slot .invoice-toolbar{width:100%;max-width:none;margin:0}
-  .drawer-toolbar-slot .invoice-toolbar-actions{width:100%;flex-direction:column;gap:2px;flex-wrap:nowrap;justify-content:flex-start}
-  .drawer-toolbar-slot .invoice-toolbar-actions .btn{display:flex;align-items:center;gap:10px;width:100%;justify-content:flex-start;text-align:left;background:transparent;border-color:transparent;box-shadow:none;font-size:13.5px;font-weight:750;padding:11px 10px;border-radius:10px;min-height:0}
-  .drawer-toolbar-slot .invoice-toolbar-actions .btn:hover{background:#f4f6f9}
-  .drawer-toolbar-slot .invoice-toolbar-actions .btn.primary{background:rgba(var(--app-accent-rgb),.08);color:var(--app-accent);border-color:transparent}
-  .drawer-toolbar-slot .invoice-toolbar-actions .btn.primary:hover{background:rgba(var(--app-accent-rgb),.14)}
-  .drawer-toolbar-slot .history-dropdown{width:100%}
-  .drawer-toolbar-slot #historyToggleBtn{width:100%}
-
-  /* Every floating panel opens as its own centered card on phone widths —
-     the drawer is too narrow to anchor a dropdown under its button. z-index
-     is inherited from the base .history-panel rule (100), which already
-     clears the drawer (50) and its overlay (49). */
-  .history-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(360px,calc(100vw - 32px));max-height:75vh}
+  /* Collapsible sections apply at every width (see .panelhead/.panel.collapsed
+     in base.css) — nothing phone-specific needed here. */
 
   /* Fullscreen preview — hides all chrome and gives the invoice the entire
      viewport, with a single floating close button to get back. */
