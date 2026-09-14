@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Invoice Studio Pro</title>
+<title>InvoGen - Invoice Generator</title>
 <meta name="description" content="Create, design and export professional invoices — works fully offline.">
 
 <!-- PWA: installability -->
@@ -16,7 +16,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Invoice Studio">
+<meta name="apple-mobile-web-app-title" content="InvoGen">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/invoice.css">
 <link rel="stylesheet" href="css/templates.css">
@@ -33,7 +33,7 @@
      old sidebar ".actions" block and the canvas toolbar. -->
 <header class="appheader" id="appHeader">
   <div class="topbar">
-    <div class="brand"><div class="mark">I</div><div><h1>Invoice Studio Pro</h1><p>Create professional invoices, fast</p></div></div>
+    <div class="brand"><div class="mark">I</div><div><h1>InvoGen</h1><p>Invoice Generator</p></div></div>
   </div>
   <div class="header-actions">
     <button class="btn small primary" id="saveInvoiceBtn" title="Save a reopenable snapshot to Saved Invoices"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>Save</button>
@@ -124,33 +124,29 @@
 </aside>
 
 <main class="workspace">
+ <!-- Editor toolbar — rebuilt as three flex groups (left/middle/right) instead
+      of two, so control order is explicit in the markup rather than relying on
+      margin-left:auto push-tricks: Currency + Undo/Redo on the left, an
+      unlabelled flexible spacer in the middle (only ever shows the Preview-mode
+      "A4 portrait preview" status text — otherwise it's genuinely empty space,
+      not a visual block), and Zoom + Edit/Preview on the right. See
+      .canvasbar/-left/-middle/-right in css/invoice.css. -->
  <div class="toolbar-row" id="toolbarRow">
  <div class="canvasbar">
    <div class="canvasbar-left">
-     <div class="btn-group" role="group" aria-label="Undo and redo">
-       <button class="btn icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo last change" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="9 14 4 9 9 4"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/></svg></button>
-       <button class="btn icon" id="redoBtn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo last change" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 14 20 9 15 4"/><path d="M20 9H10a6 6 0 0 0-6 6v5"/></svg></button>
-     </div>
-   </div>
-   <div class="canvasbar-center">
-     <div class="canvasmode-switch" role="tablist" aria-label="Edit or preview the invoice">
-       <button type="button" class="canvasmode-btn active" id="canvasModeEditBtn" role="tab" aria-selected="true" title="Show every optional field, even ones left blank, and edit line items directly"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m17 3 4 4L7 21H3v-4Z"/></svg> Edit</button>
-       <button type="button" class="canvasmode-btn" id="canvasModePreviewBtn" role="tab" aria-selected="false" title="Hide empty optional fields, like the printed/PDF output"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Preview</button>
-     </div>
-     <div class="meta" id="previewMeta">A4 portrait preview</div>
-   </div>
-   <div class="canvasbar-right">
-     <div class="btn-group zoom-group" role="group" aria-label="Zoom controls">
-       <button class="btn icon" id="zoomOut" aria-label="Zoom out">−</button>
-       <span class="zoom-label" id="zoomLabel">100%</span>
-       <button class="btn icon" id="zoomIn" aria-label="Zoom in">+</button>
-     </div>
-     <span class="toolbar-divider" aria-hidden="true"></span>
      <div class="toolbar-field currency-field">
-       <label for="currencySearchInput">Currency</label>
+       <label for="currencySearchInput" class="visually-hidden">Currency</label>
        <div class="combobox" id="currencyCombo">
          <input type="text" id="currencySearchInput" class="combobox-input" role="combobox" aria-expanded="false" aria-controls="currencyListbox" aria-autocomplete="list" aria-haspopup="listbox" autocomplete="off" spellcheck="false" placeholder="Search currency…">
          <svg class="combobox-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
+         <!-- Positioned as position:fixed with top/left/width set inline by JS
+              (see currencySearch.js's positionCurrencyList(), the same pattern
+              as layout.js's positionDropdownPanel() for the other toolbar
+              dropdowns) rather than position:absolute — .toolbar-row (this
+              list's scrolling ancestor) has overflow-x:auto for narrow
+              viewports, and any absolutely-positioned descendant gets clipped
+              to that container's own bounds, which was squashing this list
+              visually inside the toolbar instead of letting it float below it. -->
          <ul class="combobox-list" id="currencyListbox" role="listbox" aria-label="Currency"></ul>
          <select id="currency" class="visually-hidden" tabindex="-1" aria-hidden="true">
          <optgroup label="Americas">
@@ -217,7 +213,27 @@
          </select>
        </div>
      </div>
-     <button type="button" class="btn icon design-reopen-btn" id="designReopenBtn" title="Open Design panel" aria-label="Open Design panel"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+     <span class="toolbar-divider" aria-hidden="true"></span>
+     <div class="toolbar-btn-group">
+       <button class="btn small icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo last change" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="9 14 4 9 9 4"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/></svg></button>
+       <button class="btn small icon" id="redoBtn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo last change" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 14 20 9 15 4"/><path d="M20 9H10a6 6 0 0 0-6 6v5"/></svg></button>
+     </div>
+   </div>
+   <div class="canvasbar-middle">
+     <div class="meta" id="previewMeta">A4 portrait preview</div>
+   </div>
+   <div class="canvasbar-right">
+     <div class="zoom-group" role="group" aria-label="Zoom">
+       <button type="button" class="zoom-btn" id="zoomOut" aria-label="Zoom out">−</button>
+       <span class="zoom-label" id="zoomLabel">100%</span>
+       <button type="button" class="zoom-btn" id="zoomIn" aria-label="Zoom in">+</button>
+     </div>
+     <span class="toolbar-divider" aria-hidden="true"></span>
+     <div class="canvasmode-switch" role="tablist" aria-label="Edit or preview the invoice">
+       <button type="button" class="canvasmode-btn active" id="canvasModeEditBtn" role="tab" aria-selected="true" title="Show every optional field, even ones left blank, and edit line items directly"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m17 3 4 4L7 21H3v-4Z"/></svg> Edit</button>
+       <button type="button" class="canvasmode-btn" id="canvasModePreviewBtn" role="tab" aria-selected="false" title="Hide empty optional fields, like the printed/PDF output"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Preview</button>
+     </div>
+     <button type="button" class="btn small icon design-reopen-btn" id="designReopenBtn" title="Open Design panel" aria-label="Open Design panel"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
    </div>
  </div>
  </div>

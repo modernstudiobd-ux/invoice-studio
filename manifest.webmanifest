@@ -1,6 +1,6 @@
 {
-  "name": "Invoice Studio Pro",
-  "short_name": "Invoice Studio",
+  "name": "InvoGen - Invoice Generator",
+  "short_name": "InvoGen",
   "description": "Create, design and export professional invoices — works fully offline.",
   "id": "/",
   "start_url": "./index.html",

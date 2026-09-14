@@ -6,20 +6,34 @@
 /* Searchable currency combobox — a text input + filtered listbox layered
    over the real (visually hidden) #currency <select>, which stays the
    source of truth so every other module keeps reading/writing it exactly
-   as before. See js/currencySearch.js. Lives in the Right Sidebar's
-   Currency panel (index.html). */
-.currency-field{position:relative}
+   as before. See js/currencySearch.js. Lives at the far left of the canvas
+   toolbar (.canvasbar-left in index.html). */
+.currency-field{position:relative;flex:none;width:190px;max-width:44vw}
 .combobox{position:relative;min-width:0}
-/* Specificity note: this lives inside a Right Sidebar .field now (index.html),
-   and the generic ".field input" rule (base.css) also matches this <input> —
-   the extra ".combobox" ancestor class here (two classes vs. one class+type)
-   keeps this rule winning, so the caret's reserved right-padding and rounded
-   corners aren't silently overridden by the generic field style. */
-.combobox .combobox-input{min-height:32px;padding:5px 26px 5px 8px;font-size:12px;width:100%;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-family:inherit;cursor:text}
+/* Specificity note: the generic ".field input" rule (base.css) also matches
+   this <input> — the extra ".combobox" ancestor class here (two classes vs.
+   one class+type) keeps this rule winning, so the caret's reserved
+   right-padding and rounded corners aren't silently overridden by the
+   generic field style. */
+.combobox .combobox-input{min-height:34px;padding:5px 28px 5px 10px;font-size:12px;width:100%;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-family:inherit;cursor:text;text-overflow:ellipsis}
+.combobox .combobox-input:hover{border-color:#c2c9d6}
 .combobox .combobox-input:focus{outline:2px solid var(--app-accent);outline-offset:1px;border-color:var(--app-accent)}
-.combobox-caret{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);cursor:pointer;transition:transform .15s ease}
+.combobox.open .combobox-input{border-color:var(--app-accent)}
+.combobox-caret{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);cursor:pointer;transition:transform .15s ease;pointer-events:none}
 .combobox.open .combobox-caret{transform:translateY(-50%) rotate(180deg)}
-.combobox-list{position:absolute;top:calc(100% + 6px);left:0;right:0;min-width:260px;max-height:280px;overflow-y:auto;margin:0;padding:5px;list-style:none;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow-lg);z-index:50;display:none}
+/* Positioned as position:fixed with top/left/width set inline by JS
+   (currencySearch.js's positionCurrencyList(), mirroring layout.js's
+   positionDropdownPanel() for the other toolbar dropdowns) instead of
+   position:absolute — .toolbar-row, this list's nearest scrolling
+   ancestor, has overflow-x:auto for narrow viewports, and any
+   absolutely-positioned descendant gets clipped to that scrolling
+   container's own bounds instead of escaping it, which was squashing this
+   list visually *inside* the toolbar rather than letting it float below
+   it. Fixed positioning with JS-computed viewport coordinates escapes
+   that clipping entirely, matches the toolbar's actual on-screen edges at
+   any zoom/viewport size, and never affects the toolbar's own height since
+   the list no longer participates in the toolbar's layout flow at all. */
+.combobox-list{position:fixed;min-width:190px;max-height:280px;overflow-y:auto;margin:0;padding:5px;list-style:none;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow-lg);z-index:100;display:none}
 .combobox.open .combobox-list{display:block}
 .combobox-group-label{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:8px 8px 3px}
 .combobox-option{font-size:12.5px;padding:7px 8px;border-radius:7px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
@@ -28,79 +42,63 @@
 .combobox-option.selected::after{content:"✓";float:right;margin-left:8px}
 .combobox-empty{font-size:12px;color:var(--muted);padding:10px 8px;text-align:center}
 @media (max-width:640px){
+  .currency-field{width:150px;max-width:52vw}
   .combobox-list{min-width:0}
 }
-/* Unified toolbar row — a single compact pill holding three logical groups:
-   Undo/Redo (left), the Edit⇄Preview switch (true-centered on the bar,
-   independent of how wide the left/right groups are), and Zoom + Currency
-   (right). ".canvasbar" is a 3-column grid (1fr / auto / content-width) so
-   the center group sits on the bar's real midpoint rather than merely
-   centered in whatever space is left over — the classic "toolbar with a
-   centered primary control" pattern (Google Docs, Notion, Figma). Every
-   interactive control shares one height (--tb-h) so nothing is vertically
-   misaligned regardless of which group it sits in. Falls back to a
-   left-aligned, horizontally scrollable row (rather than ever wrapping to a
-   second line) only once a viewport is too narrow for the grid to keep its
-   three groups from colliding — see the max-width:760px rule below. */
-.toolbar-row{--tb-h:32px;width:100%;max-width:none;margin:0 auto 14px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:0;box-shadow:var(--shadow-sm)}
-.toolbar-row .btn{box-shadow:none;white-space:nowrap}
+/* Unified toolbar row — one clean editor pill: Currency + Undo/Redo on the
+   left, Zoom + Edit/Preview on the right, and a flexible (usually empty)
+   middle that only ever shows the Preview-mode "A4 portrait preview"
+   status text. Built as robust flex groups (.canvasbar-left/-middle/-right)
+   rather than absolute-position offsets, so control order lives in the
+   markup and reflows correctly at any width. Kept to a single line always
+   (no wrap): it uses the full workspace width — wider than the
+   page-width-constrained canvas below it — to fit everything, and falls
+   back to horizontal scrolling (rather than ever wrapping to a second
+   line) only as a last resort on very narrow windows. */
+.toolbar-row{width:100%;max-width:none;margin:0 auto 14px;display:flex;align-items:center;gap:10px;flex-wrap:nowrap;overflow-x:auto;overflow-y:visible;background:#fff;border:1px solid var(--line);border-radius:13px;padding:7px 10px;box-shadow:var(--shadow-sm)}
+.toolbar-row .btn{box-shadow:none;border-color:transparent;white-space:nowrap}
+.toolbar-row .btn:hover{border-color:var(--line);box-shadow:var(--shadow-sm)}
+.toolbar-row .btn.primary{box-shadow:0 2px 8px rgba(var(--app-accent-rgb),.28)}
 #invoiceToolbarAnchor{display:none}
-/* overflow-x is the safety net for the grid below: each group keeps its
-   default (content-protecting) min-width, so the two minmax(0,1fr) flanks
-   never compress far enough to overlap the centered group — if all three
-   groups together ever exceed the available width (previewMeta appearing
-   is the main case that adds enough width to matter), the row scrolls
-   horizontally instead of letting columns overlap or clipping text. */
-.canvasbar{display:grid;grid-template-columns:minmax(min-content,1fr) auto minmax(min-content,1fr);align-items:center;gap:10px;width:100%;padding:7px 10px;overflow-x:auto}
-.canvasbar-left{display:flex;align-items:center;gap:8px;justify-self:start}
-.canvasbar-center{display:flex;align-items:center;gap:10px;justify-self:center}
-.canvasbar-right{display:flex;align-items:center;gap:8px;justify-self:end}
+.invoice-toolbar-actions{flex-wrap:nowrap}
+/* The three flex groups share one fixed control height (--toolbar-ctrl-h)
+   so the currency field, undo/redo, zoom buttons, and the Edit/Preview
+   switch all line up on the same horizontal axis regardless of each
+   control's own internal padding/font-size. */
+.canvasbar{--toolbar-ctrl-h:34px;display:flex;align-items:center;gap:10px;flex:1 1 auto;min-width:0;flex-wrap:nowrap}
 .canvasbar .meta{font-size:11px;color:var(--muted);display:inline-flex;align-items:center;white-space:nowrap}
-/* A "joined pill" wrapper for controls that act as one unit (Undo+Redo,
-   Zoom out/level/in) — a single shared border/radius with hairline
-   dividers between segments, instead of separate free-floating buttons, so
-   related controls read as one grouped control at a glance. */
-.btn-group{display:flex;align-items:stretch;height:var(--tb-h);border:1px solid var(--line);border-radius:9px;background:#fff;overflow:hidden;flex:none}
-.btn-group .btn{height:100%;width:var(--tb-h);border:0;border-radius:0;box-shadow:none;background:transparent}
-.btn-group .btn+.btn{border-left:1px solid var(--line)}
-.btn-group .btn:hover{background:#f3f4f8;border-color:var(--line);transform:none;box-shadow:none}
-.btn-group .btn:active{transform:none}
-.btn-group .btn:disabled{opacity:.35;cursor:not-allowed}
-.btn-group .btn:disabled:hover{background:transparent}
-.zoom-group .btn{font-size:15px;font-weight:600}
-.zoom-label{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:100%;padding:0 6px;font-size:11.5px;font-weight:750;color:var(--ink);border-left:1px solid var(--line);border-right:1px solid var(--line);white-space:nowrap}
-.canvasmode-switch{flex:none;height:var(--tb-h);box-sizing:border-box}
-.toolbar-field{display:flex;align-items:center;gap:6px;min-width:0}
-.toolbar-field label{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;flex:none}
-.combobox{min-width:0;width:164px;flex:none}
-.combobox .combobox-input{height:var(--tb-h);min-height:0;box-sizing:border-box}
+.canvasbar-left,.canvasbar-right{display:flex;align-items:center;gap:10px;flex:none}
+/* Genuinely empty space, not a visual placeholder block: no background/
+   border of its own, so it only ever renders the centered "A4 portrait
+   preview" text (Preview mode only) — otherwise it's invisible flex-grow
+   that naturally separates the left and right control groups. */
+.canvasbar-middle{flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.canvasbar-right .actions{flex-wrap:nowrap;margin-bottom:0}
+.canvasbar-right .btn.icon{width:var(--toolbar-ctrl-h);height:var(--toolbar-ctrl-h)}
+.toolbar-btn-group{display:flex;align-items:center;gap:6px;flex:none}
+.toolbar-btn-group .btn.icon{width:var(--toolbar-ctrl-h);height:var(--toolbar-ctrl-h)}
+/* Zoom control — a segmented pill (same visual language as .canvasmode-switch
+   below) instead of three loose buttons, so it reads as one control. The
+   percentage label gets a fixed width so the pill doesn't shift width as the
+   text goes from "60%" to "130%". */
+.zoom-group{display:flex;align-items:center;gap:1px;height:var(--toolbar-ctrl-h);background:#eef0f7;border-radius:10px;padding:3px;flex:none}
+.zoom-btn{border:0;background:transparent;height:100%;width:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;font-weight:700;color:var(--ink);padding:0;transition:background-color .15s ease,box-shadow .15s ease}
+.zoom-btn:hover{background:#fff;box-shadow:var(--shadow-sm)}
+.zoom-btn:active{background:#fff}
+.zoom-label{width:40px;flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:750;color:var(--ink);font-variant-numeric:tabular-nums}
 /* The real #currency <select> underneath the searchable combobox must stay
    fully invisible AND non-interactive — otherwise generic rules elsewhere
-   (e.g. ".field select" in the Right Sidebar it now lives in) can leak real
-   width/padding onto it (they win over the single-class ".visually-hidden"
-   on specificity), which gives it a real clickable box that can sit on top
-   of the search input or its arrow and silently steal clicks/focus meant
-   for the combobox. The ID selector here guarantees this always wins,
-   regardless of what else targets "select" elsewhere in the stylesheet,
-   now or in the future. */
+   (e.g. ".field select" in base.css) can leak real width/padding onto it
+   (they win over the single-class ".visually-hidden" on specificity),
+   which gives it a real clickable box that can sit on top of the search
+   input or its arrow and silently steal clicks/focus meant for the
+   combobox. The ID selector here guarantees this always wins, regardless
+   of what else targets "select" elsewhere in the stylesheet, now or in
+   the future. */
 #currency{position:absolute!important;width:1px!important;height:1px!important;min-width:0!important;min-height:0!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;pointer-events:none!important}
-.toolbar-divider{width:1px;height:20px;background:var(--line);flex:none}
-.design-reopen-btn.btn.icon{height:var(--tb-h);width:var(--tb-h)}
-/* Below ~760px the three-group grid no longer has room to keep the center
-   group on the bar's true midpoint without crowding Zoom/Currency — switch
-   to a left-aligned flex row that scrolls horizontally instead of ever
-   wrapping controls onto a second line (matches how the rest of the app's
-   compact controls degrade on narrow viewports). */
-@media (max-width:760px){
-  .canvasbar{display:flex;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;padding:7px 8px}
-  .canvasbar-left,.canvasbar-center,.canvasbar-right{flex:none;justify-self:auto}
-  .canvasbar-center{order:2}
-  .canvasbar-right{order:3;margin-left:6px}
-}
-@media (max-width:480px){
-  .combobox{width:132px}
-  .toolbar-field label{display:none}
-}
+.canvasmode-switch{flex:none}
+.toolbar-divider{width:1px;align-self:stretch;margin:2px 0;background:var(--line);flex:none}
+@media (max-width:640px){ .toolbar-divider{display:none} }
 /* "A4 portrait preview · N pages" only makes sense as a description of the
    Preview mode (a faithful dry run of Print/PDF output) — in Edit mode the
    canvas isn't a page-accurate preview (it still shows every optional
@@ -162,8 +160,8 @@ body.canvas-preview-mode .invoice input[type=date]::-webkit-calendar-picker-indi
    there and reappears once Preview is switched on.*/
 body:not(.canvas-preview-mode) .invoice{min-height:0}
 body:not(.canvas-preview-mode) .footer{display:none}
-.canvasmode-switch{display:inline-flex;align-items:stretch;gap:2px;background:#eef0f7;padding:3px;border-radius:9px}
-.canvasmode-btn{border:0;background:transparent;border-radius:7px;padding:0 12px;font-size:11.5px;font-weight:750;color:var(--muted);display:inline-flex;align-items:center;gap:5px;transition:background-color .15s ease,color .15s ease,box-shadow .15s ease}
+.canvasmode-switch{display:inline-flex;gap:2px;height:var(--toolbar-ctrl-h,34px);box-sizing:border-box;background:#eef0f7;padding:3px;border-radius:10px}
+.canvasmode-btn{border:0;background:transparent;height:100%;box-sizing:border-box;border-radius:7px;padding:0 12px;font-size:11.5px;font-weight:750;color:var(--muted);display:inline-flex;align-items:center;gap:5px;transition:background-color .15s ease,color .15s ease,box-shadow .15s ease}
 .canvasmode-btn.active{background:#fff;color:var(--app-accent);box-shadow:var(--shadow-sm)}
 .canvasmode-btn:not(.active):hover{color:var(--ink)}
 .invoice{--template-accent:var(--accent);width:var(--page-w);min-height:var(--page-h);margin:0;background:var(--invoice-bg,#fff);box-shadow:0 18px 55px rgba(16,24,40,.14);padding:12mm 12mm 11mm;position:relative;overflow:hidden;font-family:var(--font-modern)}

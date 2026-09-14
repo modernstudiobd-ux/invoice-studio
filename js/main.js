@@ -252,5 +252,5 @@ registerServiceWorker();
   window.APP_VERSION = APP_VERSION;
   window.BUILD_DATE = BUILD_DATE;
   window.BUILD_STRING = BUILD_STRING;
-  console.log(`%cInvoice Studio Pro ${BUILD_STRING}`, "color:#4f46e5;font-weight:bold;");
+  console.log(`%cInvoGen - Invoice Generator ${BUILD_STRING}`, "color:#4f46e5;font-weight:bold;");
 }

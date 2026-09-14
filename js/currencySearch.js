@@ -46,6 +46,42 @@ export function syncCurrencyDisplay() {
   input.value = labelFor(select.value);
 }
 
+// Anchors the dropdown list below the combobox using fixed positioning
+// computed from the combobox's actual on-screen position, instead of
+// position:absolute (which was getting clipped by .toolbar-row's
+// overflow-x:auto — see the long comment on .combobox-list in
+// css/invoice.css). Mirrors layout.js's positionDropdownPanel() for the
+// app's other toolbar-anchored panels (Saved Invoices, Brand Templates,
+// etc.) — same fix, applied here too since this combobox predates that
+// pattern and was never migrated to it.
+//
+// Re-run on open, on window resize, and on scroll of any ancestor
+// (capture-phase listener, since scroll events don't bubble) so the list
+// never drifts away from the input it belongs to.
+function positionList() {
+  const r = combo.getBoundingClientRect();
+  const width = Math.max(r.width, Math.min(220, window.innerWidth - 16));
+  let left = r.left;
+  left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
+  listEl.style.width = width + "px";
+  listEl.style.left = left + "px";
+  // Prefer opening below the input; flip above it when there isn't enough
+  // room underneath so the list never renders partly off the bottom edge.
+  const gap = 6, minHeight = 160;
+  const spaceBelow = window.innerHeight - r.bottom - gap;
+  const spaceAbove = r.top - gap;
+  const openAbove = spaceBelow < minHeight && spaceAbove > spaceBelow;
+  if (openAbove) {
+    listEl.style.top = "";
+    listEl.style.bottom = (window.innerHeight - r.top + gap) + "px";
+    listEl.style.maxHeight = Math.max(minHeight, Math.min(280, spaceAbove)) + "px";
+  } else {
+    listEl.style.bottom = "";
+    listEl.style.top = (r.bottom + gap) + "px";
+    listEl.style.maxHeight = Math.max(minHeight, Math.min(280, spaceBelow)) + "px";
+  }
+}
+
 function setActive(idx) {
   const prev = listEl.querySelector(".combobox-option.active");
   if (prev) prev.classList.remove("active");
@@ -112,6 +148,7 @@ function openList() {
   combo.classList.add("open");
   input.setAttribute("aria-expanded", "true");
   renderList("");
+  positionList();
   // Highlight (but don't overwrite) the current selection's row on open.
   const idx = filtered.findIndex(en => en.value === select.value);
   if (idx >= 0) setActive(idx);
@@ -163,6 +200,14 @@ document.addEventListener("click", e => {
   const path = e.composedPath();
   if (!path.includes(combo)) closeList();
 });
+
+// Keeps the fixed-positioned list correctly anchored under the input
+// whenever the viewport resizes, or whenever any ancestor (including
+// .toolbar-row itself, on narrow widths where it scrolls horizontally)
+// scrolls. Scroll events don't bubble, so this listens during the capture
+// phase to still catch scrolling on nested containers.
+window.addEventListener("resize", () => { if (combo.classList.contains("open")) positionList(); });
+document.addEventListener("scroll", () => { if (combo.classList.contains("open")) positionList(); }, true);
 
 // Initial display text on boot.
 syncCurrencyDisplay();

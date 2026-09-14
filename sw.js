@@ -1,4 +1,4 @@
-// Invoice Studio Pro — Service Worker
+// InvoGen - Invoice Generator — Service Worker
 // Bump this version string whenever index.html (or any cached asset) changes,
 // so returning users automatically pick up the new version.
 const VERSION = "v3.17.1";
