@@ -124,16 +124,29 @@
 </aside>
 
 <main class="workspace">
- <!-- Editor toolbar — rebuilt as three flex groups (left/middle/right) instead
-      of two, so control order is explicit in the markup rather than relying on
-      margin-left:auto push-tricks: Currency + Undo/Redo on the left, an
-      unlabelled flexible spacer in the middle (only ever shows the Preview-mode
-      "A4 portrait preview" status text — otherwise it's genuinely empty space,
-      not a visual block), and Zoom + Edit/Preview on the right. See
-      .canvasbar/-left/-middle/-right in css/invoice.css. -->
+ <!-- Editor toolbar — rebuilt as flex groups so control order is explicit
+      in the markup rather than relying on margin-left:auto push-tricks.
+      .canvasbar-middle is a genuinely empty flexible spacer (no visible
+      content) that pushes everything else to the right; all controls —
+      Undo, Redo, Zoom, Currency, then the Edit/Preview switch and the
+      Design-panel reopen toggle — live together in .canvasbar-right, in
+      that left-to-right order. See .canvasbar/-middle/-right in
+      css/invoice.css. -->
  <div class="toolbar-row" id="toolbarRow">
  <div class="canvasbar">
-   <div class="canvasbar-left">
+   <div class="canvasbar-middle"></div>
+   <div class="canvasbar-right">
+     <div class="toolbar-btn-group">
+       <button class="btn small" id="undoBtn" title="Undo (Ctrl+Z)" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="9 14 4 9 9 4"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/></svg>Undo</button>
+       <button class="btn small" id="redoBtn" title="Redo (Ctrl+Shift+Z)" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 14 20 9 15 4"/><path d="M20 9H10a6 6 0 0 0-6 6v5"/></svg>Redo</button>
+     </div>
+     <span class="toolbar-divider" aria-hidden="true"></span>
+     <div class="zoom-group" role="group" aria-label="Zoom">
+       <button type="button" class="zoom-btn" id="zoomOut" aria-label="Zoom out">−</button>
+       <span class="zoom-label" id="zoomLabel">100%</span>
+       <button type="button" class="zoom-btn" id="zoomIn" aria-label="Zoom in">+</button>
+     </div>
+     <span class="toolbar-divider" aria-hidden="true"></span>
      <div class="toolbar-field currency-field">
        <label for="currencySearchInput" class="visually-hidden">Currency</label>
        <div class="combobox" id="currencyCombo">
@@ -212,21 +225,6 @@
          </optgroup>
          </select>
        </div>
-     </div>
-     <span class="toolbar-divider" aria-hidden="true"></span>
-     <div class="toolbar-btn-group">
-       <button class="btn small icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo last change" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="9 14 4 9 9 4"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/></svg></button>
-       <button class="btn small icon" id="redoBtn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo last change" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 14 20 9 15 4"/><path d="M20 9H10a6 6 0 0 0-6 6v5"/></svg></button>
-     </div>
-   </div>
-   <div class="canvasbar-middle">
-     <div class="meta" id="previewMeta">A4 portrait preview</div>
-   </div>
-   <div class="canvasbar-right">
-     <div class="zoom-group" role="group" aria-label="Zoom">
-       <button type="button" class="zoom-btn" id="zoomOut" aria-label="Zoom out">−</button>
-       <span class="zoom-label" id="zoomLabel">100%</span>
-       <button type="button" class="zoom-btn" id="zoomIn" aria-label="Zoom in">+</button>
      </div>
      <span class="toolbar-divider" aria-hidden="true"></span>
      <div class="canvasmode-switch" role="tablist" aria-label="Edit or preview the invoice">
@@ -361,7 +359,6 @@
 <aside class="right-sidebar" id="rightSidebar" aria-label="Design">
   <div class="right-sidebar-head">
     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg><h2>Design</h2>
-    <button type="button" class="btn small icon" id="designCloseBtn" title="Close Design panel" aria-label="Close Design panel"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
   </div>
   <section class="panel">
     <div class="panelhead"><h2>Invoice Template</h2></div>

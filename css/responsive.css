@@ -50,7 +50,7 @@
      as much of it as possible fits without needing to scroll at all. */
   .toolbar-row{padding:6px 8px;gap:6px}
   .canvasbar{gap:6px}
-  .canvasbar-left,.canvasbar-right{gap:6px}
+  .canvasbar-right{gap:6px}
   .zoom-group{padding:2px}
   .zoom-btn{width:24px}
   .zoom-label{width:34px}

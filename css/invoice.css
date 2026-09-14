@@ -6,8 +6,8 @@
 /* Searchable currency combobox — a text input + filtered listbox layered
    over the real (visually hidden) #currency <select>, which stays the
    source of truth so every other module keeps reading/writing it exactly
-   as before. See js/currencySearch.js. Lives at the far left of the canvas
-   toolbar (.canvasbar-left in index.html). */
+   as before. See js/currencySearch.js. Lives in the canvas toolbar,
+   just before the Edit/Preview switch (.canvasbar-right in index.html). */
 .currency-field{position:relative;flex:none;width:190px;max-width:44vw}
 .combobox{position:relative;min-width:0}
 /* Specificity note: the generic ".field input" rule (base.css) also matches
@@ -45,12 +45,12 @@
   .currency-field{width:150px;max-width:52vw}
   .combobox-list{min-width:0}
 }
-/* Unified toolbar row — one clean editor pill: Currency + Undo/Redo on the
-   left, Zoom + Edit/Preview on the right, and a flexible (usually empty)
-   middle that only ever shows the Preview-mode "A4 portrait preview"
-   status text. Built as robust flex groups (.canvasbar-left/-middle/-right)
-   rather than absolute-position offsets, so control order lives in the
-   markup and reflows correctly at any width. Kept to a single line always
+/* Unified toolbar row — one clean editor pill: an empty flexible spacer
+   on the left (.canvasbar-middle) pushes every control to the right, in
+   the order Undo, Redo, Zoom, Currency, then the Edit/Preview switch.
+   Built as robust flex groups (.canvasbar-middle/-right) rather than
+   absolute-position offsets, so control order lives in the markup and
+   reflows correctly at any width. Kept to a single line always
    (no wrap): it uses the full workspace width — wider than the
    page-width-constrained canvas below it — to fit everything, and falls
    back to horizontal scrolling (rather than ever wrapping to a second
@@ -67,16 +67,19 @@
    control's own internal padding/font-size. */
 .canvasbar{--toolbar-ctrl-h:34px;display:flex;align-items:center;gap:10px;flex:1 1 auto;min-width:0;flex-wrap:nowrap}
 .canvasbar .meta{font-size:11px;color:var(--muted);display:inline-flex;align-items:center;white-space:nowrap}
-.canvasbar-left,.canvasbar-right{display:flex;align-items:center;gap:10px;flex:none}
+.canvasbar-right{display:flex;align-items:center;gap:10px;flex:none}
 /* Genuinely empty space, not a visual placeholder block: no background/
-   border of its own, so it only ever renders the centered "A4 portrait
-   preview" text (Preview mode only) — otherwise it's invisible flex-grow
-   that naturally separates the left and right control groups. */
+   border, no content — just invisible flex-grow that pushes every control
+   in .canvasbar-right to the right-hand edge of the toolbar. */
 .canvasbar-middle{flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .canvasbar-right .actions{flex-wrap:nowrap;margin-bottom:0}
 .canvasbar-right .btn.icon{width:var(--toolbar-ctrl-h);height:var(--toolbar-ctrl-h)}
 .toolbar-btn-group{display:flex;align-items:center;gap:6px;flex:none}
-.toolbar-btn-group .btn.icon{width:var(--toolbar-ctrl-h);height:var(--toolbar-ctrl-h)}
+/* Undo/Redo now carry a text label alongside their icon (not icon-only),
+   so they no longer get the square .btn.icon treatment above — this keeps
+   them the same height as the rest of the toolbar's controls instead of
+   sizing to their own font/padding. */
+.toolbar-btn-group .btn{height:var(--toolbar-ctrl-h)}
 /* Zoom control — a segmented pill (same visual language as .canvasmode-switch
    below) instead of three loose buttons, so it reads as one control. The
    percentage label gets a fixed width so the pill doesn't shift width as the
@@ -99,13 +102,6 @@
 .canvasmode-switch{flex:none}
 .toolbar-divider{width:1px;align-self:stretch;margin:2px 0;background:var(--line);flex:none}
 @media (max-width:640px){ .toolbar-divider{display:none} }
-/* "A4 portrait preview · N pages" only makes sense as a description of the
-   Preview mode (a faithful dry run of Print/PDF output) — in Edit mode the
-   canvas isn't a page-accurate preview (it still shows every optional
-   field's placeholder, even ones left blank), so the label only shows once
-   Preview is switched on. */
-#previewMeta{display:none}
-body.canvas-preview-mode #previewMeta{display:inline-flex}
 /* Edit/Preview canvas switch (js/layout.js setCanvasMode): Edit (default)
    shows every optional row/field so it's clear what's available to fill
    in, even when empty (see the "— " / "Add value" placeholders preview.js
