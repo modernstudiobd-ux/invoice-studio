@@ -127,20 +127,23 @@
  <div class="toolbar-row" id="toolbarRow">
  <div class="canvasbar">
    <div class="canvasbar-left">
-     <button class="btn small icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo last change" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="9 14 4 9 9 4"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/></svg></button>
-     <button class="btn small icon" id="redoBtn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo last change" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 14 20 9 15 4"/><path d="M20 9H10a6 6 0 0 0-6 6v5"/></svg></button>
-     <span class="toolbar-divider" aria-hidden="true"></span>
-     <div class="actions">
-       <button class="btn small" id="zoomOut" aria-label="Zoom out">−</button>
-       <span class="meta" id="zoomLabel">100%</span>
-       <button class="btn small" id="zoomIn" aria-label="Zoom in">+</button>
+     <div class="btn-group" role="group" aria-label="Undo and redo">
+       <button class="btn icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo last change" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="9 14 4 9 9 4"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/></svg></button>
+       <button class="btn icon" id="redoBtn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo last change" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 14 20 9 15 4"/><path d="M20 9H10a6 6 0 0 0-6 6v5"/></svg></button>
+     </div>
+   </div>
+   <div class="canvasbar-center">
+     <div class="canvasmode-switch" role="tablist" aria-label="Edit or preview the invoice">
+       <button type="button" class="canvasmode-btn active" id="canvasModeEditBtn" role="tab" aria-selected="true" title="Show every optional field, even ones left blank, and edit line items directly"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m17 3 4 4L7 21H3v-4Z"/></svg> Edit</button>
+       <button type="button" class="canvasmode-btn" id="canvasModePreviewBtn" role="tab" aria-selected="false" title="Hide empty optional fields, like the printed/PDF output"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Preview</button>
      </div>
      <div class="meta" id="previewMeta">A4 portrait preview</div>
    </div>
    <div class="canvasbar-right">
-     <div class="canvasmode-switch" role="tablist" aria-label="Edit or preview the invoice">
-       <button type="button" class="canvasmode-btn active" id="canvasModeEditBtn" role="tab" aria-selected="true" title="Show every optional field, even ones left blank, and edit line items directly"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m17 3 4 4L7 21H3v-4Z"/></svg> Edit</button>
-       <button type="button" class="canvasmode-btn" id="canvasModePreviewBtn" role="tab" aria-selected="false" title="Hide empty optional fields, like the printed/PDF output"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Preview</button>
+     <div class="btn-group zoom-group" role="group" aria-label="Zoom controls">
+       <button class="btn icon" id="zoomOut" aria-label="Zoom out">−</button>
+       <span class="zoom-label" id="zoomLabel">100%</span>
+       <button class="btn icon" id="zoomIn" aria-label="Zoom in">+</button>
      </div>
      <span class="toolbar-divider" aria-hidden="true"></span>
      <div class="toolbar-field currency-field">
@@ -214,7 +217,7 @@
          </select>
        </div>
      </div>
-     <button type="button" class="btn small icon design-reopen-btn" id="designReopenBtn" title="Open Design panel" aria-label="Open Design panel"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+     <button type="button" class="btn icon design-reopen-btn" id="designReopenBtn" title="Open Design panel" aria-label="Open Design panel"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
    </div>
  </div>
  </div>
