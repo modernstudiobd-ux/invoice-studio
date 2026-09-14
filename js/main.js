@@ -41,6 +41,19 @@ fields.forEach(id => {
   });
 });
 
+/* --- Company name (js/preview.js, css/invoice.css): a growing <textarea>
+   now, not a single-line <input> (see .companyinfo in invoice.css), so a
+   long name wraps onto a second line instead of being silently clipped.
+   That's the one behavior a real multi-line <textarea> adds that a name
+   field shouldn't have, though: pressing Enter would insert a manual line
+   break into the saved company name. Suppressing just Enter (Shift+Enter
+   included, so there's no "soft break" escape hatch either) keeps it
+   reading and behaving like a single logical name field that happens to
+   wrap on its own — autoGrow() (preview.js) still grows/shrinks its height
+   automatically as the person types or deletes, exactly like the Address
+   field already does. --- */
+$("companyName").addEventListener("keydown", e => { if (e.key === "Enter") e.preventDefault(); });
+
 /* --- Optional color swatches (Total due / Header / Invoice area / Footer):
    picking a swatch color writes into its paired HEX field (the actual
    persisted value) and applies it; the ✕ button clears the override so the

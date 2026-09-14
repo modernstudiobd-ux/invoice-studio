@@ -6,6 +6,13 @@
 @media (max-width:900px){
   .appheader .brand p{display:none}
 }
+/* Feature tagline (.tagline in base.css) — only once the header has
+   comfortable room to spare beyond the brand text and the action buttons,
+   the same "lowest priority, first to drop" spirit as .brand p's own
+   900px/640px breakpoints just above. */
+@media (min-width:1180px){
+  .tagline{display:inline}
+}
 @media (max-width:640px){
   .appheader{flex-direction:column;align-items:stretch;gap:8px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top))}
   .appheader .brand p{display:block}
@@ -50,6 +57,7 @@
      as much of it as possible fits without needing to scroll at all. */
   .toolbar-row{padding:6px 8px;gap:6px}
   .canvasbar{gap:6px}
+  .canvasbar-left{gap:6px}
   .canvasbar-right{gap:6px}
   .zoom-group{padding:2px}
   .zoom-btn{width:24px}

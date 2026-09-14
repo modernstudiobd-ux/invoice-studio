@@ -219,6 +219,7 @@ export function renderPreview() {
   }
   autoGrowAll();
   sizeInvoiceNumberInput();
+  sizeMetaLabelInputs();
   fitInvoiceCanvas();
 }
 
@@ -285,6 +286,42 @@ function sizeInvoiceNumberInput() {
   // +3px caret slack so the last character/caret never looks clipped;
   // 18px floor keeps the field tappable/clickable even when empty.
   el.style.width = Math.max(invNumMirror.offsetWidth + 3, 18) + "px";
+}
+
+// .metatable's first column (the "Invoice date"/"Due date"/"Reference" row
+// labels — labelInvoiceDate, labelDueDate, labelReference, each a real,
+// renameable <input> right on the canvas) has the exact same "a text input
+// can't shrink-wrap its own value in CSS" limitation #invoiceNumber does
+// above, but with a worse symptom: the column's own CSS (width:1% +
+// white-space:nowrap in invoice.css) is the standard "shrink this table
+// column to fit its content" trick, and it only works when a cell's content
+// is plain text. An <input> stretched to width:100% can't contribute a
+// usable size to that calculation — a percentage width can't resolve until
+// the column's own final width is already known, so the browser had nothing
+// to size the column around and collapsed it to ~0, taking the label (and
+// visually squeezing its value cell) with it in every template. Same fix as
+// sizeInvoiceNumberInput(): measure each label's actual value/placeholder
+// with a hidden same-font mirror and set its width directly in px, so the
+// column always has real content to size around.
+let metaLabelMirror = null;
+function sizeMetaLabelInputs() {
+  const inputs = document.querySelectorAll("#invoice .metatable td:first-child input");
+  if (!inputs.length) return;
+  if (!metaLabelMirror) {
+    metaLabelMirror = document.createElement("span");
+    metaLabelMirror.style.cssText = "position:absolute;visibility:hidden;white-space:pre;left:-9999px;top:-9999px;";
+    document.body.appendChild(metaLabelMirror);
+  }
+  inputs.forEach(el => {
+    const cs = getComputedStyle(el);
+    metaLabelMirror.style.font = cs.font;
+    metaLabelMirror.style.letterSpacing = cs.letterSpacing;
+    metaLabelMirror.textContent = el.value || el.placeholder || "";
+    // +3px caret slack (matches sizeInvoiceNumberInput's own floor/slack
+    // reasoning above); 18px floor keeps the field tappable/clickable even
+    // when completely empty.
+    el.style.width = Math.max(metaLabelMirror.offsetWidth + 3, 18) + "px";
+  });
 }
 
 // Print (see print.js) temporarily resizes .canvaswrap to its natural,

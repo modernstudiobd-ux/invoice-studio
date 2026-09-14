@@ -45,13 +45,14 @@
   .currency-field{width:150px;max-width:52vw}
   .combobox-list{min-width:0}
 }
-/* Unified toolbar row — one clean editor pill: an empty flexible spacer
-   on the left (.canvasbar-middle) pushes every control to the right, in
-   the order Undo, Redo, Zoom, Currency, then the Edit/Preview switch.
-   Built as robust flex groups (.canvasbar-middle/-right) rather than
-   absolute-position offsets, so control order lives in the markup and
-   reflows correctly at any width. Kept to a single line always
-   (no wrap): it uses the full workspace width — wider than the
+/* Unified toolbar row — one clean editor pill: Undo, Redo and Zoom are
+   pinned together at the far left in .canvasbar-left; an empty flexible
+   spacer (.canvasbar-middle) then absorbs the rest of the row's width,
+   pushing Currency and the Edit/Preview switch to the far right in
+   .canvasbar-right. Built as robust flex groups (.canvasbar-left/-middle/
+   -right) rather than absolute-position offsets, so control order lives
+   in the markup and reflows correctly at any width. Kept to a single line
+   always (no wrap): it uses the full workspace width — wider than the
    page-width-constrained canvas below it — to fit everything, and falls
    back to horizontal scrolling (rather than ever wrapping to a second
    line) only as a last resort on very narrow windows. */
@@ -62,15 +63,20 @@
 #invoiceToolbarAnchor{display:none}
 .invoice-toolbar-actions{flex-wrap:nowrap}
 /* The three flex groups share one fixed control height (--toolbar-ctrl-h)
-   so the currency field, undo/redo, zoom buttons, and the Edit/Preview
-   switch all line up on the same horizontal axis regardless of each
-   control's own internal padding/font-size. */
+   so the undo/redo buttons, zoom buttons, currency field, and the
+   Edit/Preview switch all line up on the same horizontal axis regardless
+   of each control's own internal padding/font-size. */
 .canvasbar{--toolbar-ctrl-h:34px;display:flex;align-items:center;gap:10px;flex:1 1 auto;min-width:0;flex-wrap:nowrap}
 .canvasbar .meta{font-size:11px;color:var(--muted);display:inline-flex;align-items:center;white-space:nowrap}
+/* Same flex:none/gap treatment as .canvasbar-right below (its mirror image
+   at the opposite end of the row) — sized to its content, never stretched,
+   so it hugs the toolbar's left edge. */
+.canvasbar-left{display:flex;align-items:center;gap:10px;flex:none}
 .canvasbar-right{display:flex;align-items:center;gap:10px;flex:none}
 /* Genuinely empty space, not a visual placeholder block: no background/
    border, no content — just invisible flex-grow that pushes every control
-   in .canvasbar-right to the right-hand edge of the toolbar. */
+   in .canvasbar-right to the right-hand edge of the toolbar (and, by the
+   same token, keeps .canvasbar-left pinned to the left edge). */
 .canvasbar-middle{flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .canvasbar-right .actions{flex-wrap:nowrap;margin-bottom:0}
 .canvasbar-right .btn.icon{width:var(--toolbar-ctrl-h);height:var(--toolbar-ctrl-h)}
@@ -163,7 +169,26 @@ body:not(.canvas-preview-mode) .footer{display:none}
 .invoice{--template-accent:var(--accent);width:var(--page-w);min-height:var(--page-h);margin:0;background:var(--invoice-bg,#fff);box-shadow:0 18px 55px rgba(16,24,40,.14);padding:12mm 12mm 11mm;position:relative;overflow:hidden;font-family:var(--font-modern)}
 .invoice .section-hidden{display:none!important}.inv-header{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;background:var(--header-bg,transparent);border-radius:10px}.invoice.has-header-bg:not(.template-medical) .inv-header{padding:14px 16px;margin:0 0 14px}
 .invoice.has-header-text .inv-header .companyname,.invoice.has-header-text .inv-header .metaText,.invoice.has-header-text .inv-header .invtitle h2,.invoice.has-header-text .inv-header .invno,.invoice.has-header-text .inv-header .metatable td{color:var(--header-text)!important}
-.companywrap{display:flex;gap:12px;align-items:flex-start}.invoice.logo-position-left .companywrap{flex-direction:row;align-items:flex-start}.invoice.logo-position-above .companywrap{flex-direction:column;align-items:flex-start}.logobox{display:inline-flex;align-items:center;justify-content:center;flex:none}.logobox:not(.has-logo){width:var(--logo-h,48px);height:var(--logo-h,48px);border:1px solid #d7dde6;border-radius:10px;background:#f7f9fc}.logobox img{display:none;max-height:var(--logo-h,48px);max-width:220px;width:auto;height:auto;object-fit:contain}.logobox.has-logo img{display:block}.logobox.has-logo .logofallback{display:none}.logofallback{width:100%;height:100%;border-radius:11px;background:var(--template-accent);color:#fff;font-size:calc(var(--logo-h,48px)*0.42);font-weight:900;display:grid;place-items:center}.companyname{font-size:20px;font-weight:800;margin:1px 0 5px}.invoice .metaText{font-size:10.5px;color:#485568;line-height:1.4}.metaText>div{white-space:pre-line}.invtitle{text-align:right}.invtitle h2{margin:0;font-size:34px;font-weight:300;letter-spacing:.04em}.invno{font-size:15px;color:#667085;font-weight:700;margin-top:3px}.metatable{width:100%;margin-top:10px;border-collapse:collapse;font-size:10.5px}.metatable td{padding:2.5px 0}.metatable td:first-child{text-align:left;color:#667085;padding-right:14px;white-space:nowrap;width:1%}.metatable td:last-child{text-align:right;font-weight:700}.balance{margin-top:10px;background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.14);border-radius:8px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800}.balance span{color:var(--total-color,#1f2937)}.balance strong{font-size:18px;color:var(--total-color,#18181b)}
+.companywrap{display:flex;gap:12px;align-items:flex-start}.invoice.logo-position-left .companywrap{flex-direction:row;align-items:flex-start}.invoice.logo-position-above .companywrap{flex-direction:column;align-items:flex-start}
+/* .companyinfo (the company-name + registration/VAT/address/phone/email/
+   website column next to the logo) used to be a plain, unclassed flex
+   item: with no flex-basis of its own and every child inside it (the name
+   field and each metaText line) a percentage-width input/textarea, it had
+   no actual content to size itself around — a percentage can't resolve
+   until the *parent's* width is already known — so the browser fell back
+   to each input's own ~20-character UA default (about 234px) regardless of
+   how much header space was actually free or how long a real company name
+   was. flex:1 1 0% sidesteps that entirely: its width comes from the flex
+   distribution itself (all the leftover space in .companywrap once the
+   fixed-size logo box is subtracted), not from measuring its children, so
+   the company name field always gets the invoice header's full available
+   width to work with. min-width:0 stops the default flex min-width:auto
+   from re-introducing the same content-based floor; width:100% carries
+   that same sizing over to the logo-position-above layout, where
+   .companywrap switches to a column direction and this item's width
+   becomes a cross-axis property instead (flex:1 alone only governs the
+   main axis, so column mode needs width set explicitly too). */
+.companyinfo{flex:1 1 0%;min-width:0;width:100%}.logobox{display:inline-flex;align-items:center;justify-content:center;flex:none}.logobox:not(.has-logo){width:var(--logo-h,48px);height:var(--logo-h,48px);border:1px solid #d7dde6;border-radius:10px;background:#f7f9fc}.logobox img{display:none;max-height:var(--logo-h,48px);max-width:220px;width:auto;height:auto;object-fit:contain}.logobox.has-logo img{display:block}.logobox.has-logo .logofallback{display:none}.logofallback{width:100%;height:100%;border-radius:11px;background:var(--template-accent);color:#fff;font-size:calc(var(--logo-h,48px)*0.42);font-weight:900;display:grid;place-items:center}.companyname{font-size:20px;font-weight:800;margin:1px 0 5px}.invoice .metaText{font-size:10.5px;color:#485568;line-height:1.4}.metaText>div{white-space:pre-line}.invtitle{text-align:right}.invtitle h2{margin:0;font-size:34px;font-weight:300;letter-spacing:.04em}.invno{font-size:15px;color:#667085;font-weight:700;margin-top:3px}.metatable{width:100%;margin-top:10px;border-collapse:collapse;font-size:10.5px}.metatable td{padding:2.5px 0}.metatable td:first-child{text-align:left;color:#667085;padding-right:14px;white-space:nowrap;width:1%}.metatable td:last-child{text-align:right;font-weight:700}.balance{margin-top:10px;background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.14);border-radius:8px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800}.balance span{color:var(--total-color,#1f2937)}.balance strong{font-size:18px;color:var(--total-color,#18181b)}
 
 /* ---- Canvas form fields --------------------------------------------------
    Every field on the invoice (v3.15+) is a real <input>/<textarea>/<select>

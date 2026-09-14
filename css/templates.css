@@ -168,6 +168,17 @@
 .invoice.template-legal{font-family:Georgia,"Times New Roman",serif;padding:16mm 18mm}
 .template-legal .inv-header{display:block;text-align:center;border-bottom:3px double #1f2937;padding-bottom:14px}
 .template-legal .companywrap{flex-direction:column;align-items:center;text-align:center;gap:6px}
+/* Legal's letterhead is deliberately narrow and centered (unlike every
+   other template, which lets .companyinfo fill its full header column —
+   see .companyinfo in invoice.css) — flex:none;width:auto here opts this
+   template back out of that full-width stretch so the name keeps hugging
+   its own centered width instead of spanning the whole page edge-to-edge.
+   A very long name still wraps onto a second centered line (companyName is
+   a growing <textarea>, not a clipping <input>) rather than overflowing,
+   capped at max-width so it wraps well before actually reaching either
+   page edge. */
+.template-legal .companyinfo{flex:none;width:340px;max-width:90%;margin:0 auto}
+.template-legal .companyname{text-align:center}
 .template-legal .companyname{font-size:19px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
 .template-legal .metaText{color:#475467;text-align:center}
 .template-legal .invtitle{text-align:center;margin-top:10px}
