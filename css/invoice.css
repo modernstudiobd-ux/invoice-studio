@@ -290,6 +290,62 @@ body:not(.canvas-preview-mode) .footer{display:none}
 .invoice input.money-input::-webkit-outer-spin-button,.invoice input.money-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .invoice input.pct-input,.invoice input.money-input{-moz-appearance:textfield}
 
+/* ---- Edit-canvas hover/focus affordance -----------------------------------
+   Every field above is reset to look exactly like plain invoice text (no
+   border, no background, padding:0) so the canvas reads as a real document
+   rather than a form — which is exactly why, at rest, nothing on it looks
+   editable. This adds that cue back on :hover/:focus-visible only, using
+   box-shadow rather than border/padding/outline-in-flow: box-shadow is pure
+   paint (it doesn't participate in the box model at all), so this can't add
+   so much as a subpixel to any field's box — nothing here can ever shift
+   the canvas's actual layout, spacing, typography, or printed dimensions.
+   The one computed, genuinely non-editable cell on the canvas (Amount) is a
+   plain <td>, never an <input> (see preview.js), so it's naturally excluded
+   by the input/textarea/select selector below without needing its own
+   exception.
+
+   Scoped two ways, both belt-and-suspenders:
+   - body:not(.canvas-preview-mode) — Preview mode already makes every field
+     readOnly/disabled (setInvoiceFieldsEditable in js/layout.js), but this
+     additionally removes the *look* of an editable field, so Preview reads
+     as a genuine print preview rather than a disabled form that still looks
+     like one.
+   - @media screen — :hover can only ever reflect a live pointer position,
+     so none of this could literally survive into a PDF/printout either way,
+     but wrapping the whole block removes any dependence on that and makes
+     it structurally impossible for Print Preview, actual printing, or PDF
+     export to ever show it.
+   Colored with --app-accent (the editor's own fixed UI color — the same
+   one focus rings, buttons and tabs already use everywhere else in the
+   app) rather than --accent (the per-template, user-customizable invoice
+   color): this is an editor affordance layered on top of the document, not
+   a piece of the invoice's own designed appearance, so it stays visually
+   consistent no matter which template or accent color is applied. */
+@media screen {
+  body:not(.canvas-preview-mode) .invoice input,
+  body:not(.canvas-preview-mode) .invoice textarea,
+  body:not(.canvas-preview-mode) .invoice select{
+    transition:background-color .15s ease,box-shadow .15s ease;
+    border-radius:4px;
+  }
+  body:not(.canvas-preview-mode) .invoice input:hover,
+  body:not(.canvas-preview-mode) .invoice textarea:hover,
+  body:not(.canvas-preview-mode) .invoice select:hover{
+    background-color:rgba(var(--app-accent-rgb),.1);
+    box-shadow:0 0 0 2px rgba(var(--app-accent-rgb),.1);
+  }
+  /* Keyboard focus gets the same chip, one step stronger, plus the app-wide
+     focus-visible outline (base.css) still layers on top of it unchanged —
+     so tabbing through the canvas is at least as clear as hovering it, and
+     nothing here removes or replaces that existing outline. */
+  body:not(.canvas-preview-mode) .invoice input:focus-visible,
+  body:not(.canvas-preview-mode) .invoice textarea:focus-visible,
+  body:not(.canvas-preview-mode) .invoice select:focus-visible{
+    background-color:rgba(var(--app-accent-rgb),.14);
+    box-shadow:0 0 0 2px rgba(var(--app-accent-rgb),.3);
+  }
+}
+
 /* Logo upload/height/position controls — not invoice content, so they're
    hidden from print/PDF (print.css) and from the Edit/Preview canvas
    switch's Preview mode (invoice.css, alongside every other print-only
