@@ -45,7 +45,26 @@
      old sidebar ".actions" block and the canvas toolbar. -->
 <header class="appheader" id="appHeader">
   <div class="topbar">
-    <div class="brand"><div class="mark">I</div><div><h1>InvoGen</h1><p>Invoice Generator<span class="tagline"><span class="tagline-sep" aria-hidden="true">—</span>Create, customize, and print professional invoices in minutes.</span></p></div></div>
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" focusable="false">
+          <defs>
+            <linearGradient id="markBg" x1="12%" y1="8%" x2="88%" y2="96%">
+              <stop offset="0%" stop-color="#4f46e5"/>
+              <stop offset="100%" stop-color="#7c74f0"/>
+            </linearGradient>
+          </defs>
+          <rect width="100" height="100" rx="22" fill="url(#markBg)"/>
+          <path d="M30 18h26l12 12v40a6 6 0 0 1-6 6H30a6 6 0 0 1-6-6V24a6 6 0 0 1 6-6Z" fill="#fff"/>
+          <path d="M56 18l12 12H62a6 6 0 0 1-6-6v-6Z" fill="#c9c4f7"/>
+          <rect x="33" y="46" width="24" height="5.6" rx="2.8" fill="#4f46e5"/>
+          <rect x="33" y="57" width="24" height="5.6" rx="2.8" fill="#4f46e5"/>
+          <circle cx="63" cy="66" r="12.5" fill="#4f46e5" stroke="#fff" stroke-width="3"/>
+          <path d="M57.5 66.2l3.6 3.6 7-7.8" fill="none" stroke="#fff" stroke-width="3.1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div><h1>InvoGen</h1><p class="tagline">Create, customize, and print professional invoices in minutes.</p></div>
+    </div>
   </div>
   <div class="header-actions">
     <button class="btn small primary" id="saveInvoiceBtn" title="Save a reopenable snapshot to Saved Invoices"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>Save</button>

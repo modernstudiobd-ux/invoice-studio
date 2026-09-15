@@ -1,22 +1,15 @@
 /* Responsive behavior — mobile edit/preview switcher, tablet/phone breakpoints */
 /* App header — brand-only now (Template/Currency moved to the canvas
-   toolbar, everything else to the Design panel); on phones the subtitle
-   line is dropped, then restored once the header stacks and has the
-   vertical room for it again. */
-@media (max-width:900px){
-  .appheader .brand p{display:none}
-}
-/* Feature tagline (.tagline in base.css) — only once the header has
-   comfortable room to spare beyond the brand text and the action buttons,
-   the same "lowest priority, first to drop" spirit as .brand p's own
-   900px/640px breakpoints just above. */
+   toolbar, everything else to the Design panel). The tagline (.tagline in
+   base.css, hidden by default) only reappears once there's comfortable
+   room to spare beyond the brand text and the action buttons. */
 @media (min-width:1180px){
-  .tagline{display:inline}
+  .tagline{display:block}
 }
 @media (max-width:640px){
   .appheader{flex-direction:column;align-items:stretch;gap:8px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top))}
-  .appheader .brand p{display:block}
   .appheader .topbar{flex-wrap:wrap;row-gap:6px}
+  .tagline{display:block}
   .header-actions{width:100%}
   .save-status{width:100%;justify-content:center;order:-1}
 }

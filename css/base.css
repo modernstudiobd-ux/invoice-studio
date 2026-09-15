@@ -51,17 +51,24 @@ button.design-reopen-btn{display:none}
 .app.design-closed button.design-reopen-btn{display:inline-flex}
 .appheader{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:#fff;border-bottom:1px solid var(--line);padding:10px 16px}
 .appheader .topbar{margin-bottom:0;flex:1 1 auto;min-width:0}
-.brand{display:flex;gap:10px;align-items:center}.mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(145deg,var(--app-accent),#7c74f0);box-shadow:0 4px 12px rgba(var(--app-accent-rgb),.35);color:#fff;font-weight:900;display:grid;place-items:center;flex:none}
+/* Brand mark — the InvoGen logo (document + checkmark, indigo gradient),
+   the exact same SVG used for the favicon and PWA app icons (see
+   icons/icon.svg), inlined here for crisp rendering with zero extra
+   requests. The gradient/rounding live in the SVG itself; this box only
+   handles sizing, elevation, and clipping so the logo reads identically
+   everywhere it appears. */
+.brand{display:flex;gap:10px;align-items:center}.mark{width:38px;height:38px;border-radius:11px;box-shadow:0 4px 12px rgba(var(--app-accent-rgb),.35);display:grid;place-items:center;flex:none;overflow:hidden}
+.mark svg{width:100%;height:100%;display:block}
 .brand h1{font-size:17px;margin:0;letter-spacing:-.01em}.brand p{margin:2px 0 0;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* Feature tagline — an extension of the existing "Invoice Generator"
-   descriptor line (same element, same font-size/color), not a new header
-   row, so it never adds height to the already-compact .appheader. Hidden
-   below 1180px (see the min-width media query further down) so it's the
-   first thing to go as the header actions on the right need more room —
-   .brand p itself already has its own, separate narrower breakpoints
-   (900px/640px in responsive.css) for the same reason. */
+/* Feature tagline — the app's one-line description under the wordmark.
+   Hidden by default so it never adds height to the already-compact
+   .appheader; shown once the header has comfortable room to spare beyond
+   the brand text and the action buttons (>=1180px, see responsive.css),
+   and again once the header stacks vertically on phones (<=640px, where
+   there's vertical room even though horizontal space is tight — .brand p's
+   own overflow:hidden/text-overflow:ellipsis above truncates gracefully if
+   it doesn't fit). */
 .tagline{display:none}
-.tagline-sep{margin:0 6px;color:var(--line)}
 /* Header action row (Save/Duplicate/Export/More/Print) — every button here
    is the exact same element/id/handler that used to live split across the
    old sidebar ".actions" block and the canvas toolbar's ".invoice-toolbar";
