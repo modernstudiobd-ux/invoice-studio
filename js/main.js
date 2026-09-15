@@ -21,6 +21,7 @@ import { parseCSV, mapRows, ensureXLSX } from "./importSheet.js";
 import { printInvoice } from "./print.js";
 import { initInstallPrompt, registerServiceWorker } from "./install.js";
 import { naturalLogoHeight, handleLogoFile, removeLogo } from "./logo.js";
+import { initSettings, getDefaultPaperSize } from "./settings.js";
 // layout.js self-wires its own listeners on import (sidebar resize, mobile view switch, floating panels, etc.)
 import "./layout.js";
 
@@ -183,6 +184,12 @@ $("zoomIn").onclick = () => { state.zoom = Math.min(1.3, state.zoom + .1); rende
 $("zoomOut").onclick = () => { state.zoom = Math.max(.6, state.zoom - .1); renderPreview(); save(); };
 
 /* --- Initial defaults + first render --- */
+// Settings > Default paper size only seeds this starting value — if a
+// draft/invoice is restored just below (or one is opened/imported later),
+// its own saved Page size always overrides this, exactly like every other
+// field in `fields` (state.js). This never touches an invoice that
+// already has a Page size of its own.
+$("paperSize").value = getDefaultPaperSize();
 $("invoiceDate").value = today();
 $("dueDate").value = plusDays(today(), 14);
 if (!$("logoHeight").value) $("logoHeight").value = "48";
@@ -256,14 +263,22 @@ document.addEventListener("keydown", e => {
 initInstallPrompt();
 registerServiceWorker();
 
+/* --- Settings panel (Default paper size / Default date format / Theme) -
+   Date format changes need the Saved Invoices and Brand Templates lists
+   (both render a date outside the invoice canvas) re-drawn immediately so
+   the new format is visible without reopening either panel. --- */
+initSettings(() => { renderHistory(); renderBrandTemplates(); });
+
 /* --- Build/version string ---------------------------------------------
-   Not shown in the UI (removed per feedback) — exposed on window only, so
-   the build can still be confirmed via the browser console if ever needed
-   (type `BUILD_STRING` in DevTools > Console). Bumped on every delivered
-   update — see js/version.js. */
+   Console-logged (type `BUILD_STRING` in DevTools > Console) and now also
+   shown, compactly, in the left sidebar footer (#sidebarVersion) — single
+   source of truth stays js/version.js, bumped by the maintainer on every
+   delivered update. */
 {
   window.APP_VERSION = APP_VERSION;
   window.BUILD_DATE = BUILD_DATE;
   window.BUILD_STRING = BUILD_STRING;
   console.log(`%cInvoGen - Invoice Generator ${BUILD_STRING}`, "color:#4f46e5;font-weight:bold;");
+  const versionEl = $("sidebarVersion");
+  if (versionEl) { versionEl.textContent = `v${APP_VERSION}`; versionEl.title = BUILD_STRING; }
 }

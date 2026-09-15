@@ -97,6 +97,12 @@
 <div class="panel-overlay" id="panelOverlay"></div>
 <div class="app" id="appRoot">
 <aside class="sidebar" id="sidebar">
+ <!-- Everything that should scroll (install banner, nav, the blank-data
+      notice) lives in .sidebar-scroll; .sidebar-footer below it is a
+      separate, non-scrolling flex item pinned to the bottom of the
+      sidebar itself — see .sidebar/.sidebar-scroll/.sidebar-footer in
+      css/base.css. -->
+ <div class="sidebar-scroll">
   <div class="install-banner hidden" id="installBanner">
     <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Install this app for quick access and offline use.</span>
     <div style="display:flex;gap:6px;flex:none">
@@ -152,6 +158,14 @@
     </div>
   </nav>
   <div class="notice">All invoice values are blank/default. No financial data from the uploaded samples has been copied into the application.</div>
+ </div>
+ <!-- App version (js/main.js fills this in from js/version.js — single
+      source of truth) + credit link, opened in a new tab so it never
+      navigates away from an in-progress invoice. -->
+ <div class="sidebar-footer" id="sidebarFooter">
+   <span id="sidebarVersion"></span>
+   <span>Created by <a href="https://modernpsd.com/" target="_blank" rel="noopener noreferrer">Modern Studio</a></span>
+ </div>
 </aside>
 
 <main class="workspace">
@@ -563,13 +577,45 @@
   </div>
 
   <!-- Settings and Help & Support — opened from the matching nav rows in
-       the left sidebar (js/layout.js). Neither backs an existing feature,
-       so each says something true instead of pretending: Settings notes
-       that every current preference already lives in the Design panel,
-       and Help documents this app's own real, less-obvious interactions. -->
+       the left sidebar (js/layout.js). Settings holds app-wide preferences
+       only (this device, not any one invoice) — wired up in js/settings.js:
+       Default paper size / Default date format / Theme, plus a Reset. It
+       intentionally does NOT duplicate the per-invoice Page setup/
+       Alignment/Template/Currency/Table Columns controls already on the
+       Design panel (right sidebar) — see the hint text below. Help remains
+       real, current documentation of this app's own less-obvious
+       interactions. -->
   <div class="history-panel" id="settingsPanel" role="dialog" aria-label="Settings">
     <div class="history-panel-head"><h2>Settings</h2></div>
-    <span class="hint">There's nothing app-wide to configure yet — every preference that exists today (colors, layout, currency, template, which sections show) already lives in the Design panel on the right, and applies instantly per invoice.</span>
+    <div class="grid2">
+      <div class="field">
+        <label for="settingPaperSize">Default paper size</label>
+        <select id="settingPaperSize">
+          <option value="a4">A4</option>
+          <option value="letter">US Letter</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="settingDateFormat">Default date format</label>
+        <select id="settingDateFormat">
+          <option value="dmy">DD/MM/YYYY</option>
+          <option value="mdy">MM/DD/YYYY</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" style="margin-top:8px">
+      <label id="settingThemeLabel">Theme</label>
+      <div class="theme-switch" role="tablist" aria-labelledby="settingThemeLabel">
+        <button type="button" class="theme-btn" data-theme="light" role="tab" title="Light theme">Light</button>
+        <button type="button" class="theme-btn" data-theme="dark" role="tab" title="Dark theme">Dark</button>
+        <button type="button" class="theme-btn" data-theme="system" role="tab" title="Match your device setting">System</button>
+      </div>
+    </div>
+    <span class="hint" style="display:block;margin-top:8px">Saved on this device and applied across the app. Page size, alignment, template, currency and table columns stay per-invoice in the Design panel.</span>
+    <div class="danger-zone">
+      <div class="danger-zone-label">Danger zone</div>
+      <button class="btn small danger" id="resetSettingsBtn" type="button" style="width:100%">Reset settings to default</button>
+    </div>
   </div>
 
   <div class="history-panel" id="helpPanel" role="dialog" aria-label="Help and support">

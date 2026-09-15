@@ -32,7 +32,7 @@
    stacked layout as space shrinks. */
 @media (max-width:1080px){
   .app,.app.design-closed{grid-template-columns:1fr}
-  .sidebar{position:static;height:auto;max-height:60vh;border-right:0;border-bottom:1px solid var(--line)}
+  .sidebar{position:static;height:auto;max-height:60vh;overflow:hidden;border-right:0;border-bottom:1px solid var(--line)}
   .sidebar-resizer{display:none}
   .workspace{padding:16px}
   .right-sidebar{position:static;height:auto;max-height:60vh;border-left:0;border-top:1px solid var(--line)}
@@ -63,7 +63,8 @@
   body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
   .app{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
   .sidebar,.workspace,.right-sidebar{flex:1 1 auto;min-height:0;max-height:none;height:auto;overflow:auto}
-  .sidebar{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  .sidebar{overflow:hidden}
+  .sidebar-scroll{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
   .right-sidebar{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
   /* The right (Design) sidebar holds canvas/document settings (Page setup,
      Alignment, Template, Colors, Show/Hide), so it belongs with the canvas:

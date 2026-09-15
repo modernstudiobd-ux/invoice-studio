@@ -18,6 +18,7 @@ import { renderToggles } from "./toggles.js";
 import { renderPreview } from "./preview.js";
 import { save } from "./persistence.js";
 import { toast } from "./toast.js";
+import { formatDateBySetting } from "./settings.js";
 import { closeTemplatesPanel } from "./layout.js";
 
 export const BRAND_KEY = "invoiceStudio.brandTemplates.v1";
