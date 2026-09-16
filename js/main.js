@@ -264,10 +264,13 @@ initInstallPrompt();
 registerServiceWorker();
 
 /* --- Settings panel (Default paper size / Default date format / Theme) -
-   Date format changes need the Saved Invoices and Brand Templates lists
-   (both render a date outside the invoice canvas) re-drawn immediately so
-   the new format is visible without reopening either panel. --- */
-initSettings(() => { renderHistory(); renderBrandTemplates(); });
+   Default paper size is wired directly to the real #paperSize field (see
+   js/settings.js) so it needs no extra handling here. Date format changes
+   need everything that renders a date through format.js's dateFmt() to
+   redraw immediately: the current invoice's own "date"-type line-item
+   columns (renderPreview), plus the Saved Invoices and Brand Templates
+   lists, both of which live outside the invoice canvas. --- */
+initSettings(() => { renderPreview(); renderHistory(); renderBrandTemplates(); });
 
 /* --- Build/version string ---------------------------------------------
    Console-logged (type `BUILD_STRING` in DevTools > Console) and now also

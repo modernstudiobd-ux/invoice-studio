@@ -18,7 +18,7 @@ import { renderToggles } from "./toggles.js";
 import { renderPreview } from "./preview.js";
 import { save } from "./persistence.js";
 import { toast } from "./toast.js";
-import { formatDateBySetting } from "./settings.js";
+import { dateFmt } from "./format.js";
 import { closeTemplatesPanel } from "./layout.js";
 
 export const BRAND_KEY = "invoiceStudio.brandTemplates.v1";
@@ -145,7 +145,7 @@ export function renderBrandTemplates() {
   if (!list.length) { root.innerHTML = '<p class="hint">No templates yet — save your current company info, logo and design above, then reuse it for the next brand.</p>'; return; }
   root.innerHTML = list.map(e => `<div class="historycard" data-id="${esc(e.id)}">
    <div class="historytop"><div><strong>${esc(e.name)}</strong></div></div>
-   <div class="historymeta"><span>${esc((e.snapshot && e.snapshot.fields && e.snapshot.fields.companyName) || "No company name")}</span><span>${esc(new Date(e.updatedAt).toLocaleDateString())}</span></div>
+   <div class="historymeta"><span>${esc((e.snapshot && e.snapshot.fields && e.snapshot.fields.companyName) || "No company name")}</span><span>${esc(dateFmt(e.updatedAt))}</span></div>
    <div class="historyactions"><button class="btn small" data-act="apply" type="button">Load</button><button class="btn small" data-act="rename" type="button">Rename</button><button class="btn small danger" data-act="delete" type="button">Delete</button></div>
  </div>`).join("");
   root.querySelectorAll(".historycard").forEach(card => {

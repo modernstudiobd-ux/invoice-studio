@@ -3,12 +3,11 @@
 
 import { $, esc, uid } from "./dom.js";
 import { state, serialize } from "./state.js";
-import { moneyFor, today, plusDays } from "./format.js";
+import { moneyFor, today, plusDays, dateFmt } from "./format.js";
 import { calc } from "./calc.js";
 import { toast } from "./toast.js";
 import { load } from "./invoiceData.js";
 import { renderPreview } from "./preview.js";
-import { formatDateBySetting } from "./settings.js";
 
 import { save } from "./persistence.js";
 import { setMobileView, closeHistoryPanel } from "./layout.js";
@@ -63,7 +62,7 @@ export function renderHistory() {
   if (!lib.length) { root.innerHTML = '<p class="hint">No saved invoices yet — click Save above to add this one.</p>'; return; }
   root.innerHTML = lib.map(e => `<div class="historycard${e.id === curId ? " current" : ""}" data-id="${esc(e.id)}">
    <div class="historytop"><div><strong>${esc(e.invoiceNumber || "Untitled")}</strong>${e.id === curId ? '<span class="tinybadge">Current</span>' : ""}</div><span class="historyamount">${esc(moneyFor(e.total, e.currency))}</span></div>
-   <div class="historymeta"><span>${esc(e.clientName || "No client")} · ${esc(e.status || "Draft")}</span><span>${esc(formatDateBySetting(e.updatedAt))}</span></div>
+   <div class="historymeta"><span>${esc(e.clientName || "No client")} · ${esc(e.status || "Draft")}</span><span>${esc(dateFmt(e.updatedAt))}</span></div>
    <div class="historyactions"><button class="btn small" data-act="open" type="button">Open</button><button class="btn small" data-act="rename" type="button">Rename</button><button class="btn small" data-act="duplicate" type="button">Duplicate</button><button class="btn small danger" data-act="delete" type="button">Delete</button></div>
  </div>`).join("");
   root.querySelectorAll(".historycard").forEach(card => {

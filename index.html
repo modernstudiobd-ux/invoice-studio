@@ -577,14 +577,19 @@
   </div>
 
   <!-- Settings and Help & Support — opened from the matching nav rows in
-       the left sidebar (js/layout.js). Settings holds app-wide preferences
-       only (this device, not any one invoice) — wired up in js/settings.js:
-       Default paper size / Default date format / Theme, plus a Reset. It
-       intentionally does NOT duplicate the per-invoice Page setup/
-       Alignment/Template/Currency/Table Columns controls already on the
-       Design panel (right sidebar) — see the hint text below. Help remains
-       real, current documentation of this app's own less-obvious
-       interactions. -->
+       the left sidebar (js/layout.js). Settings holds app-wide preferences,
+       wired up in js/settings.js: Default paper size / Default date
+       format / Theme, plus a Reset.
+        - Default paper size is NOT a separate/duplicate control — it live-
+          mirrors the exact same #paperSize field the Design panel's own
+          "Page size" already drives (state.js), so changing either one
+          updates the other and the actual invoice/print/PDF output.
+        - Default date format persists its own setting, read directly by
+          format.js's dateFmt() — the app's one real date-formatting
+          function — so it's never duplicated per-component.
+       Alignment/Template/Currency/Table Columns remain per-invoice-only,
+       exactly as before (see the hint text below). Help remains real,
+       current documentation of this app's own less-obvious interactions. -->
   <div class="history-panel" id="settingsPanel" role="dialog" aria-label="Settings">
     <div class="history-panel-head"><h2>Settings</h2></div>
     <div class="grid2">
@@ -611,7 +616,7 @@
         <button type="button" class="theme-btn" data-theme="system" role="tab" title="Match your device setting">System</button>
       </div>
     </div>
-    <span class="hint" style="display:block;margin-top:8px">Saved on this device and applied across the app. Page size, alignment, template, currency and table columns stay per-invoice in the Design panel.</span>
+    <span class="hint" style="display:block;margin-top:8px">Saved on this device. Default paper size applies immediately and stays in sync with Page size in the Design panel; date format updates every date rendered through the app. Alignment, template, currency and table columns stay per-invoice in the Design panel.</span>
     <div class="danger-zone">
       <div class="danger-zone-label">Danger zone</div>
       <button class="btn small danger" id="resetSettingsBtn" type="button" style="width:100%">Reset settings to default</button>

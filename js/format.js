@@ -19,6 +19,7 @@
 // these still render correctly with no network connection.
 
 import { $, esc } from "./dom.js";
+import { getDateFormat } from "./settings.js";
 
 export function num(v) {
   v = Number(v);
@@ -40,9 +41,31 @@ export function alignClass(a) {
   return a === "right" ? "right" : a === "center" ? "center" : "";
 }
 
+function pad2(n) { return String(n).padStart(2, "0"); }
+
+// The single place invoice dates are rendered as text anywhere in the app
+// (as opposed to a native <input type="date">, which the browser/OS itself
+// renders) — used by fmtCell() below for "date"-type line-item columns,
+// and by the Saved Invoices / Brand Templates lists (js/library.js,
+// js/brandTemplates.js). Always reads the live Settings > Default date
+// format (js/settings.js) rather than a fixed style, so changing that
+// setting is immediately reflected everywhere a date is formatted through
+// this function — nothing else in the app hardcodes a date format.
+// Accepts a "YYYY-MM-DD" date-only string (line-item cell values, native
+// date-input values), a timestamp number, or a Date.
 export function dateFmt(v) {
-  if (!v) return "—";
-  return new Intl.DateTimeFormat("en-US", { day: "numeric", month: "long", year: "numeric" }).format(new Date(v + "T00:00:00"));
+  if (v === "" || v == null) return "—";
+  let d;
+  if (v instanceof Date) d = v;
+  else if (typeof v === "number") d = new Date(v);
+  // A plain "YYYY-MM-DD" string is parsed at local midnight (appending
+  // T00:00:00) so it never shifts a day depending on the visitor's UTC
+  // offset — new Date("YYYY-MM-DD") alone parses as UTC midnight.
+  else if (/^\d{4}-\d{2}-\d{2}$/.test(String(v))) d = new Date(v + "T00:00:00");
+  else d = new Date(v);
+  if (isNaN(d.getTime())) return "—";
+  const day = pad2(d.getDate()), month = pad2(d.getMonth() + 1), year = d.getFullYear();
+  return getDateFormat() === "mdy" ? `${month}/${day}/${year}` : `${day}/${month}/${year}`;
 }
 
 // Kept only for anything that still wants a locale hint (not used by
