@@ -32,9 +32,17 @@ export const defaultSections = () => Object.fromEntries(sectionDefs.map(x => [x[
 // `fields` array below and index.html). defaultLabels() is kept only as
 // fallback/placeholder text and to migrate invoices saved before this
 // change (see LEGACY_LABEL_MAP in invoiceData.js / brandTemplates.js).
+// bill/note/payment/terms are uppercase here to match the literal
+// uppercase placeholder text those four fields carry in index.html (see
+// the .label rule in css/invoice.css — the uppercase default look comes
+// from that literal text now, not a text-transform, so a genuinely
+// customized value keeps its exact typed casing instead of being forced
+// uppercase too); this keeps a pre-3.15 file with no saved value for one
+// of these four falling back to the *same* default a brand-new invoice
+// shows, rather than a differently-cased one.
 export const defaultLabels = () => ({
-  title: "INVOICE", bill: "Bill to", balance: "Balance due", note: "Invoice note",
-  payment: "Payment details", terms: "Terms", date: "Invoice date", due: "Due date", ref: "Reference"
+  title: "INVOICE", bill: "BILL TO", balance: "Balance due", note: "NOTE",
+  payment: "PAYMENT DETAILS", terms: "TERMS", date: "Invoice date", due: "Due date", ref: "Reference"
 });
 
 // Maps each new label field id to its key in the old (pre-3.15) top-level

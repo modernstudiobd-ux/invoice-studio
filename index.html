@@ -316,8 +316,8 @@
         <h2><input id="labelTitle" placeholder="INVOICE" aria-label="Document title"></h2>
         <div class="invno"><span class="hashprefix" aria-hidden="true">#</span><input id="invoiceNumber" value="INV-1001" aria-label="Invoice number"></div>
         <table class="metatable">
-          <tr data-section="invoiceDate"><td><input id="labelInvoiceDate" placeholder="Invoice date" aria-label="Invoice date row label"></td><td><input id="invoiceDate" type="date" aria-label="Invoice date"></td></tr>
-          <tr data-section="dueDate"><td><input id="labelDueDate" placeholder="Due date" aria-label="Due date row label"></td><td><input id="dueDate" type="date" aria-label="Due date"></td></tr>
+          <tr data-section="invoiceDate"><td><input id="labelInvoiceDate" placeholder="Invoice date" aria-label="Invoice date row label"></td><td><input id="invoiceDate" type="date" aria-label="Invoice date"><span class="date-display" id="invoiceDateDisplay"></span></td></tr>
+          <tr data-section="dueDate"><td><input id="labelDueDate" placeholder="Due date" aria-label="Due date row label"></td><td><input id="dueDate" type="date" aria-label="Due date"><span class="date-display" id="dueDateDisplay"></span></td></tr>
           <tr data-section="reference"><td><input id="labelReference" placeholder="Reference" aria-label="Reference row label"></td><td><input id="reference" placeholder="Add value" aria-label="Reference / PO value"></td></tr>
         </table>
         <div class="statusbalance">
@@ -330,7 +330,7 @@
     </header>
     <section class="billrow">
       <div data-section="client">
-        <input id="labelBillTo" class="label" placeholder="Bill to" aria-label="Bill to label">
+        <input id="labelBillTo" class="label" placeholder="BILL TO" aria-label="Bill to label">
         <input id="clientName" class="clientname" placeholder="Client name" aria-label="Client company name">
         <div class="metaText" id="pClientMeta">
           <input id="clientContact" placeholder="Contact name" aria-label="Client contact">
@@ -360,7 +360,7 @@
     <table class="invtable"><colgroup id="pCols"></colgroup><thead><tr id="pHeaders"></tr></thead><tbody id="pItems"></tbody></table>
     <section class="bottomgrid">
       <div class="notebox" data-section="notes">
-        <input id="labelNote" class="label" placeholder="Invoice note" aria-label="Note label">
+        <input id="labelNote" class="label" placeholder="NOTE" aria-label="Note label">
         <textarea id="notes" class="metaText" rows="1" placeholder="Click to add a note" aria-label="Invoice note text"></textarea>
       </div>
       <div class="summary">
@@ -373,11 +373,11 @@
     </section>
     <section class="paymentgrid">
       <div data-section="payment">
-        <input id="labelPayment" class="label" placeholder="Payment details" aria-label="Payment details label">
+        <input id="labelPayment" class="label" placeholder="PAYMENT DETAILS" aria-label="Payment details label">
         <textarea id="paymentDetails" class="metaText" rows="1" placeholder="Add payment details" aria-label="Payment details text"></textarea>
       </div>
       <div data-section="terms">
-        <input id="labelTerms" class="label" placeholder="Terms" aria-label="Terms label">
+        <input id="labelTerms" class="label" placeholder="TERMS" aria-label="Terms label">
         <textarea id="terms" class="metaText" rows="1" placeholder="Click to add terms" aria-label="Terms text"></textarea>
       </div>
     </section>
@@ -447,32 +447,32 @@
       <label for="totalColorHex">Balance due text color</label>
       <div class="colorrow">
         <input id="totalColor" type="color" value="#18181b" aria-label="Balance due text color swatch">
-        <input id="totalColorHex" type="text" placeholder="Auto (template default)" autocomplete="off" spellcheck="false">
-        <button class="btn small icon" id="totalColorClear" type="button" title="Clear override" aria-label="Clear balance due text color override"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+        <input id="totalColorHex" type="text" placeholder="Template default" autocomplete="off" spellcheck="false">
+        <button class="btn small icon" id="totalColorClear" type="button" title="Clear override" aria-label="Clear balance due text color override"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 2.636-6.364L3 8"/><path d="M3 3v5h5"/></svg></button>
       </div>
     </div>
     <div class="field">
       <label for="headerColorHex">Header background</label>
       <div class="colorrow">
         <input id="headerColor" type="color" value="#ffffff" aria-label="Header background swatch">
-        <input id="headerColorHex" type="text" placeholder="Auto (template default)" autocomplete="off" spellcheck="false">
-        <button class="btn small icon" id="headerColorClear" type="button" title="Clear override" aria-label="Clear header background override"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+        <input id="headerColorHex" type="text" placeholder="Template default" autocomplete="off" spellcheck="false">
+        <button class="btn small icon" id="headerColorClear" type="button" title="Clear override" aria-label="Clear header background override"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 2.636-6.364L3 8"/><path d="M3 3v5h5"/></svg></button>
       </div>
     </div>
     <div class="field">
       <label for="headerTextColorHex">Header text color</label>
       <div class="colorrow">
         <input id="headerTextColor" type="color" value="#101828" aria-label="Header text color swatch">
-        <input id="headerTextColorHex" type="text" placeholder="Auto (template default)" autocomplete="off" spellcheck="false">
-        <button class="btn small icon" id="headerTextColorClear" type="button" title="Clear override" aria-label="Clear header text color override"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+        <input id="headerTextColorHex" type="text" placeholder="Template default" autocomplete="off" spellcheck="false">
+        <button class="btn small icon" id="headerTextColorClear" type="button" title="Clear override" aria-label="Clear header text color override"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 2.636-6.364L3 8"/><path d="M3 3v5h5"/></svg></button>
       </div>
     </div>
     <div class="field">
       <label for="invoiceColorHex">Invoice area background</label>
       <div class="colorrow">
         <input id="invoiceColor" type="color" value="#ffffff" aria-label="Invoice area background swatch">
-        <input id="invoiceColorHex" type="text" placeholder="Auto (template default)" autocomplete="off" spellcheck="false">
-        <button class="btn small icon" id="invoiceColorClear" type="button" title="Clear override" aria-label="Clear invoice area background override"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+        <input id="invoiceColorHex" type="text" placeholder="Template default" autocomplete="off" spellcheck="false">
+        <button class="btn small icon" id="invoiceColorClear" type="button" title="Clear override" aria-label="Clear invoice area background override"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 2.636-6.364L3 8"/><path d="M3 3v5h5"/></svg></button>
       </div>
     </div>
   </section>

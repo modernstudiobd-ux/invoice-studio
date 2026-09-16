@@ -147,6 +147,21 @@ body.canvas-preview-mode .invoice select:focus{outline:none}
 body.canvas-preview-mode .invoice input[type=number]::-webkit-outer-spin-button,
 body.canvas-preview-mode .invoice input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 body.canvas-preview-mode .invoice input[type=date]::-webkit-calendar-picker-indicator{display:none}
+/* Invoice date / Due date (js/format.js's dateFmt()) — native <input
+   type=date> controls always render their own text in the browser/OS's
+   locale format, completely ignoring Settings > Default date format; that
+   can't be changed while the field stays a real, editable native date
+   picker (needed in Edit), so Edit keeps the native input as-is. Preview
+   and Print/PDF are read-only dry runs of the final document (both switch
+   on via this same body.canvas-preview-mode class — see js/print.js), so
+   there each date input is swapped for a plain text sibling (#invoiceDateDisplay/
+   #dueDateDisplay, filled by dateFmt() in js/preview.js) that always
+   reflects the selected format, the same as every other date on the
+   document. */
+.invoice .date-display{display:none}
+body.canvas-preview-mode .invoice input#invoiceDate,
+body.canvas-preview-mode .invoice input#dueDate{display:none}
+body.canvas-preview-mode .invoice .date-display{display:inline}
 /* Edit is an editing form, not a page-accurate mock-up — it shouldn't be
    held open to a fixed A4/Letter height (min-height, set below on the base
    .invoice rule) when the actual fields don't fill one, since that leaves a
@@ -433,7 +448,20 @@ body.canvas-preview-mode .add-item-row{display:none}
 .item-remove-btn:focus-visible{outline:2px solid #b42318;outline-offset:1px}
 th.item-actions-col{background:transparent!important;border:0!important}
 .statusbalance{margin-top:10px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}.statusbalance .balance{margin-top:0;width:100%}
-.billrow{margin:14px 0}.label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#667085;font-weight:850;margin-bottom:4px}.clientname{font-size:14px;font-weight:850;margin-bottom:3px}.status{display:inline-flex;flex:none;white-space:nowrap;text-align:center;padding:5px 22px 5px 9px;border-radius:999px;font-size:9.5px;font-weight:850;border:1px solid #abefc6;background-color:#ecfdf3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;background-size:11px;color:#18794e}
+.billrow{margin:14px 0}
+/* .label's default text (BILL TO / NOTE / PAYMENT DETAILS / TERMS) is
+   uppercase because it's literally typed that way as each field's
+   placeholder (index.html) — not via a CSS text-transform. A blanket
+   text-transform:uppercase here used to force EVERY value uppercase,
+   including whatever a person actually typed into these renameable
+   labels (e.g. typing "Bill To" displayed as "BILL TO" regardless),
+   silently discarding their exact casing. Removing it means the
+   placeholder (shown only while the field is empty) stays uppercase as
+   written, and a customized value now always renders in the exact
+   casing the person typed — in Edit, Preview, Print and PDF alike, since
+   all four are the same native input/placeholder, just with different
+   CSS around it (see body.canvas-preview-mode rules below). */
+.label{font-size:9px;letter-spacing:.08em;color:#667085;font-weight:850;margin-bottom:4px}.clientname{font-size:14px;font-weight:850;margin-bottom:3px}.status{display:inline-flex;flex:none;white-space:nowrap;text-align:center;padding:5px 22px 5px 9px;border-radius:999px;font-size:9.5px;font-weight:850;border:1px solid #abefc6;background-color:#ecfdf3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;background-size:11px;color:#18794e}
 /* Line-items table toolbar (Import CSV) — Edit mode only, sits directly
    above the table it acts on rather than in the whole-invoice toolbar
    above the canvas, so it reads as belonging to the table specifically.

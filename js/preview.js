@@ -2,7 +2,7 @@
 
 import { $, esc } from "./dom.js";
 import { state, currentPaper, applyPaperSize, templateFooterInsetMm, templatePaddingMm } from "./state.js";
-import { money, alignClass, fmtCell, num } from "./format.js";
+import { money, alignClass, fmtCell, num, dateFmt } from "./format.js";
 import { calc, itemValue } from "./calc.js";
 import { applyAllOptionalColors } from "./accent.js";
 import { syncCurrencyDisplay } from "./currencySearch.js";
@@ -47,6 +47,15 @@ export function renderPreview() {
 
   const invoiceDateVal = $("invoiceDate").value;
   const dueDateVal = $("dueDate").value;
+  // Preview/Print/PDF show these two dates via the plain-text
+  // #invoiceDateDisplay/#dueDateDisplay siblings (see css/invoice.css)
+  // instead of the native date input, so they always honor Settings >
+  // Default date format (js/format.js's dateFmt()) — the same function
+  // every other date on the document already goes through — rather than
+  // whatever locale format the browser/OS renders inside a native
+  // <input type="date">.
+  setText($("invoiceDateDisplay"), invoiceDateVal ? dateFmt(invoiceDateVal) : "");
+  setText($("dueDateDisplay"), dueDateVal ? dateFmt(dueDateVal) : "");
   const referenceText = $("reference").value.trim();
   const notesText = $("notes").value.trim();
   const termsText = $("terms").value.trim();
