@@ -149,16 +149,65 @@ body.canvas-preview-mode .invoice input[type=number]::-webkit-inner-spin-button{
 body.canvas-preview-mode .invoice input[type=date]::-webkit-calendar-picker-indicator{display:none}
 /* Invoice date / Due date (js/format.js's dateFmt()) — native <input
    type=date> controls always render their own text in the browser/OS's
-   locale format, completely ignoring Settings > Default date format; that
-   can't be changed while the field stays a real, editable native date
-   picker (needed in Edit), so Edit keeps the native input as-is. Preview
-   and Print/PDF are read-only dry runs of the final document (both switch
-   on via this same body.canvas-preview-mode class — see js/print.js), so
-   there each date input is swapped for a plain text sibling (#invoiceDateDisplay/
-   #dueDateDisplay, filled by dateFmt() in js/preview.js) that always
-   reflects the selected format, the same as every other date on the
-   document. */
+   locale format, completely ignoring Settings > Default date format.
+   Preview and Print/PDF (both switch on via body.canvas-preview-mode —
+   see js/print.js) are read-only, so there the input is swapped outright
+   for a plain text sibling (#invoiceDateDisplay/#dueDateDisplay, filled
+   by dateFmt() in js/preview.js) that always reflects the selected
+   format.
+   Edit needs to stay a real, focusable/editable native date picker (that
+   can't be swapped for plain text without losing the picker), so instead
+   the formatted text is laid over the input as a pointer-events:none
+   overlay, and the input's own native text is made transparent
+   (.has-date-override, toggled by renderPreview() only once the field
+   actually has a value — an empty field keeps its normal native "click to
+   add a date" hint, untouched) so what's actually read is the overlay,
+   not the browser's own locale text. Clicking/tabbing into the field to
+   actually change it needs the input's real native text visible again (so
+   the person can see what they're typing), so :focus reverses both of
+   those — real text back, overlay hidden — and reverts back to the
+   overlay the moment it's blurred. */
+.invoice tr[data-section="invoiceDate"] td:last-child,
+.invoice tr[data-section="dueDate"] td:last-child{position:relative}
 .invoice .date-display{display:none}
+body:not(.canvas-preview-mode) .invoice .date-display{position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;pointer-events:none;padding-right:15px}
+/* color/-webkit-text-fill-color on the <input> itself doesn't reliably
+   reach Chrome's own internal date-field text (the day/month/year
+   segments + separators are rendered by UA shadow parts, not by the
+   host element's own text box) — left at just the line below, those
+   segments still painted faintly through, showing as a doubled/ghosted
+   date behind the overlay. Targeting the shadow parts directly clears
+   that up completely. */
+body:not(.canvas-preview-mode) .invoice input#invoiceDate.has-date-override,
+body:not(.canvas-preview-mode) .invoice input#dueDate.has-date-override{color:transparent;-webkit-text-fill-color:transparent}
+body:not(.canvas-preview-mode) .invoice input#invoiceDate.has-date-override::-webkit-datetime-edit,
+body:not(.canvas-preview-mode) .invoice input#dueDate.has-date-override::-webkit-datetime-edit,
+body:not(.canvas-preview-mode) .invoice input#invoiceDate.has-date-override::-webkit-datetime-edit-fields-wrapper,
+body:not(.canvas-preview-mode) .invoice input#dueDate.has-date-override::-webkit-datetime-edit-fields-wrapper,
+body:not(.canvas-preview-mode) .invoice input#invoiceDate.has-date-override::-webkit-datetime-edit-text,
+body:not(.canvas-preview-mode) .invoice input#dueDate.has-date-override::-webkit-datetime-edit-text,
+body:not(.canvas-preview-mode) .invoice input#invoiceDate.has-date-override::-webkit-datetime-edit-day-field,
+body:not(.canvas-preview-mode) .invoice input#dueDate.has-date-override::-webkit-datetime-edit-day-field,
+body:not(.canvas-preview-mode) .invoice input#invoiceDate.has-date-override::-webkit-datetime-edit-month-field,
+body:not(.canvas-preview-mode) .invoice input#dueDate.has-date-override::-webkit-datetime-edit-month-field,
+body:not(.canvas-preview-mode) .invoice input#invoiceDate.has-date-override::-webkit-datetime-edit-year-field,
+body:not(.canvas-preview-mode) .invoice input#dueDate.has-date-override::-webkit-datetime-edit-year-field{color:transparent;-webkit-text-fill-color:transparent}
+body:not(.canvas-preview-mode) .invoice input#invoiceDate:focus,
+body:not(.canvas-preview-mode) .invoice input#dueDate:focus{color:inherit;-webkit-text-fill-color:currentColor}
+body:not(.canvas-preview-mode) .invoice input#invoiceDate:focus::-webkit-datetime-edit,
+body:not(.canvas-preview-mode) .invoice input#dueDate:focus::-webkit-datetime-edit,
+body:not(.canvas-preview-mode) .invoice input#invoiceDate:focus::-webkit-datetime-edit-fields-wrapper,
+body:not(.canvas-preview-mode) .invoice input#dueDate:focus::-webkit-datetime-edit-fields-wrapper,
+body:not(.canvas-preview-mode) .invoice input#invoiceDate:focus::-webkit-datetime-edit-text,
+body:not(.canvas-preview-mode) .invoice input#dueDate:focus::-webkit-datetime-edit-text,
+body:not(.canvas-preview-mode) .invoice input#invoiceDate:focus::-webkit-datetime-edit-day-field,
+body:not(.canvas-preview-mode) .invoice input#dueDate:focus::-webkit-datetime-edit-day-field,
+body:not(.canvas-preview-mode) .invoice input#invoiceDate:focus::-webkit-datetime-edit-month-field,
+body:not(.canvas-preview-mode) .invoice input#dueDate:focus::-webkit-datetime-edit-month-field,
+body:not(.canvas-preview-mode) .invoice input#invoiceDate:focus::-webkit-datetime-edit-year-field,
+body:not(.canvas-preview-mode) .invoice input#dueDate:focus::-webkit-datetime-edit-year-field{color:inherit;-webkit-text-fill-color:currentColor}
+body:not(.canvas-preview-mode) .invoice input#invoiceDate:focus ~ .date-display,
+body:not(.canvas-preview-mode) .invoice input#dueDate:focus ~ .date-display{display:none}
 body.canvas-preview-mode .invoice input#invoiceDate,
 body.canvas-preview-mode .invoice input#dueDate{display:none}
 body.canvas-preview-mode .invoice .date-display{display:inline}

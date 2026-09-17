@@ -53,9 +53,14 @@ export function renderPreview() {
   // Default date format (js/format.js's dateFmt()) — the same function
   // every other date on the document already goes through — rather than
   // whatever locale format the browser/OS renders inside a native
-  // <input type="date">.
+  // <input type="date">. Edit keeps the real native input (needed for the
+  // picker) but overlays the same formatted text on top of it via CSS,
+  // gated by .has-date-override so an empty field's normal native "click
+  // to add a date" hint is left alone.
   setText($("invoiceDateDisplay"), invoiceDateVal ? dateFmt(invoiceDateVal) : "");
   setText($("dueDateDisplay"), dueDateVal ? dateFmt(dueDateVal) : "");
+  $("invoiceDate").classList.toggle("has-date-override", !!invoiceDateVal);
+  $("dueDate").classList.toggle("has-date-override", !!dueDateVal);
   const referenceText = $("reference").value.trim();
   const notesText = $("notes").value.trim();
   const termsText = $("terms").value.trim();
