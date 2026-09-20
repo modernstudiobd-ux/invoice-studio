@@ -64,7 +64,28 @@ button.design-reopen-btn{display:none}
    requests. The gradient/rounding live in the SVG itself; this box only
    handles sizing, elevation, and clipping so the logo reads identically
    everywhere it appears. */
-.brand{display:flex;gap:10px;align-items:center}.mark{width:38px;height:38px;border-radius:11px;box-shadow:0 4px 12px rgba(var(--app-accent-rgb),.35);display:grid;place-items:center;flex:none;overflow:hidden}
+.brand{display:flex;gap:10px;align-items:center;min-width:0;width:100%}
+/* Flex items default to min-width:auto (their content's un-shrunk min-content
+   size), not 0 — for this wrapper that min-content size is the tagline's
+   full nowrap text width (see .brand p below), which silently forced .brand,
+   .topbar and .appheader wider than the viewport on narrow phones no matter
+   how much overflow:hidden/text-overflow:ellipsis the text itself had,
+   since there was never a bounded width for those to truncate against.
+   The explicit width:100% above matters even more on phones specifically:
+   .topbar switches to align-items:flex-start there (responsive.css, so its
+   column-stacked children read top-aligned instead of centered) — normal/
+   stretch (the desktop default) was what had been implicitly holding .brand
+   to topbar's own width; flex-start sizes a flex item by its own content
+   instead, which is exactly the wide, unshrinkable nowrap text this rule
+   fixes, so .brand needs to claim topbar's full width itself rather than
+   relying on stretch to hand it over. */
+.brand>div:not(.mark){min-width:0;flex:1 1 auto}
+/* :not(.mark) above matters, not just style: .mark (the logo icon box,
+   defined next) is also a plain <div> and a direct child of .brand, so an
+   unqualified ".brand>div" rule matches it too — and by specificity (a
+   class+type combinator beats .mark's own single-class "flex:none") would
+   win and stretch the 38px icon into a full-width bar. */
+.mark{width:38px;height:38px;border-radius:11px;box-shadow:0 4px 12px rgba(var(--app-accent-rgb),.35);display:grid;place-items:center;flex:none;overflow:hidden}
 .mark svg{width:100%;height:100%;display:block}
 .brand h1{font-size:17px;margin:0;letter-spacing:-.01em}.brand p{margin:2px 0 0;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Feature tagline — the app's one-line description under the wordmark.
@@ -203,6 +224,14 @@ button.design-reopen-btn{display:none}
 .history-panel.open{display:block}
 .history-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .history-panel-head h2{font-size:13px;margin:0}
+/* Close (×) button injected into every panel head by js/layout.js — hidden
+   here by default (unchanged desktop behavior: click the same toggle again,
+   or click outside) and only shown on phone widths, where it's needed (see
+   the long comment in layout.js and the .history-panel-close rule in
+   responsive.css for why). */
+.history-panel-close{display:none;flex:none;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:0;background:transparent;border-radius:8px;color:var(--muted)}
+.history-panel-close:hover{background:#f1f2f6;color:var(--ink)}
+.history-panel-close .icon{width:15px;height:15px}
 
 /* Off-screen but still fully functional data-backing fields (see
    #detailsHiddenFields in index.html) — every value on the invoice that

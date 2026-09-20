@@ -202,6 +202,13 @@ function startResizeDrag(handle, startEvent) {
 /* ------------------------------ per-column popover ------------------------------ */
 
 let colSettingsKey = null;
+// Phone-width check, mirroring js/layout.js's own phoneQuery (same two
+// conditions, kept in sync with the CSS breakpoints in responsive.css) — a
+// separate local instance rather than importing layout.js's, since
+// layout.js already imports closeColSettings from this module (an import
+// back the other way would be circular).
+const colSettingsPhoneQuery = window.matchMedia("(max-width:640px),(max-width:960px) and (max-height:500px)");
+
 function openColSettings(triggerBtn) {
   const key = triggerBtn.dataset.key;
   const c = state.columns.find(c => c.key === key);
@@ -214,6 +221,22 @@ function openColSettings(triggerBtn) {
   $("colSettingsRole").value = c.role;
   panel.classList.add("open");
   triggerBtn.setAttribute("aria-expanded", "true");
+  // On phone widths this panel is centered via CSS (top/left/transform —
+  // see .history-panel in responsive.css, the same treatment every other
+  // floating panel gets), not anchored beside the button that opened it —
+  // there's no toolbar-relative position worth anchoring to on a single-
+  // column phone layout, and critically, leaving any of this function's own
+  // inline left/top/width in place would fight that CSS transform (which
+  // assumes it's the only thing positioning the panel) and render it mostly
+  // off-screen. Clearing them defers entirely to CSS, mirroring exactly
+  // what js/layout.js's positionDropdownPanel() already does for every
+  // other panel at this same breakpoint.
+  if (colSettingsPhoneQuery.matches) {
+    panel.style.top = "";
+    panel.style.left = "";
+    panel.style.width = "";
+    return;
+  }
   const r = triggerBtn.getBoundingClientRect();
   const width = Math.min(260, window.innerWidth - 32);
   let left = r.left + r.width / 2 - width / 2;

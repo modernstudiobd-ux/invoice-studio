@@ -63,7 +63,11 @@ setMobileView("edit");
 // backdrop sits behind that card: tapping it dismisses the panel, the same
 // way tapping outside any dropdown already does on desktop.
 const panelOverlay = $("panelOverlay");
-const phoneQuery = window.matchMedia("(max-width:640px)");
+// Matches the phone-tier CSS breakpoints in responsive.css exactly (see the
+// long comment at the top of that file for why this is two conditions, not
+// one: width alone misses phones held in landscape, which are often wider
+// than 640px while still being short).
+const phoneQuery = window.matchMedia("(max-width:640px),(max-width:960px) and (max-height:500px)");
 
 // Fullscreen preview: hides all mobile chrome and gives the invoice the full viewport.
 const expandPreviewBtn = $("expandPreviewBtn"), exitFullscreenBtn = $("exitFullscreenBtn");
@@ -319,6 +323,47 @@ document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
   const openEntry = dropdowns.find(d => d.panel.classList.contains("open"));
   if (openEntry) { openEntry.close(); openEntry.toggleBtn.focus(); }
+});
+
+// Every floating panel above (History, Templates, Import, Logo settings,
+// Settings, Help — anything using the shared .history-panel look) gets a
+// close (×) button injected into its own .history-panel-head, rather than
+// hand-added to all seven in index.html: one place to add/maintain it, and
+// any future panel using the same markup pattern picks it up automatically.
+// Only shown on phone widths (see .history-panel-close in responsive.css):
+// on desktop each panel is a small dropdown anchored right next to the
+// button that opened it, so clicking that same button again (or clicking
+// anywhere else) closes it with no overlap. On a phone it opens as a
+// centered card (responsive.css) that can cover its own trigger button
+// entirely, silently turning "tap the button again to close" into a dead
+// tap — and the dimmed backdrop around a nearly-full-width/height card
+// leaves little to no visible margin to tap either, so there was no
+// reliable, discoverable way to dismiss one. Reuses each panel's own
+// registerDropdown() close() via the toggle button it already tracks
+// (found through the existing aria-controls link) instead of a second,
+// parallel close path.
+document.querySelectorAll(".history-panel").forEach(panel => {
+  const head = panel.querySelector(".history-panel-head");
+  if (!head || head.querySelector(".history-panel-close")) return;
+  const toggle = document.querySelector(`[aria-controls="${panel.id}"]`);
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "history-panel-close";
+  closeBtn.setAttribute("aria-label", "Close");
+  closeBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>';
+  head.appendChild(closeBtn);
+  // Column settings (js/columnCanvas.js) is the one panel here with no
+  // single static trigger button (it's opened from whichever column
+  // header's own "⋮" was last clicked, a different one every time, so
+  // there's nothing for a static aria-controls link to point at) — its
+  // own closeColSettings() also resets that column header button's
+  // aria-expanded and the "which column" state, so route to it directly
+  // rather than only clearing the panel's own "open" class.
+  closeBtn.addEventListener("click", () => {
+    if (panel.id === "colSettingsPanel") closeColSettings();
+    else if (toggle) toggle.click();
+    else panel.classList.remove("open");
+  });
 });
 
 // Collapsible sections — tap a panel heading to expand/collapse it. Color
