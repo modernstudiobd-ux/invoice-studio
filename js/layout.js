@@ -42,6 +42,14 @@ sidebarResizer.addEventListener("dblclick", () => {
 });
 
 const mvEditBtn = $("mvEditBtn"), mvPreviewBtn = $("mvPreviewBtn");
+// view "edit" = the left Menu/nav sidebar, view "preview" = the actual
+// canvas (+ Design panel) — named after the mobile tab's data-view value,
+// not the *other* Edit/Preview switch further down (setCanvasMode), which
+// toggles the canvas's own content between the two. Keeping this function
+// unconditional (no phoneQuery guard) is deliberate and harmless: the
+// view-edit/view-preview classes it sets only have any visual effect
+// inside the phone-tier media query in responsive.css, so calling it on a
+// desktop-width window is a no-op there.
 export function setMobileView(view) {
   appRoot.classList.toggle("view-edit", view === "edit");
   appRoot.classList.toggle("view-preview", view === "preview");
@@ -52,7 +60,14 @@ export function setMobileView(view) {
 }
 mvEditBtn.addEventListener("click", () => setMobileView("edit"));
 mvPreviewBtn.addEventListener("click", () => setMobileView("preview"));
-setMobileView("edit");
+// Default to the invoice itself, not the nav menu: someone opening the app
+// (or reloading mid-edit) wants to see/keep editing their invoice, not a
+// list of New Invoice/Load Invoice/Templates/Settings/Help — landing on
+// the menu first just added a guaranteed extra tap before reaching the one
+// thing the app is actually for. Matches the "Invoice" tab already marked
+// active in index.html's initial markup, so there's no first-paint flash
+// of the wrong tab before this runs.
+setMobileView("preview");
 
 /* --- Mobile chrome (additive UI-only wiring; no business logic here) --- */
 

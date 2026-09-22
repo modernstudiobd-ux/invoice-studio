@@ -8,6 +8,23 @@ import { applyAllOptionalColors } from "./accent.js";
 import { syncCurrencyDisplay } from "./currencySearch.js";
 import { buildColumnHeaderHtml, buildAddColumnHeaderHtml } from "./columnCanvas.js";
 
+// Matches the phone-tier CSS breakpoints in responsive.css/js/layout.js's
+// own phoneQuery exactly (see the long comment at the top of responsive.css
+// for why this is two conditions, not one). Kept as a separate, self-
+// contained query here rather than importing layout.js's copy: layout.js
+// already imports fitInvoiceCanvas *from* this file, so importing back
+// from layout.js would create a circular module dependency for one
+// three-line matchMedia query.
+const mobilePhoneQuery = window.matchMedia("(max-width:640px),(max-width:960px) and (max-height:500px)");
+// Floor for Edit mode's shrink-to-fit zoom on a phone — see the comment on
+// its one usage in fitInvoiceCanvas() below for why this exists and why
+// it's Edit-only. 0.68 was chosen as the practical balance: high enough
+// that on-canvas editing controls are comfortably distinguishable by touch
+// (roughly +48% over the ~0.46 natural fit on a 390px-wide phone), without
+// requiring so much horizontal scroll to reach the far side of the page
+// that basic company-name/client-name editing becomes awkward.
+const MOBILE_EDIT_MIN_FIT = 0.68;
+
 // Writes text into a preview element — a thin wrapper kept mainly so every
 // preview text update goes through one place (guards against a missing
 // element cleanly, same as the rest of this file's helpers).
@@ -593,11 +610,38 @@ export function fitInvoiceCanvas() {
   // clip/shift the preview instead of actually showing it larger.
   const panel = wrap.parentElement;
   const available = (panel ? panel.clientWidth : 0) || naturalW;
-  const fit = Math.min(1, available / naturalW);   // shrink to fit narrow screens; never auto-enlarge
+  let fit = Math.min(1, available / naturalW);   // shrink to fit narrow screens; never auto-enlarge
+  const isPreviewMode = document.body.classList.contains("canvas-preview-mode");
+  // Mobile Edit-mode floor: shrink-to-fit alone can zoom a phone-width page
+  // down to ~45-50% (a 210mm page vs. a ~360px-wide panel) — small enough
+  // that the on-canvas editing controls (column drag/menu/resize handles,
+  // item remove buttons, Logo settings) sit too close together to tell
+  // apart by touch, even with the scale-compensated hit areas those get
+  // (see --canvas-scale below and the matching rules in responsive.css) —
+  // expanding one control's own tap target can't create room between it
+  // and its neighbor once the row itself has shrunk this far. Preview/
+  // Print must stay pixel-accurate to the real page (that's the whole
+  // point of Preview — see setCanvasMode in js/layout.js), so this floor
+  // is scoped to Edit only; the canvas simply grows wider than the phone
+  // and scrolls horizontally past that point, the same already-built
+  // mechanism used below for zooming in past 100%.
+  if (!isPreviewMode && mobilePhoneQuery.matches) fit = Math.max(fit, MOBILE_EDIT_MIN_FIT);
   const total = fit * state.zoom;
   const scaledW = naturalW * total;
   inv.style.transformOrigin = "top left";
   inv.style.transform = `scale(${total})`;
+  // Exposes the canvas's current on-screen scale to CSS. #invoice is
+  // continuously zoomed via the transform above, so any CSS length set on
+  // a descendant (e.g. an invisible expanded tap-target around a small
+  // on-canvas control) gets visually shrunk by that same `total` factor —
+  // a 44px hit-area declared in CSS only ever actually measures 44*total
+  // real screen pixels. Touch-target rules for on-canvas editing chrome
+  // (see .item-remove-btn/.logo-settings-trigger/.add-item-btn/.col-menu-
+  // btn/etc. in the phone-tier block of css/responsive.css) divide by this
+  // variable via calc() to compensate, so they stay close to a real ~44px
+  // regardless of zoom level or how much a narrow phone has auto-shrunk
+  // the page to fit.
+  inv.style.setProperty("--canvas-scale", total);
   wrap.style.maxWidth = "none";   // let the wrapper grow past one page width when zoomed in past 100%
   if (scaledW <= available) {
     // Fits within the panel (includes the shrink-to-fit case on narrow
@@ -621,7 +665,6 @@ export function fitInvoiceCanvas() {
   // page-break guides) to match — Print/PDF already paginate correctly on
   // their own, this only affects the on-screen preview.
   const contentH = inv.scrollHeight || naturalH;
-  const isPreviewMode = document.body.classList.contains("canvas-preview-mode");
   // Page count is only meaningful in Preview (a faithful dry run of the
   // physical page): computed there for both the wrapper height and the
   // "N pages" labels below. Edit always reports/renders as a single,

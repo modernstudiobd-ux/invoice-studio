@@ -58,7 +58,7 @@
      flex/grid display switching at narrower breakpoints) have no
      !important of their own, but nothing in this print block otherwise
      resets "display" for either — so without this, printing from a phone
-     while its "Form" tab (rather than "Preview") is the active single
+     while its "Menu" tab (rather than "Invoice") is the active single
      panel would carry that display:none straight into the printed page
      and print a blank invoice. */
   .workspace{display:block!important;padding:0;overflow:visible}

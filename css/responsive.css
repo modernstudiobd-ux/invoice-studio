@@ -16,13 +16,16 @@
 /* App header — brand-only now (Template/Currency moved to the canvas
    toolbar, everything else to the Design panel). The tagline (.tagline in
    base.css, hidden by default) only reappears once there's comfortable
-   room to spare beyond the brand text and the action buttons. */
+   room to spare beyond the brand text and the action buttons. Phones
+   deliberately do NOT get the tagline back (unlike the old behavior) —
+   see the phone-tier rule below, which keeps it off to give that vertical
+   space to the action row instead of a decorative sentence. */
 @media (min-width:1180px){
   .tagline{display:block}
 }
 .mobileview-toggle{display:none}
 @media (max-width:640px),(max-width:960px) and (max-height:500px){
-  .appheader{flex-direction:column;align-items:stretch;gap:8px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top))}
+  .appheader{flex-direction:column;align-items:stretch;gap:6px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top))}
   /* Explicit width:100% rather than relying on .appheader's align-items:
      stretch to size this: stretch's used cross size still falls back to
      this item's own automatic minimum (content) size in a browser's
@@ -32,9 +35,41 @@
      explicit width is resolved top-down against .appheader's own
      (correctly viewport-capped) content box, sidestepping that entirely. */
   .appheader .topbar{flex-wrap:wrap;row-gap:6px;width:100%}
-  .tagline{display:block}
   .header-actions{width:100%}
-  .save-status{width:100%;justify-content:center;order:-1}
+
+  /* Header actions — Save/Duplicate/Export/More/Print collapse to plain
+     44px icon squares instead of icon+label buttons, so all five always
+     fit on ONE row (verified down to a 320px-wide phone) instead of
+     wrapping into two. Root cause of the old 2-row header: five
+     full-label buttons simply don't fit a phone's width at any reasonable
+     font size — shrinking padding/font alone (the old approach) still
+     wrapped, it just moved *where* the wrap happened. Each button's label
+     text still exists in the DOM as a <span class="btn-label"> (see
+     index.html) and is only visually clipped here (the same off-screen-
+     but-still-announced technique as .visually-hidden in base.css, not
+     display:none) — screen readers still get the full "Save"/"Duplicate"/
+     etc. name, and every button's existing title="" still shows as a
+     tooltip on long-press/hover. Sized to the ~44px touch-target target
+     (see also .btn.icon, .zoom-btn, .canvasmode-btn below for the same
+     treatment applied consistently across the rest of the mobile chrome). */
+  .header-actions{flex-wrap:nowrap;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch}
+  .header-actions .btn.small{width:44px;height:44px;padding:0;justify-content:center;flex:none}
+  .header-actions .btn .icon{margin-right:0;width:17px;height:17px}
+  .header-actions .btn-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .actions-more-dropdown{flex:none}
+
+  /* Autosave status ("Saved 2 min ago") — a persistent indicator (see the
+     comment on #saveStatus in js/main.js), not a one-off toast, so it
+     can't just be hidden after a few seconds like the old full-text
+     version implicitly assumed room for. Forcing it onto its own
+     full-width centered row (the old behavior) was itself a source of
+     header height, on top of the two action rows. Collapsed here to just
+     its leading status dot inline in the action row (font-size:0 hides
+     the text glyphs without display:none, so the aria-live announcement
+     screen readers get on every update is unaffected) — full text is
+     still available on demand via the title attribute js/main.js sets
+     alongside it. */
+  .save-status{order:0;flex:none;width:auto;font-size:0;gap:0}
 }
 /* Floating panels (Saved Invoices, Brand Templates, Import Items, Logo/
    Column settings, Settings, Help) — js/layout.js's positionDropdownPanel()
@@ -64,7 +99,7 @@
 @media (max-width:640px),(max-width:960px) and (max-height:500px){
   .mobileview-toggle{display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:15;background:#fff;padding:9px 10px;border-bottom:1px solid var(--line)}
   .mobileview-toggle .view-switch{display:flex;flex:1 1 auto;gap:6px}
-  .mobileview-toggle .btn{flex:1 1 0;text-align:center}
+  .mobileview-toggle .btn{flex:1 1 0;text-align:center;min-height:44px}
   .mobileview-toggle .btn.active{background:var(--app-accent);border-color:var(--app-accent);color:#fff}
   #appRoot.view-edit .workspace{display:none}
   #appRoot.view-preview .sidebar{display:none}
@@ -102,16 +137,28 @@
   /* Comfortable touch sizing: bumps every control sharing this one height
      variable (Undo/Redo, the zoom group, the Edit/Preview switch — see the
      var(--toolbar-ctrl-h) usages in css/invoice.css) from the desktop 34px
-     up to 40px at once, rather than sizing each individually. */
-  .canvasbar{gap:8px;flex-wrap:wrap;row-gap:8px;--toolbar-ctrl-h:40px}
+     up to 42px at once, rather than sizing each individually — height is
+     what matters most for a row of adjacent small controls like these
+     (width is capped by the row's own available space; see zoom-btn
+     below), so this is where the real touch-comfort gain comes from. */
+  .canvasbar{gap:8px;flex-wrap:wrap;row-gap:8px;--toolbar-ctrl-h:42px}
   .canvasbar-middle{display:none}
   .canvasbar-left,.canvasbar-right{flex:1 1 100%;flex-wrap:wrap;gap:6px}
   .canvasbar-right{justify-content:flex-start}
   .currency-field{max-width:none;flex:1 1 auto}
-  .combobox .combobox-input{min-height:40px}
+  .combobox .combobox-input{min-height:42px}
+  /* Zoom buttons keep their original 34px width (only height grows, via
+     --toolbar-ctrl-h above): Undo, Redo and the zoom group all share
+     .canvasbar-left, and a wider zoom-btn was enough to push that row's
+     total width past a 320px phone's available space, wrapping the zoom
+     group onto its own second row — the same "just barely doesn't fit"
+     problem the rest of this block exists to avoid. Two adjacent narrow
+     +/- buttons are a common, accepted exception to a flat wide-target
+     rule (compare a native OS's own stepper controls); their 42px height
+     still gets the same touch-comfort gain as everything else here.*/
   .zoom-group{padding:2px}
   .zoom-btn{width:34px}
-  .zoom-label{width:38px;font-size:12px}
+  .zoom-label{width:36px;font-size:12px}
   /* Column header editing controls (js/columnCanvas.js: the drag grip, the
      "⋮" column-settings trigger, the resize handle on each column's right
      edge) are compact enough on a mouse-driven desktop table but too small
@@ -119,13 +166,84 @@
      than resizing the controls themselves) keeps the table's own visual
      density/layout untouched while making them comfortable to hit with a
      fingertip. Edit-mode-only editor affordances, same as always — none of
-     this reaches Preview or Print (see the comment on .col-head-cell). */
-  .col-menu-btn{position:relative}
-  .col-menu-btn::before{content:"";position:absolute;inset:-11px}
-  .col-drag-handle::before{content:"";position:absolute;inset:-9px}
-  .col-resize-handle{width:20px;right:-10px}
+     this reaches Preview or Print (see the comment on .col-head-cell).
+
+     Scale-compensated: every one of these lives inside #invoice, which is
+     continuously CSS-transformed (scale(total) — see fitInvoiceCanvas() in
+     js/preview.js) to fit the page to the viewport/zoom level. A flat
+     "inset:-11px" written here is itself scaled down by that same
+     transform when it renders, so on a narrow phone (often ~45-55% scale)
+     an "11px" hit area was really only ~5-6px on screen — barely more
+     than the control itself. Dividing by --canvas-scale (a custom property
+     js/preview.js keeps in sync with the live transform) keeps the real,
+     on-screen hit area close to constant regardless of zoom/viewport. */
+  .col-menu-btn{position:relative;z-index:3}
+  .col-menu-btn::before{content:"";position:absolute;inset:calc(-11px / var(--canvas-scale,1))}
+  .col-drag-handle{z-index:2}
+  .col-drag-handle::before{content:"";position:absolute;inset:calc(-9px / var(--canvas-scale,1))}
+  /* col-resize-handle is a real, directly-sized element sharing the same
+     ~60-90px-wide header cell as the drag handle and menu button above —
+     unlike those two (invisible ::before overlays layered on top of an
+     unchanged visible control), scale-compensating THIS element's own
+     width made its actual clickable box bigger on screen, eating into its
+     neighbors' space in a narrow column (SKU's default 14% width) rather
+     than just adding harmless invisible padding around a fixed-size
+     control. Kept at its original flat mobile size instead (20px/-10px,
+     already tuned against the original 34px control before this file's
+     other mobile-zoom changes) — z-index:1 (below both neighbors above)
+     means any residual overlap resolves in the menu button's or drag
+     handle's favor, so a tap that lands in the shared sliver opens the
+     column menu or starts a reorder rather than an unintended resize. */
+  .col-resize-handle{width:20px;right:-10px;z-index:1}
+  /* Same treatment for the rest of the on-canvas editing chrome (not
+     invoice content — all hidden from Preview/print already, see
+     invoice.css/print.css): the "+ Add item" button, the "+" add-column
+     button, and the Logo settings trigger each sit with enough of their
+     own surrounding whitespace that a ~10px screen-constant expansion
+     doesn't reach a neighboring control — verified by mapping
+     elementFromPoint across the gap to each one's nearest neighbor.
+     Visible size is untouched either way (purely an invisible, expanded
+     tap catcher) so nothing about the invoice's own look changes, only
+     how forgiving it is to tap. */
+  .add-item-btn,.col-add-btn,.logo-settings-trigger{position:relative}
+  .add-item-btn::before,.col-add-btn::before,.logo-settings-trigger::before{content:"";position:absolute;inset:calc(-10px / var(--canvas-scale,1))}
+  /* The per-row "×" remove button is a different case: line-item rows sit
+     directly back-to-back (no gap — that's the invoice's real printed row
+     spacing, out of scope to change here) with only ~6px of screen space
+     between one row's remove button and the next's. The same 10px
+     expansion used above would meet its neighbor past the row boundary
+     and, worse, do it asymmetrically — later DOM order wins ties, so the
+     row *below* would silently steal taps meant for the row *above*'s
+     remove button. Capped at 3px, the largest expansion that still stays
+     on its own side of that boundary (verified the same way, by mapping
+     elementFromPoint across the gap to the next row's button). */
+  .item-remove-btn{position:relative}
+  .item-remove-btn::before{content:"";position:absolute;inset:calc(-3px / var(--canvas-scale,1))}
+  /* Deliberately NOT applied to the Discount/Tax/Shipping % and $ inputs in
+     the summary block (input.pct-input/input.money-input in invoice.css):
+     those rows have even less room than the item rows above — zero gap,
+     not 6px (each .sumrow's bottom edge is literally the next one's top
+     edge) — so there's no safe amount of expansion left to give them at
+     all. They still benefit from the mobile Edit-mode zoom floor
+     (js/preview.js's MOBILE_EDIT_MIN_FIT) the same as everything else on
+     the canvas. */
   .canvasmode-switch{flex:1 1 auto;padding:2px}
   .canvasmode-btn{flex:1 1 auto;justify-content:center;padding:0 9px}
+
+  /* Currency + Edit/Preview switch: both flex:1 1 auto (below/in
+     invoice.css) so they share the row proportionally down to ~360px, but
+     their combined min-content width (the "Edit"/"Preview" labels and the
+     currency search text can only shrink so far before truncating
+     illegibly) is a few px wider than a 320px-360px phone's available
+     width, silently wrapping Currency onto its own row and the switch onto
+     a third. Trimming both a little further, only below 360px, keeps them
+     on the shared row that already works fine everywhere above it —
+     avoiding a 3rd toolbar row rather than just tolerating it. */
+  @media (max-width:359px){
+    .currency-field{width:118px;max-width:46vw}
+    .canvasmode-btn{padding:0 6px;font-size:10.5px}
+    .canvasmode-btn .icon{width:12px;height:12px}
+  }
 
   /* Same reasoning across the rest of the chrome: 28–34px controls are
      within WCAG 2.2's 24px floor but tighter than comfortable for a
@@ -136,7 +254,7 @@
   .mobileview-toggle .btn{padding:10px 12px}
   .actions-more .btn{padding:10px 12px}
 
-  /* Native single-panel body: the visible panel (Form or Preview) fills all
+  /* Native single-panel body: the visible panel (Menu or Invoice) fills all
      remaining height below the top bar; the hidden one is fully removed from
      flow (see view-edit/view-preview rules above), not just scroll-limited. */
   body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
@@ -147,8 +265,8 @@
   .right-sidebar{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
   /* The right (Design) sidebar holds canvas/document settings (Page setup,
      Alignment, Template, Colors, Show/Hide), so it belongs with the canvas:
-     shown together with the "Preview" tab (the actual editable invoice),
-     hidden together with the "Form" tab (the nav sidebar) — same pairing
+     shown together with the "Invoice" tab (the actual editable invoice),
+     hidden together with the "Menu" tab (the nav sidebar) — same pairing
      #appRoot.view-edit/.view-preview already apply to .workspace below.
      The manual close/reopen toggle (#designReopenBtn, hidden below) is a
      desktop-only affordance for handing its width back to the canvas —
@@ -156,8 +274,8 @@
      hidden here rather than adapted. Its underlying state (.design-closed
      on #appRoot) is desktop-only too, but persists in localStorage across
      any width — without the next rule, someone who closed it on desktop
-     and later opens this same saved app on a phone would land on a
-     "Preview" tab with a permanently blank Design section and no reopen
+     and later opens this same saved app on a phone would land on the
+     "Invoice" tab with a permanently blank Design section and no reopen
      button to recover it. */
   #appRoot.view-edit .right-sidebar{display:none}
   .app.design-closed .right-sidebar{display:block}
@@ -168,16 +286,32 @@
 
   /* Fullscreen preview — hides all chrome and gives the invoice the entire
      viewport, with a single floating close button to get back. The trigger
-     itself (a small expand icon next to the Form/Preview tabs) is desktop-
+     itself (a small expand icon next to the Menu/Invoice tabs) is desktop-
      hidden by default (.mtb-icon in base.css: fullscreen only makes sense
      once the canvas itself is a separate, single-panel "view" — a purely
      mobile concept here) — nothing had ever un-hidden it at phone widths,
      so the whole feature, despite being fully built otherwise (JS wiring,
      the exit button, every state below), was unreachable. Sized a little
      larger than its desktop .btn.icon default (31px) for comfortable touch. */
-  .mtb-icon{display:inline-flex;width:36px;height:36px}
+  .mtb-icon{display:inline-flex;width:44px;height:44px}
   .fullscreen-exit{display:none}
   body.fullscreen-preview .mobileview-toggle,body.fullscreen-preview .canvasbar,body.fullscreen-preview .actions{display:none}
   body.fullscreen-preview .workspace{padding:0}
   body.fullscreen-preview .fullscreen-exit{display:grid;place-items:center;position:fixed;top:calc(14px + env(safe-area-inset-top));right:14px;z-index:60;width:44px;height:44px;border-radius:50%;background:rgba(16,24,40,.62);color:#fff;border:0;font-size:15px}
+}
+/* Extra-short screens — mainly a phone held in landscape (e.g. ~360-400px
+   tall): the header, the Menu/Invoice tabs and the toolbar each already
+   fit in a single row apiece (see above), but stacked together their
+   padding/gaps alone were still consuming a disproportionate share of a
+   screen this short, leaving very little height for the invoice itself.
+   Trims that padding specifically here — not the portrait-phone rules
+   above, which have vertical room to spare — and never shrinks a control
+   below the touch-target sizing already set above (min-height:44px on the
+   Menu/Invoice tabs is untouched; only the row's own padding around them
+   shrinks). */
+@media (max-width:960px) and (max-height:430px){
+  .appheader{padding-top:calc(4px + env(safe-area-inset-top));padding-bottom:4px;gap:4px}
+  .mobileview-toggle{padding:5px 10px}
+  .toolbar-row{padding:4px 8px;gap:6px;row-gap:6px}
+  .canvasbar{row-gap:6px}
 }

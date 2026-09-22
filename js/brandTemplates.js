@@ -19,7 +19,7 @@ import { renderPreview } from "./preview.js";
 import { save } from "./persistence.js";
 import { toast } from "./toast.js";
 import { dateFmt } from "./format.js";
-import { closeTemplatesPanel } from "./layout.js";
+import { closeTemplatesPanel, setMobileView } from "./layout.js";
 
 export const BRAND_KEY = "invoiceStudio.brandTemplates.v1";
 
@@ -103,6 +103,11 @@ export function applyBrandTemplate(id) {
   applyAllOptionalColors();
   renderToggles(); renderPreview(); save();
   toast(`Loaded "${entry.name}" — client, items and invoice number are unchanged.`);
+  // Same reasoning as openInvoiceById/duplicateInvoiceById in library.js:
+  // applying a template changes the on-screen invoice, so switch mobile to
+  // the "Invoice" view to actually show that change instead of leaving
+  // someone on the Menu tab where the Templates panel was opened from.
+  setMobileView("preview");
   closeTemplatesPanel();
 }
 

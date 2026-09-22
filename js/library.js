@@ -80,7 +80,15 @@ export function openInvoiceById(id) {
   setCurrentId(id);
   load(entry.snapshot);
   renderHistory();
-  setMobileView("edit");
+  // Show the actual invoice that was just opened, not the nav sidebar —
+  // "edit" here means the mobile *sidebar/menu* view (see setMobileView in
+  // js/layout.js), which is a different "edit" than the canvas's own Edit/
+  // Preview switch. Calling it after loading an invoice used to land the
+  // person back on the menu they opened History from, with no visible
+  // change on screen until they manually switched to the "Invoice" tab —
+  // exactly the kind of extra, unnecessary navigation step this should
+  // never require.
+  setMobileView("preview");
   closeHistoryPanel();
   toast("Opened " + (entry.invoiceNumber || "invoice") + ".");
 }
@@ -133,6 +141,9 @@ export function duplicateInvoiceById(id) {
   if (!entry) return;
   load(entry.snapshot);
   duplicateCurrentInvoice();
+  // Same reasoning as openInvoiceById above: show the result, not the menu
+  // it was triggered from.
+  setMobileView("preview");
   closeHistoryPanel();
 }
 

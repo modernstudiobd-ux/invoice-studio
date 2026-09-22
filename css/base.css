@@ -44,7 +44,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
    scroll), mirrored on the opposite edge; independently scrollable so a
    long left sidebar and a short right one (or vice versa) never fight each
    other for space. Hidden entirely at print (css/print.css) and on the
-   mobile "Form" view (css/responsive.css) — it's an editing tool, not part
+   mobile "Menu" view (css/responsive.css) — it's an editing tool, not part
    of the document. Closeable via its own header button (#designCloseBtn),
    reopened via #designReopenBtn in the canvas toolbar (see .design-reopen-
    btn below) — matches the reference UI, which shows a close (X) inside

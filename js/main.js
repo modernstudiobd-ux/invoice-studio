@@ -236,7 +236,13 @@ function refreshSaveStatus() {
   if (!el) return;
   const ts = Number(localStorage.getItem("invoiceStudio.lastSavedAt"));
   if (!ts) { el.classList.remove("show"); return; }
-  el.textContent = formatSavedAgo(ts);
+  const text = formatSavedAgo(ts);
+  el.textContent = text;
+  // On phones this indicator collapses to just its status dot (see
+  // .save-status in responsive.css) — the title attribute keeps the full
+  // "Saved 2 min ago" text reachable via a long-press/hover tooltip even
+  // though it's no longer visible as inline text there.
+  el.title = text;
   el.classList.add("show");
 }
 window.addEventListener("invoicestudio:autosaved", refreshSaveStatus);

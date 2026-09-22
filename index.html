@@ -67,10 +67,10 @@
     </div>
   </div>
   <div class="header-actions">
-    <button class="btn small primary" id="saveInvoiceBtn" title="Save a reopenable snapshot to Saved Invoices"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>Save</button>
+    <button class="btn small primary" id="saveInvoiceBtn" title="Save a reopenable snapshot to Saved Invoices"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg><span class="btn-label">Save</span></button>
     <span class="save-status" id="saveStatus" aria-live="polite"></span>
-    <button class="btn small" id="duplicateInvoiceBtn" title="Save a copy with the next invoice number and today's dates"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Duplicate</button>
-    <button class="btn small" id="exportBtn" title="Download this invoice as a JSON file"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Export JSON</button>
+    <button class="btn small" id="duplicateInvoiceBtn" title="Save a copy with the next invoice number and today's dates"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="btn-label">Duplicate</span></button>
+    <button class="btn small" id="exportBtn" title="Download this invoice as a JSON file"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span class="btn-label">Export JSON</span></button>
     <div class="actions-more-dropdown">
       <button class="btn small icon actions-more-toggle" id="actionsMoreBtn" aria-haspopup="true" aria-expanded="false" aria-controls="actionsMorePanel" title="More actions"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
       <div class="actions-more" id="actionsMorePanel" role="menu">
@@ -79,13 +79,24 @@
       </div>
       <input type="file" id="jsonFile" class="hidden" accept=".json">
     </div>
-    <button class="btn small primary" id="printBtn" title="Opens your browser's print dialog — choose a physical printer, or &quot;Save as PDF&quot; as the destination for a PDF copy"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print / PDF</button>
+    <button class="btn small primary" id="printBtn" title="Opens your browser's print dialog — choose a physical printer, or &quot;Save as PDF&quot; as the destination for a PDF copy"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg><span class="btn-label">Print / PDF</span></button>
   </div>
 </header>
-<div class="mobileview-toggle" id="mobileViewToggle" role="tablist" aria-label="Switch between editor and preview">
+<!-- Mobile-only top-level view switch — Menu (the left nav: New/Load/
+     Templates/Settings/Help) vs Invoice (the actual canvas + Design panel).
+     Named "Menu"/"Invoice" rather than "Form"/"Preview": the left panel was
+     never a form (there's nothing to fill in on it — that all happens
+     directly on the canvas), and "Preview" here would collide with the
+     *other* Edit/Preview switch that lives inside the canvas toolbar
+     (#canvasModeEditBtn/#canvasModePreviewBtn) once this tab reveals it —
+     two same-named controls meaning two different things was the root
+     cause of "which Preview do I want?" confusion. data-view values stay
+     "edit"/"preview" (js/layout.js's setMobileView) since those only
+     select which panel is shown, not any user-facing label. -->
+<div class="mobileview-toggle" id="mobileViewToggle" role="tablist" aria-label="Switch between the menu and the invoice">
   <div class="view-switch">
-    <button class="btn small active" id="mvEditBtn" role="tab" aria-selected="true" data-view="edit">Form</button>
-    <button class="btn small" id="mvPreviewBtn" role="tab" aria-selected="false" data-view="preview">Preview</button>
+    <button class="btn small" id="mvEditBtn" role="tab" aria-selected="false" data-view="edit">Menu</button>
+    <button class="btn small active" id="mvPreviewBtn" role="tab" aria-selected="true" data-view="preview">Invoice</button>
   </div>
   <button class="btn small icon mtb-icon" id="expandPreviewBtn" aria-label="Fullscreen preview" title="Fullscreen preview"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
 </div>
