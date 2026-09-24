@@ -67,21 +67,59 @@
     </div>
   </div>
   <div class="header-actions">
-    <button class="btn small primary" id="saveInvoiceBtn" title="Save a reopenable snapshot to Saved Invoices"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg><span class="btn-label">Save</span></button>
-    <span class="save-status" id="saveStatus" aria-live="polite"></span>
-    <button class="btn small" id="duplicateInvoiceBtn" title="Save a copy with the next invoice number and today's dates"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="btn-label">Duplicate</span></button>
-    <button class="btn small" id="exportBtn" title="Download this invoice as a JSON file"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span class="btn-label">Export JSON</span></button>
-    <div class="actions-more-dropdown">
-      <button class="btn small icon actions-more-toggle" id="actionsMoreBtn" aria-haspopup="true" aria-expanded="false" aria-controls="actionsMorePanel" title="More actions"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
-      <div class="actions-more" id="actionsMorePanel" role="menu">
-        <button class="btn" id="importBtn" role="menuitem"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import JSON</button>
-        <button class="btn danger" id="resetBtn" role="menuitem"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>Reset</button>
-      </div>
-      <input type="file" id="jsonFile" class="hidden" accept=".json">
+    <!-- Primary actions: the two most frequent, most consequential things
+         someone does with an invoice. Kept visually distinct (filled
+         accent color, same "primary" styling as before) from the
+         secondary group below so hierarchy is obvious at a glance, not
+         just implied by position. -->
+    <div class="actions-primary">
+      <button class="btn small primary" id="saveInvoiceBtn" title="Save a reopenable snapshot to Saved Invoices"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg><span class="btn-label">Save</span></button>
+      <button class="btn small primary" id="printBtn" title="Opens your browser's print dialog — choose a physical printer, or &quot;Save as PDF&quot; as the destination for a PDF copy"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg><span class="btn-label">Print</span></button>
+      <span class="save-status" id="saveStatus" aria-live="polite"></span>
     </div>
-    <button class="btn small primary" id="printBtn" title="Opens your browser's print dialog — choose a physical printer, or &quot;Save as PDF&quot; as the destination for a PDF copy"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg><span class="btn-label">Print / PDF</span></button>
+    <!-- Secondary actions — Duplicate and Export were already here;
+         Import JSON and Reset moved in from what used to be a "..." More
+         menu (see the removed .actions-more-dropdown — its two buttons
+         are the same #importBtn/#resetBtn, just no longer behind an
+         overflow toggle, so nothing about how they work changed). A "..."
+         icon by itself doesn't say what's inside it, and for exactly two
+         infrequent-but-legitimate actions a menu wasn't buying enough
+         compactness to be worth that ambiguity. Reset keeps the "danger"
+         styling (red) it already had as its own visual separation from
+         the other three, on top of the existing confirm() dialog in
+         js/main.js, which is untouched. -->
+    <div class="actions-secondary">
+      <button class="btn small" id="duplicateInvoiceBtn" title="Save a copy with the next invoice number and today's dates"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="btn-label">Copy</span></button>
+      <button class="btn small" id="exportBtn" title="Download this invoice as a JSON file"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span class="btn-label">Export</span></button>
+      <button class="btn small" id="importBtn" title="Import an invoice from a JSON file"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span class="btn-label">Import</span></button>
+      <input type="file" id="jsonFile" class="hidden" accept=".json">
+      <button class="btn small danger" id="resetBtn" title="Erase all locally saved invoices, templates and settings"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg><span class="btn-label">Reset</span></button>
+    </div>
   </div>
 </header>
+<!-- The PWA install prompt (js/install.js: shown for any browser that
+     actually fires beforeinstallprompt — Chrome/Edge on desktop as much
+     as Android, never iOS Safari, never once already installed or
+     dismissed — see that file for exactly which). Lives here, directly
+     under the header, rather than inside .sidebar where it used to sit:
+     that meant it was only ever visible on the mobile "Menu" tab (the
+     sidebar is what that tab shows) and never on "Invoice" — the default
+     tab since js/layout.js's setMobileView("preview") — so on a phone it
+     was effectively unreachable unless someone happened to check Menu
+     first. It also used to carry a flat "@media (min-width:641px){
+     display:none!important}" that hid it from every desktop browser
+     outright, regardless of whether Chrome/Edge had actually judged the
+     app installable there — installability, not viewport width, is what
+     should decide that, so that rule is gone too (see .install-banner in
+     css/base.css). One element, shown identically on phone/tablet/desktop
+     now, rather than a mobile-only copy plus a separate desktop one. -->
+<div class="install-banner hidden" id="installBanner">
+  <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Install this app for quick access and offline use.</span>
+  <div style="display:flex;gap:6px;flex:none">
+    <button class="btn small primary" id="installAppBtn" type="button">Install</button>
+    <button class="btn small icon" id="installDismissBtn" type="button" aria-label="Dismiss"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+  </div>
+</div>
 <!-- Mobile-only top-level view switch — Menu (the left nav: New/Load/
      Templates/Settings/Help) vs Invoice (the actual canvas + Design panel).
      Named "Menu"/"Invoice" rather than "Form"/"Preview": the left panel was
@@ -108,19 +146,11 @@
 <div class="panel-overlay" id="panelOverlay"></div>
 <div class="app" id="appRoot">
 <aside class="sidebar" id="sidebar">
- <!-- Everything that should scroll (install banner, nav, the blank-data
-      notice) lives in .sidebar-scroll; .sidebar-footer below it is a
-      separate, non-scrolling flex item pinned to the bottom of the
-      sidebar itself — see .sidebar/.sidebar-scroll/.sidebar-footer in
-      css/base.css. -->
+ <!-- Everything that should scroll (nav, the blank-data notice) lives in
+      .sidebar-scroll; .sidebar-footer below it is a separate, non-
+      scrolling flex item pinned to the bottom of the sidebar itself —
+      see .sidebar/.sidebar-scroll/.sidebar-footer in css/base.css. -->
  <div class="sidebar-scroll">
-  <div class="install-banner hidden" id="installBanner">
-    <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Install this app for quick access and offline use.</span>
-    <div style="display:flex;gap:6px;flex:none">
-      <button class="btn small primary" id="installAppBtn" type="button">Install</button>
-      <button class="btn small icon" id="installDismissBtn" type="button" aria-label="Dismiss"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
-    </div>
-  </div>
   <!-- App navigation — each row is an existing action/handler relocated
        here, not a new/duplicate one: "New Invoice", "Load Invoice" and
        "Brand Templates" are the very same #newInvoiceBtn/#historyToggleBtn

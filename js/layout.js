@@ -153,23 +153,6 @@ export function setCanvasMode(mode) {
 canvasModeEditBtn.addEventListener("click", () => setCanvasMode("edit"));
 canvasModePreviewBtn.addEventListener("click", () => setCanvasMode("preview"));
 
-// Header "more actions" overflow menu (Import JSON / Reset) — same
-// dropdown pattern as History/Templates below: toggle open, close on an
-// outside click or on picking one of its own buttons.
-const actionsMoreBtn = $("actionsMoreBtn"), actionsMorePanel = $("actionsMorePanel");
-function closeActionsMore() { actionsMorePanel.classList.remove("open"); actionsMoreBtn.setAttribute("aria-expanded", "false"); }
-actionsMoreBtn.addEventListener("click", e => {
-  e.stopPropagation();
-  const open = actionsMorePanel.classList.toggle("open");
-  actionsMoreBtn.setAttribute("aria-expanded", open ? "true" : "false");
-});
-// composedPath() reflects the click's path at dispatch time, which stays
-// accurate even if the click handler itself re-renders/replaces the clicked
-// element (as History's Rename does) before this listener runs — .contains()
-// would wrongly say "outside" in that case, since the original node is gone.
-document.addEventListener("click", e => { const path = e.composedPath(); if (!path.includes(actionsMorePanel) && !path.includes(actionsMoreBtn)) closeActionsMore(); });
-actionsMorePanel.querySelectorAll("button").forEach(b => b.addEventListener("click", closeActionsMore));
-
 // Anchors a .history-panel below its toggle button using fixed positioning
 // computed from the button's actual on-screen position, instead of relying
 // on CSS position:absolute (which was getting clipped by .toolbar-row's

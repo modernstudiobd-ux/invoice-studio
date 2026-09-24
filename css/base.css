@@ -97,17 +97,21 @@ button.design-reopen-btn{display:none}
    own overflow:hidden/text-overflow:ellipsis above truncates gracefully if
    it doesn't fit). */
 .tagline{display:none}
-/* Header action row (Save/Duplicate/Export/More/Print) — every button here
-   is the exact same element/id/handler that used to live split across the
-   old sidebar ".actions" block and the canvas toolbar's ".invoice-toolbar";
-   only their location and look changed, to read as one clear primary
-   action row (reference UI) instead of two separate strips. */
+/* Header action row (Save/Duplicate/Export/Import/Reset/Print) — every
+   button here is the exact same element/id/handler that used to live split
+   across the old sidebar ".actions" block and the canvas toolbar's
+   ".invoice-toolbar"; only their location and look changed, to read as one
+   clear primary action row (reference UI) instead of two separate strips.
+   Grouped into .actions-primary (Save, Print — the two most frequent,
+   highest-consequence actions, kept visually distinct via .btn.primary)
+   and .actions-secondary (Duplicate, Export, Import, Reset — no longer
+   behind a "..." overflow menu; see the comment on .header-actions in
+   index.html for why). The grouping is a plain flex sub-row each, not a
+   popover/dropdown, so there's nothing to open/close/position — every
+   button is always simply *there*. */
 .header-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:none}
-.actions-more-dropdown{position:relative;display:flex}
+.actions-primary,.actions-secondary{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .actions{display:flex;gap:6px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff;border-radius:var(--radius-sm);padding:7px 11px;font-size:12px;font-weight:750;color:var(--ink);box-shadow:var(--shadow-sm);transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease,background-color .12s ease}
-.actions-more{display:none;position:absolute;top:calc(100% + 6px);right:0;flex-direction:column;gap:4px;min-width:170px;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow-lg);padding:6px;z-index:20}
-.actions-more.open{display:flex}
-.actions-more .btn{width:100%;justify-content:flex-start;text-align:left}
 .mtb-icon,.fullscreen-exit{display:none}
 .btn:hover{border-color:#c2c9d6;transform:translateY(-1px);box-shadow:var(--shadow-md)}.btn:active{transform:translateY(0)}.btn.primary{background:linear-gradient(160deg,var(--app-accent),var(--app-accent-dark));border-color:var(--app-accent-dark);color:#fff}.btn.primary:hover{box-shadow:0 10px 22px rgba(var(--app-accent-rgb),.32)}.btn.danger{color:var(--danger)}.btn.small{padding:6px 9px;font-size:11px}.btn.icon{width:31px;height:31px;padding:0}
 /* App navigation (left sidebar) — each row is a relocated, unchanged
@@ -143,8 +147,14 @@ button.design-reopen-btn{display:none}
 .itemcard{border:1px solid #dde3eb;border-radius:var(--radius-sm);padding:9px;margin-bottom:7px;background:#fbfcfe}.itemtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}.itemtop strong{font-size:11px}.itemgrid{display:grid;gap:7px;grid-template-columns:repeat(2,1fr)}.itemgrid .field textarea{min-height:44px}
 .historycard{border:1px solid #dde3eb;border-radius:10px;padding:10px;margin-bottom:8px;background:#fbfcfe}.historycard.current{border-color:var(--app-accent);box-shadow:0 0 0 1px rgba(var(--app-accent-rgb),.25)}.historytop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.historytop strong{font-size:12.5px}.historyamount{font-size:12.5px;font-weight:800;white-space:nowrap}.historymeta{display:flex;justify-content:space-between;align-items:center;margin:6px 0 8px;gap:8px}.historyactions{display:flex;gap:6px;flex-wrap:wrap}.historyactions .btn{flex:1 1 auto}
 .tinybadge{font-size:8.5px;font-weight:800;color:var(--app-accent);background:rgba(var(--app-accent-rgb),.1);border-radius:6px;padding:2px 6px;margin-left:5px;text-transform:uppercase;letter-spacing:.04em;vertical-align:middle}
-.install-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(var(--app-accent-rgb),.06);border:1px solid rgba(var(--app-accent-rgb),.16);border-radius:10px;padding:9px 10px;margin-bottom:10px;font-size:11.5px;line-height:1.35}
-@media (min-width:641px){.install-banner{display:none!important}}
+/* Sits directly under the header (index.html) as its own full-width bar —
+   not the rounded, inset "card" look it had inside .sidebar's own padding
+   before — spanning edge-to-edge with its own horizontal padding instead,
+   consistent with the header's. Shown/hidden purely by js/install.js
+   toggling .hidden (display:none!important, so it always wins over the
+   flex below) based on actual installability — no width-based media query
+   here on purpose; see the comment on #installBanner in index.html. */
+.install-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(var(--app-accent-rgb),.06);border-bottom:1px solid rgba(var(--app-accent-rgb),.16);padding:9px 20px;font-size:11.5px;line-height:1.35}
 .notice{font-size:11px;color:#475467;background:rgba(var(--app-accent-rgb),.07);border:1px solid rgba(var(--app-accent-rgb),.14);padding:8px 9px;border-radius:9px;margin-bottom:10px}
 .importhelp{margin:8px 0 10px;font-size:11.5px}
 .importhelp summary{cursor:pointer;font-weight:800;color:var(--app-accent);list-style:none;padding:2px 0}
@@ -276,16 +286,14 @@ button.design-reopen-btn{display:none}
 :root[data-theme="dark"] .mobileview-toggle,
 :root[data-theme="dark"] .history-panel,
 :root[data-theme="dark"] .logo-settings-panel,
-:root[data-theme="dark"] .col-settings-panel,
-:root[data-theme="dark"] .actions-more{background:var(--panel);border-color:var(--line);color:var(--ink)}
+:root[data-theme="dark"] .col-settings-panel{background:var(--panel);border-color:var(--line);color:var(--ink)}
 :root[data-theme="dark"] .sidebar .btn,
 :root[data-theme="dark"] .right-sidebar .btn,
 :root[data-theme="dark"] .appheader .btn,
 :root[data-theme="dark"] .mobileview-toggle .btn,
 :root[data-theme="dark"] .history-panel .btn,
 :root[data-theme="dark"] .logo-settings-panel .btn,
-:root[data-theme="dark"] .col-settings-panel .btn,
-:root[data-theme="dark"] .actions-more .btn{background:var(--panel-alt);border-color:var(--line);color:var(--ink)}
+:root[data-theme="dark"] .col-settings-panel .btn{background:var(--panel-alt);border-color:var(--line);color:var(--ink)}
 :root[data-theme="dark"] .sidebar .btn:hover,
 :root[data-theme="dark"] .right-sidebar .btn:hover,
 :root[data-theme="dark"] .appheader .btn:hover,
