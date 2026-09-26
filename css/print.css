@@ -53,14 +53,15 @@
   .invoice-toolbar,.page-break-line,.page-break-chip{display:none!important}
   .toolbar-row{display:none!important}
   .app{display:block!important}
-  /* !important on both: the mobile single-panel rules in responsive.css
-     (#appRoot.view-edit .workspace{display:none}, and .app's own
-     flex/grid display switching at narrower breakpoints) have no
-     !important of their own, but nothing in this print block otherwise
-     resets "display" for either — so without this, printing from a phone
-     while its "Menu" tab (rather than "Invoice") is the active single
-     panel would carry that display:none straight into the printed page
-     and print a blank invoice. */
+  /* !important on both: .app's own grid/block display switching at
+     narrower breakpoints (responsive.css) has no !important of its own,
+     and nothing in this print block otherwise resets .workspace's
+     display — so without this, printing while the left menu drawer
+     happens to be open (#appRoot.view-edit — see js/layout.js) would
+     leave nothing forcing the canvas itself back to visible. The drawer
+     and its backdrop are hidden outright above (.mobile-drawer,
+     .drawer-overlay), so this is belt-and-braces, not the only thing
+     keeping the invoice from printing blank. */
   .workspace{display:block!important;padding:0;overflow:visible}
   .canvaswrap{max-width:none;width:auto;height:auto!important}
   /* width intentionally NOT overridden to auto here — it inherits the base

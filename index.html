@@ -120,32 +120,52 @@
     <button class="btn small icon" id="installDismissBtn" type="button" aria-label="Dismiss"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
   </div>
 </div>
-<!-- Mobile-only top-level view switch — Menu (the left nav: New/Load/
-     Templates/Settings/Help) vs Invoice (the actual canvas + Design panel).
-     Named "Menu"/"Invoice" rather than "Form"/"Preview": the left panel was
-     never a form (there's nothing to fill in on it — that all happens
-     directly on the canvas), and "Preview" here would collide with the
-     *other* Edit/Preview switch that lives inside the canvas toolbar
-     (#canvasModeEditBtn/#canvasModePreviewBtn) once this tab reveals it —
-     two same-named controls meaning two different things was the root
-     cause of "which Preview do I want?" confusion. data-view values stay
-     "edit"/"preview" (js/layout.js's setMobileView) since those only
-     select which panel is shown, not any user-facing label. -->
-<div class="mobileview-toggle" id="mobileViewToggle" role="tablist" aria-label="Switch between the menu and the invoice">
-  <div class="view-switch">
-    <button class="btn small" id="mvEditBtn" role="tab" aria-selected="false" data-view="edit">Menu</button>
-    <button class="btn small active" id="mvPreviewBtn" role="tab" aria-selected="true" data-view="preview">Invoice</button>
-  </div>
+<!-- Mobile/tablet-only top bar — a hamburger trigger for the left nav
+     (New/Load/Templates/Settings/Help), which becomes an off-canvas drawer
+     below the desktop 3-column breakpoint (see #sidebar/.mobile-drawer in
+     responsive.css). Unlike the old "Menu"/"Invoice" tab switch this
+     replaces, opening the menu no longer hides or resizes the invoice
+     canvas underneath — the drawer floats above it, closed the same way
+     any of this app's other floating panels close (backdrop tap, ×, or
+     Escape — see js/layout.js). #mvEditBtn keeps its id/handler
+     (setMobileView("edit")) so nothing importing from layout.js needed to
+     change; only its markup/label did. -->
+<div class="mobileview-toggle" id="mobileViewToggle">
+  <button class="btn small icon hamburger-btn" id="mvEditBtn" aria-haspopup="true" aria-expanded="false" aria-controls="sidebar" aria-label="Open menu" title="Menu"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
+  <span class="mobileview-title">Invoice</span>
   <button class="btn small icon mtb-icon" id="expandPreviewBtn" aria-label="Fullscreen preview" title="Fullscreen preview"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
 </div>
 <button class="fullscreen-exit" id="exitFullscreenBtn" aria-label="Exit fullscreen preview" title="Exit fullscreen"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+<!-- Dimmed backdrop shared by both off-canvas drawers (the left #sidebar
+     menu and the right #rightSidebar Design panel — see
+     .mobile-drawer/.drawer-overlay in responsive.css). Tapping it closes
+     whichever drawer is open, the same way it already works for the
+     floating dropdown panels below. Kept as its own element rather than
+     reusing #panelOverlay: the two backdrops can be visible for
+     unrelated reasons at the same time (e.g. a dropdown panel opened from
+     a control inside an already-open drawer) and must not close each
+     other. -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
 <!-- Dimmed backdrop shown behind a floating panel (Saved Invoices, Brand
      Templates, Import Items) on phone widths, where each opens as its own
      centered card instead of a toolbar-anchored dropdown — see
      js/layout.js and the .history-panel override in responsive.css. -->
 <div class="panel-overlay" id="panelOverlay"></div>
 <div class="app" id="appRoot">
-<aside class="sidebar" id="sidebar">
+<aside class="sidebar mobile-drawer" id="sidebar">
+ <!-- Drawer header — only rendered/visible as an off-canvas drawer below
+      the desktop breakpoint (see .sidebar-drawer-head in responsive.css);
+      on desktop this sidebar is the permanent left column and this row
+      stays hidden, same as it always has been. The × reuses the id/click
+      handler that used to belong to the old "Invoice" tab button
+      (js/layout.js's setMobileView("preview")) — closing this drawer and
+      "switching to the Invoice tab" were already the same action once the
+      canvas stopped being hidden behind that tab, so nothing about the
+      handler itself needed to change, only where the button lives. -->
+ <div class="sidebar-drawer-head">
+   <h2>Menu</h2>
+   <button type="button" class="btn small icon" id="mvPreviewBtn" aria-label="Close menu" title="Close menu"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+ </div>
  <!-- Everything that should scroll (nav, the blank-data notice) lives in
       .sidebar-scroll; .sidebar-footer below it is a separate, non-
       scrolling flex item pinned to the bottom of the sidebar itself —
@@ -444,9 +464,10 @@
      color/layout controls that used to justify a resizable sidebar now
      live in the Design panel instead, so the resizer moved with them. -->
 <div class="sidebar-resizer" id="sidebarResizer" title="Drag to resize the Design panel"></div>
-<aside class="right-sidebar" id="rightSidebar" aria-label="Design">
+<aside class="right-sidebar mobile-drawer" id="rightSidebar" aria-label="Design">
   <div class="right-sidebar-head">
     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg><h2>Design</h2>
+    <button type="button" class="btn small icon" id="designCloseBtn" aria-label="Close Design panel" title="Close Design panel"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
   </div>
   <section class="panel">
     <div class="panelhead"><h2>Invoice Template</h2></div>

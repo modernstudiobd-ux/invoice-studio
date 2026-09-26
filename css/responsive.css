@@ -1,104 +1,128 @@
-/* Responsive behavior — mobile edit/preview switcher, tablet/phone breakpoints */
-/* Every "phone tier" media query in this file is deliberately two
-   conditions, not one: (max-width:640px) alone only ever catches a phone
-   held in PORTRAIT — turned sideways, most phones report a width well
-   past 640px (a 430px-wide phone is ~930px wide in landscape) while still
-   only being ~400px tall, so width alone would silently drop every one of
-   them into the tablet tier below instead: three panels stacked in one
-   column with the phone's own short height, ".sidebar"/".right-sidebar"
-   capped at max-height:60vh and (at the time) overflow:hidden — nav rows
-   like Brand Templates/Settings/Help/the footer got clipped off with no
-   way to reach them at all, not even by scrolling. The second condition,
-   (max-width:960px) and (max-height:500px), catches exactly that case — a
-   wide-but-short viewport — without the width half of it alone
-   misfiring on an ordinary desktop window (those are essentially never
-   both under 960px wide AND under 500px tall at once). */
-/* App header — brand-only now (Template/Currency moved to the canvas
-   toolbar, everything else to the Design panel). The tagline (.tagline in
-   base.css, hidden by default) only reappears once there's comfortable
-   room to spare beyond the brand text and the action buttons. Phones
-   deliberately do NOT get the tagline back (unlike the old behavior) —
-   see the phone-tier rule below, which keeps it off to give that vertical
-   space to the action row instead of a decorative sentence. */
+/* Responsive behavior — off-canvas mobile/tablet navigation, the canvas
+   edit/preview scaling floor, and fluid toolbar/control sizing.
+
+   ONE breakpoint drives the app's structural layout: max-width:1080px
+   ("compact"). Below it, .sidebar (the left nav) and .right-sidebar (the
+   Design panel) stop being permanent grid columns and become off-canvas
+   drawers that float above the canvas instead — see .mobile-drawer below,
+   and js/layout.js's compactQuery (kept in exact sync with this number),
+   mobilePhoneQuery in js/preview.js, and the paired rule in css/base.css
+   (.app{display:grid;...}, overridden below). 1080px alone is enough to
+   catch a phone in ANY orientation — even the widest common phones held
+   sideways stay well under it — so unlike this file's previous two-
+   threshold system (640px alone only ever caught PORTRAIT phones; a
+   landscape phone needed a second "(max-width:960px) and
+   (max-height:500px)" fallback to catch it too), one width-only condition
+   now covers both cases with no separate short-height clause needed.
+
+   A second, narrower breakpoint (max-width:640px) exists only for a
+   handful of rules that are genuinely about screen space running out, not
+   about the drawer/off-canvas pattern above — the app header collapsing
+   its action buttons onto their own rows, and a few micro-adjustments for
+   the very narrowest phones. Everything else below applies across the
+   whole compact range, tablets included, since touch-friendly sizing and
+   an off-canvas nav benefit a tablet exactly as much as a phone. */
+
 @media (min-width:1180px){
   .tagline{display:block}
 }
+
+/* Desktop default: the drawer-only header inside #sidebar (title + ×) has
+   no reason to show while .sidebar is the permanent left column — it's
+   given its real display:flex only inside the compact-width drawer rules
+   further down. */
+.sidebar-drawer-head{display:none}
+
+/* --- Hamburger / mobile-view top bar --------------------------------- */
+/* Opens the left nav as an off-canvas drawer (js/layout.js's
+   setMobileView). Unlike the old Menu/Invoice tab switch this replaced,
+   the canvas is never hidden to show it — see .mobile-drawer below. */
 .mobileview-toggle{display:none}
-@media (max-width:640px),(max-width:960px) and (max-height:500px){
-  .appheader{flex-direction:column;align-items:stretch;gap:6px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top))}
-  /* Explicit width:100% rather than relying on .appheader's align-items:
-     stretch to size this: stretch's used cross size still falls back to
-     this item's own automatic minimum (content) size in a browser's
-     nested-flex resolution here — practically, .brand's nowrap tagline
-     (see base.css) — pushing .topbar (and everything inside it) wider
-     than the viewport instead of actually being constrained to it. An
-     explicit width is resolved top-down against .appheader's own
-     (correctly viewport-capped) content box, sidestepping that entirely. */
-  .appheader .topbar{flex-wrap:wrap;row-gap:6px;width:100%}
-  .header-actions{width:100%}
-  .install-banner{padding:9px 10px}
-
-  /* Header actions — two distinct rows (Save+Print, then Duplicate/Export/
-     Import/Reset), not one crowded row: matches the .actions-primary/
-     .actions-secondary grouping already in the markup (see base.css) and
-     gives each button's label room to actually show. An earlier version of
-     this rule collapsed all six buttons to bare 44px icon squares to force
-     them onto a single row — compact, but "Export"'s icon (two carets,
-     easy to mistake for a code/dev-tools symbol) and "Import"'s (a plain
-     upward arrow) aren't self-explanatory without their labels, and
-     hiding every label to save space defeated the point of having them.
-     Each row instead fills the full width with its buttons sized equally
-     (flex:1 1 0) — comfortable ~44px-tall touch targets that also read as
-     one deliberate, evenly-spaced group rather than left-aligned clutter
-     with empty space on the right. */
-  .header-actions{display:flex;flex-direction:column;align-items:stretch;gap:8px}
-  .actions-primary{width:100%;flex-wrap:nowrap;gap:8px}
-  /* .actions-secondary allows wrapping (.actions-primary never needs to —
-     it's always just 2 buttons and comfortably fits one row): at 4
-     buttons with real labels, "Copy"/"Export"/"Import"/"Reset" fit one row
-     down to ~360px, but a 320-360px phone is a few px too narrow. Letting
-     the row wrap is the fallback for that case — verified it lands as
-     Copy/Export/Import on one row with Reset alone on its own full-width
-     row below (equal flex-basis means whichever button runs out of room
-     first wraps alone, and Reset is last in DOM/reading order), which
-     doubles as exactly the "keep Reset clearly separated" this request
-     also asks for, not just a layout compromise. */
-  .actions-secondary{width:100%;flex-wrap:wrap;gap:8px}
-  .actions-primary .btn,.actions-secondary .btn{flex:1 1 0;justify-content:center;min-height:44px;padding:8px 4px;font-size:12px;white-space:nowrap}
-  .header-actions .btn .icon{width:16px;height:16px}
-  /* Reset stays visually separated (its existing .btn.danger red, per
-     base.css) rather than blending into the row as a same-colored fifth
-     button — the one action here whose easy accessibility (per this
-     request) shouldn't come at the cost of it looking like just another
-     routine action. Its confirm() safety dialog in js/main.js is
-     untouched either way. */
-
-  /* Autosave status ("Saved 2 min ago") — a persistent indicator (see the
-     comment on #saveStatus in js/main.js), not a one-off toast, so it
-     can't just be hidden after a few seconds like the old full-text
-     version implicitly assumed room for. Forcing it onto its own
-     full-width centered row (the old behavior) was itself a source of
-     header height, on top of the two action rows. Collapsed here to just
-     its leading status dot inline in the action row (font-size:0 hides
-     the text glyphs without display:none, so the aria-live announcement
-     screen readers get on every update is unaffected) — full text is
-     still available on demand via the title attribute js/main.js sets
-     alongside it. */
-  .save-status{order:0;flex:none;width:auto;font-size:0;gap:0}
+@media (max-width:1080px){
+  .mobileview-toggle{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;background:#fff;padding:8px 12px;border-bottom:1px solid var(--line)}
+  .hamburger-btn.btn{flex:none;width:40px;height:40px;border-radius:10px}
+  .hamburger-btn .icon{width:19px;height:19px}
+  .hamburger-btn[aria-expanded="true"]{background:rgba(var(--app-accent-rgb),.1);border-color:rgba(var(--app-accent-rgb),.35);color:var(--app-accent)}
+  .mobileview-title{flex:1 1 auto;min-width:0;font-size:13.5px;font-weight:800;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mtb-icon.btn{display:inline-flex;width:40px;height:40px;flex:none}
+  .mtb-icon .icon{width:18px;height:18px}
 }
-/* Floating panels (Saved Invoices, Brand Templates, Import Items, Logo/
-   Column settings, Settings, Help) — js/layout.js's positionDropdownPanel()
-   deliberately clears all its desktop anchor positioning at phone widths
-   and defers entirely to CSS here (see the comment above that function),
-   since there's no toolbar button worth anchoring a dropdown to on a
-   single-column phone layout: every one of these becomes its own centered
-   card floating above a dimmed backdrop instead — the standard mobile
-   pattern for what's a dropdown/popover on desktop. #panelOverlay (shown/
-   hidden by the same registerDropdown() JS that opens/closes each panel)
-   is that backdrop; tapping it dismisses whatever panel is open, the same
-   as clicking outside a desktop dropdown already does. */
+
+/* --- Off-canvas drawers: left nav (#sidebar) + Design panel (#rightSidebar) --- */
+/* Shared backdrop for both — see the comment on #drawerOverlay in
+   index.html for why this is a separate element from #panelOverlay (the
+   floating-dropdown backdrop just below). */
+.drawer-overlay{display:none;position:fixed;inset:0;z-index:65;background:rgba(16,24,40,.45)}
+@media (max-width:1080px){
+  .drawer-overlay.show{display:block}
+}
+/* .mobile-drawer is applied to both asides in the markup as a hook for
+   this block; it has zero effect above the compact breakpoint, where both
+   remain the permanent grid columns css/base.css already defines. */
+@media (max-width:1080px){
+  .app,.app.design-closed{display:block;min-height:100vh;min-height:100dvh}
+  .sidebar-resizer{display:none}
+
+  .mobile-drawer{position:fixed;top:0;bottom:0;z-index:70;width:min(320px,86vw);max-width:320px;box-shadow:var(--shadow-lg);transition:transform .22s ease;display:flex;flex-direction:column}
+  /* Both start off-screen and slide in on their own edge — left nav from
+     the left, Design panel from the right — never displacing or resizing
+     the canvas underneath (it isn't part of this transform at all), and
+     never stacked into the document flow above/below it the way a plain
+     "collapse to a block" approach would. */
+  #sidebar.mobile-drawer{left:0;height:100vh;height:100dvh;transform:translateX(-100%)}
+  #appRoot.view-edit #sidebar.mobile-drawer{transform:translateX(0)}
+  #rightSidebar.mobile-drawer{right:0;height:100vh;height:100dvh;transform:translateX(100%);width:min(340px,88vw);max-width:340px}
+  #appRoot.design-drawer-open #rightSidebar.mobile-drawer{transform:translateX(0)}
+  /* Overrides base.css's ".app.design-closed .right-sidebar{display:none}"
+     (a desktop-only concept — "closed" there means the grid column is
+     collapsed to 0 width, not this drawer's own open/closed state, tracked
+     separately via design-drawer-open — see the comment on
+     setDesignPanelOpen in js/layout.js). Without this, resizing down to
+     this width from a desktop where Design had been explicitly closed
+     would leave the drawer permanently display:none here — no reopen
+     button could ever bring it back, since display:none defeats the
+     transform-based show/hide above entirely. js/layout.js also clears
+     .design-closed on every breakpoint crossing as a second line of
+     defense; this rule is the guaranteed fix regardless of JS state. */
+  .app.design-closed .right-sidebar.mobile-drawer{display:flex}
+
+  /* Drawer header — hidden on desktop by default (see base.css), shown
+     here as each drawer's own title + close (×), matching the pattern
+     every other floating panel in this app already uses. */
+  .sidebar-drawer-head{display:flex;align-items:center;gap:8px;padding:14px 14px 10px;flex:none}
+  .sidebar-drawer-head h2{margin:0;font-size:14px;font-weight:800;flex:1;min-width:0}
+  .sidebar-drawer-head .btn.icon{flex:none;width:32px;height:32px}
+  .sidebar-scroll{padding:0 14px 14px}
+  .sidebar-footer{margin:0 14px 14px;padding-top:10px}
+
+  .right-sidebar{padding:14px}
+  /* 26px on desktop (base.css) is a mouse target; bumped up here for a
+     comfortable ~32px touch target, matching the left drawer's own close
+     button just above. */
+  .right-sidebar-head .btn.icon{width:32px;height:32px}
+
+  /* The canvas-toolbar trigger that reopens the Design drawer (hidden on
+     desktop unless the panel's been explicitly closed there — see
+     button.design-reopen-btn in base.css) is always the way back in here,
+     since the drawer always starts closed at this width regardless of any
+     desktop-saved preference (see the comment on setDesignPanelOpen in
+     js/layout.js). Hidden only while the drawer itself is already open,
+     so there's one obvious control for each state rather than two. */
+  .design-reopen-btn{display:inline-flex!important}
+  #appRoot.design-drawer-open .design-reopen-btn{display:none!important}
+}
+
+/* --- Floating dropdown panels (Saved Invoices, Brand Templates, Import
+   Items, Logo/Column settings, Settings, Help) — js/layout.js's
+   positionDropdownPanel() defers to CSS here instead of anchoring beside
+   the trigger button: at this width every trigger either lives inside a
+   drawer of its own or has too little clearance to anchor a dropdown
+   sensibly beside it, so each of these becomes its own centered card
+   floating above a dimmed backdrop instead. #panelOverlay (shown/hidden by
+   the same registerDropdown() JS that opens/closes each panel) is that
+   backdrop. */
 .panel-overlay{display:none;position:fixed;inset:0;z-index:99;background:rgba(16,24,40,.45)}
-@media (max-width:640px),(max-width:960px) and (max-height:500px){
+@media (max-width:1080px){
   .panel-overlay.show{display:block}
   .history-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(400px,calc(100vw - 32px));max-width:none;max-height:min(560px,calc(100dvh - 32px));border-radius:16px}
   /* Centered-card treatment above means a panel can sit directly on top of
@@ -111,69 +135,53 @@
   .history-panel-close .icon{width:17px;height:17px}
 }
 
-@media (max-width:640px),(max-width:960px) and (max-height:500px){
-  .mobileview-toggle{display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:15;background:#fff;padding:6px 10px;border-bottom:1px solid var(--line)}
-  .mobileview-toggle .view-switch{display:flex;flex:1 1 auto;gap:6px}
-  .mobileview-toggle .btn{flex:1 1 0;text-align:center;min-height:44px}
-  .mobileview-toggle .btn.active{background:var(--app-accent);border-color:var(--app-accent);color:#fff}
-  #appRoot.view-edit .workspace{display:none}
-  #appRoot.view-preview .sidebar{display:none}
-  .tabs{display:none}
-}
-
-/* Responsive breakpoints — the left nav, canvas workspace and Design panel
-   are independent modules that reflow from a three-column layout into a
-   stacked layout as space shrinks. */
+/* --- Everything else structural/fluid at the compact breakpoint --------- */
 @media (max-width:1080px){
-  .app,.app.design-closed{grid-template-columns:1fr}
-  .sidebar{position:static;height:auto;max-height:60vh;overflow:auto;border-right:0;border-bottom:1px solid var(--line)}
-  .sidebar-resizer{display:none}
-  .workspace{padding:16px}
-  .right-sidebar{position:static;height:auto;max-height:60vh;overflow:auto;border-left:0;border-top:1px solid var(--line)}
-  .app.design-closed .right-sidebar{display:none}
-}
-@media (max-width:640px),(max-width:960px) and (max-height:500px){
   .grid2,.grid3,.itemgrid{grid-template-columns:1fr}
   .topbar{flex-direction:column;align-items:flex-start;gap:8px}
-  .sidebar{padding:10px}
-  .workspace{padding:8px}
-  .right-sidebar{padding:10px}
+  .workspace{padding:10px}
 
-  /* Toolbar: was a single nowrap row with overflow-x:auto (see the base
-     rule in css/invoice.css) — on a real phone that silently hid the
-     Currency field and, worse, the Edit/Preview switch and Design-reopen
-     button (both needed constantly) off the right edge with no visible
-     scrollbar/affordance to say more was there. Every control here is
-     the exact same element as desktop, just reflowed: the middle spacer
-     (only meaningful when there's slack width to absorb) is dropped, and
-     the left/right groups each become their own full-width row so
-     everything wraps into view instead of being scrollable-but-hidden. */
-  .toolbar-row{padding:6px 8px;gap:8px;flex-wrap:wrap;overflow-x:visible;row-gap:8px}
-  /* Comfortable touch sizing: bumps every control sharing this one height
-     variable (Undo/Redo, the zoom group, the Edit/Preview switch — see the
-     var(--toolbar-ctrl-h) usages in css/invoice.css) from the desktop 34px
-     up to 42px at once, rather than sizing each individually — height is
-     what matters most for a row of adjacent small controls like these
-     (width is capped by the row's own available space; see zoom-btn
-     below), so this is where the real touch-comfort gain comes from. */
-  .canvasbar{gap:8px;flex-wrap:wrap;row-gap:8px;--toolbar-ctrl-h:42px}
+  /* Toolbar: fluid, wrapping flex groups instead of a single nowrap row
+     with horizontal scroll — every control here is the exact same
+     element as desktop, just reflowed and, via the clamp()s below, sized
+     to shrink continuously as the available width does rather than only
+     at a couple of fixed breakpoints. The middle spacer (only meaningful
+     when there's slack width to absorb) is dropped, and the left/right
+     groups each become their own row so everything wraps into view. */
+  .toolbar-row{padding:7px 8px;gap:8px;flex-wrap:wrap;overflow-x:visible;row-gap:8px}
+  .canvasbar{gap:8px;flex-wrap:wrap;row-gap:8px;--toolbar-ctrl-h:clamp(36px,9vw,42px)}
   .canvasbar-middle{display:none}
-  .canvasbar-left,.canvasbar-right{flex:1 1 100%;flex-wrap:wrap;gap:6px}
+  .canvasbar-left,.canvasbar-right{flex:1 1 100%;flex-wrap:wrap;gap:6px;row-gap:6px}
   .canvasbar-right{justify-content:flex-start}
-  .currency-field{max-width:none;flex:1 1 auto}
-  .combobox .combobox-input{min-height:42px}
-  /* Zoom buttons keep their original 34px width (only height grows, via
-     --toolbar-ctrl-h above): Undo, Redo and the zoom group all share
-     .canvasbar-left, and a wider zoom-btn was enough to push that row's
-     total width past a 320px phone's available space, wrapping the zoom
-     group onto its own second row — the same "just barely doesn't fit"
-     problem the rest of this block exists to avoid. Two adjacent narrow
-     +/- buttons are a common, accepted exception to a flat wide-target
-     rule (compare a native OS's own stepper controls); their 42px height
-     still gets the same touch-comfort gain as everything else here.*/
+  .currency-field{max-width:none;flex:1 1 160px;width:auto}
+  .combobox .combobox-input{min-height:var(--toolbar-ctrl-h)}
+
+  /* Fluid control sizing: every plain small button/tab a person taps
+     scales continuously with the available width (via clamp(), floor/
+     ceiling chosen so it never drops below a comfortable ~24-34px touch
+     target and never grows past its desktop size) instead of jumping
+     between a couple of fixed sizes at a couple of fixed widths — the
+     same visual density at 1080px as at 900px as at 700px, not a sudden
+     step. Icons scale down slightly alongside their button. */
+  .btn.small{padding:clamp(6px,1.6vw,9px) clamp(8px,2vw,12px);font-size:clamp(11px,2.4vw,12px)}
+  .btn.small .icon{width:clamp(13px,3vw,15px);height:clamp(13px,3vw,15px)}
+  /* Scoped to .canvasbar specifically (not every .btn.icon on the page):
+     --toolbar-ctrl-h is a custom property only ever set on .canvasbar
+     itself, so a bare ".btn.icon{width:var(--toolbar-ctrl-h)}" rule would
+     read an undefined value everywhere else (e.g. the hamburger button,
+     the drawer close buttons, the floating-panel close ×) and lose its
+     own explicit size entirely rather than falling back to it — CSS
+     doesn't fall back to an earlier rule when a var() is invalid outside
+     the property it inherits through, it falls back to the property's
+     own initial/inherited value instead. */
+  .canvasbar .btn.icon{width:var(--toolbar-ctrl-h);height:var(--toolbar-ctrl-h)}
   .zoom-group{padding:2px}
-  .zoom-btn{width:34px}
+  .zoom-btn{width:clamp(28px,7vw,34px);height:var(--toolbar-ctrl-h)}
   .zoom-label{width:36px;font-size:12px}
+  .canvasmode-switch{flex:1 1 auto;padding:2px;min-width:0}
+  .canvasmode-btn{flex:1 1 auto;justify-content:center;padding:0 clamp(6px,2vw,9px);font-size:clamp(10.5px,2.4vw,12px);white-space:nowrap}
+  .canvasmode-btn .icon{width:clamp(12px,3vw,14px);height:clamp(12px,3vw,14px)}
+
   /* Column header editing controls (js/columnCanvas.js: the drag grip, the
      "⋮" column-settings trigger, the resize handle on each column's right
      edge) are compact enough on a mouse-driven desktop table but too small
@@ -242,102 +250,111 @@
      all. They still benefit from the mobile Edit-mode zoom floor
      (js/preview.js's MOBILE_EDIT_MIN_FIT) the same as everything else on
      the canvas. */
-  .canvasmode-switch{flex:1 1 auto;padding:2px}
-  .canvasmode-btn{flex:1 1 auto;justify-content:center;padding:0 9px}
 
-  /* Currency + Edit/Preview switch: both flex:1 1 auto (below/in
-     invoice.css) so they share the row proportionally down to ~360px, but
-     their combined min-content width (the "Edit"/"Preview" labels and the
-     currency search text can only shrink so far before truncating
-     illegibly) is a few px wider than a 320px-360px phone's available
-     width, silently wrapping Currency onto its own row and the switch onto
-     a third. Trimming both a little further, only below 360px, keeps them
-     on the shared row that already works fine everywhere above it —
-     avoiding a 3rd toolbar row rather than just tolerating it. */
+  /* Currency + Edit/Preview switch: both flex:1 1 auto so they share the
+     row proportionally, wrapping onto their own row below ~360px (via the
+     clamp()s above easing them down continuously first) rather than a
+     hard swap at one fixed width. */
   @media (max-width:359px){
     .currency-field{width:118px;max-width:46vw}
-    .canvasmode-btn{padding:0 6px;font-size:10.5px}
-    .canvasmode-btn .icon{width:12px;height:12px}
   }
 
-  /* Same reasoning across the rest of the chrome: 28–34px controls are
-     within WCAG 2.2's 24px floor but tighter than comfortable for a
-     fingertip, so every plain small button/tab a person taps on a phone —
-     not just the canvas toolbar above — gets a bit more room. Desktop's
-     own .btn.small (base.css) is untouched; this only applies here. */
-  .btn.small{padding:9px 12px;font-size:12px}
-  .mobileview-toggle .btn{padding:10px 12px}
-  .actions-more .btn{padding:10px 12px}
-
-  /* Native single-panel body: the visible panel (Menu or Invoice) fills all
-     remaining height below the top bar; the hidden one is fully removed from
-     flow (see view-edit/view-preview rules above), not just scroll-limited. */
-  body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
-  .app{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
-  .sidebar,.workspace,.right-sidebar{flex:1 1 auto;min-height:0;max-height:none;height:auto;overflow:auto}
-  .sidebar{overflow:hidden}
-  .sidebar-scroll{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
-  .right-sidebar{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
-  /* The right (Design) sidebar holds canvas/document settings (Page setup,
-     Alignment, Template, Colors, Show/Hide), so it belongs with the canvas:
-     shown together with the "Invoice" tab (the actual editable invoice),
-     hidden together with the "Menu" tab (the nav sidebar) — same pairing
-     #appRoot.view-edit/.view-preview already apply to .workspace below.
-     The manual close/reopen toggle (#designReopenBtn, hidden below) is a
-     desktop-only affordance for handing its width back to the canvas —
-     not a concept that exists on a single-column phone layout, so it's
-     hidden here rather than adapted. Its underlying state (.design-closed
-     on #appRoot) is desktop-only too, but persists in localStorage across
-     any width — without the next rule, someone who closed it on desktop
-     and later opens this same saved app on a phone would land on the
-     "Invoice" tab with a permanently blank Design section and no reopen
-     button to recover it. */
-  #appRoot.view-edit .right-sidebar{display:none}
-  .app.design-closed .right-sidebar{display:block}
-  .design-reopen-btn{display:none!important}
-
-  /* Collapsible sections apply at every width (see .panelhead/.panel.collapsed
-     in base.css) — nothing phone-specific needed here. */
-
   /* Fullscreen preview — hides all chrome and gives the invoice the entire
-     viewport, with a single floating close button to get back. The trigger
-     itself (a small expand icon next to the Menu/Invoice tabs) is desktop-
-     hidden by default (.mtb-icon in base.css: fullscreen only makes sense
-     once the canvas itself is a separate, single-panel "view" — a purely
-     mobile concept here) — nothing had ever un-hidden it at phone widths,
-     so the whole feature, despite being fully built otherwise (JS wiring,
-     the exit button, every state below), was unreachable. Sized a little
-     larger than its desktop .btn.icon default (31px) for comfortable touch. */
-  .mtb-icon{display:inline-flex;width:44px;height:44px}
+     viewport, with a single floating close button to get back. */
   .fullscreen-exit{display:none}
   body.fullscreen-preview .mobileview-toggle,body.fullscreen-preview .canvasbar,body.fullscreen-preview .actions{display:none}
   body.fullscreen-preview .workspace{padding:0}
   body.fullscreen-preview .fullscreen-exit{display:grid;place-items:center;position:fixed;top:calc(14px + env(safe-area-inset-top));right:14px;z-index:60;width:44px;height:44px;border-radius:50%;background:rgba(16,24,40,.62);color:#fff;border:0;font-size:15px}
 }
+
+/* --- Narrow-phone-only refinements ------------------------------------ */
+/* Everything below is genuinely about screen space running out on a small
+   phone (not the off-canvas drawer pattern above, which already applies
+   across the whole compact range) — the header's six action buttons no
+   longer fitting comfortably in one row, and a few extra size trims once
+   even the fluid clamp()s above have shrunk about as far as they should. */
+@media (max-width:640px){
+  .appheader{flex-direction:column;align-items:stretch;gap:6px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top))}
+  /* Explicit width:100% rather than relying on .appheader's align-items:
+     stretch to size this: stretch's used cross size still falls back to
+     this item's own automatic minimum (content) size in a browser's
+     nested-flex resolution here — practically, .brand's nowrap tagline
+     (see base.css) — pushing .topbar (and everything inside it) wider
+     than the viewport instead of actually being constrained to it. An
+     explicit width is resolved top-down against .appheader's own
+     (correctly viewport-capped) content box, sidestepping that entirely. */
+  .appheader .topbar{flex-wrap:wrap;row-gap:6px;width:100%}
+  .header-actions{width:100%}
+  .install-banner{padding:9px 10px}
+
+  /* Header actions — two distinct rows (Save+Print, then Duplicate/Export/
+     Import/Reset), not one crowded row: matches the .actions-primary/
+     .actions-secondary grouping already in the markup (see base.css) and
+     gives each button's label room to actually show. Each row instead
+     fills the full width with its buttons sized equally (flex:1 1 0) —
+     comfortable ~44px-tall touch targets that also read as one deliberate,
+     evenly-spaced group rather than left-aligned clutter with empty space
+     on the right. */
+  .header-actions{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+  .actions-primary{width:100%;flex-wrap:nowrap;gap:8px}
+  /* .actions-secondary allows wrapping (.actions-primary never needs to —
+     it's always just 2 buttons and comfortably fits one row): at 4
+     buttons with real labels, "Copy"/"Export"/"Import"/"Reset" fit one row
+     down to ~360px, but a 320-360px phone is a few px too narrow. Letting
+     the row wrap is the fallback for that case — lands as Copy/Export/
+     Import on one row with Reset alone on its own full-width row below
+     (equal flex-basis means whichever button runs out of room first wraps
+     alone, and Reset is last in DOM/reading order) — Reset stays visually
+     separated (its existing .btn.danger red) either way. */
+  .actions-secondary{width:100%;flex-wrap:wrap;gap:8px}
+  .actions-primary .btn,.actions-secondary .btn{flex:1 1 0;justify-content:center;min-height:44px;padding:8px 4px;font-size:12px;white-space:nowrap}
+  .header-actions .btn .icon{width:16px;height:16px}
+
+  /* Autosave status ("Saved 2 min ago") — a persistent indicator (see the
+     comment on #saveStatus in js/main.js), not a one-off toast, so it
+     can't just be hidden after a few seconds like plain text would need
+     room for. Collapsed here to just its leading status dot inline in the
+     action row (font-size:0 hides the text glyphs without display:none,
+     so the aria-live announcement screen readers get on every update is
+     unaffected) — full text is still available on demand via the title
+     attribute js/main.js sets alongside it. */
+  .save-status{order:0;flex:none;width:auto;font-size:0;gap:0}
+
+  .sidebar-scroll{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  .right-sidebar{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+
+  /* Zoom buttons keep close to their original width (only height grows,
+     via --toolbar-ctrl-h): Undo, Redo and the zoom group all share
+     .canvasbar-left, and a wider zoom-btn is enough to push that row's
+     total width past a 320px phone's available space, wrapping the zoom
+     group onto its own second row. Two adjacent narrow +/- buttons are a
+     common, accepted exception to a flat wide-target rule (compare a
+     native OS's own stepper controls). */
+  .zoom-btn{width:32px}
+
+  .btn.small{padding:9px 12px;font-size:12px}
+  .mobileview-toggle{padding:6px 10px}
+}
+
 /* Extra-short screens — mainly a phone held in landscape (e.g. ~360-400px
-   tall): the header, the Menu/Invoice tabs and the toolbar each already
-   fit in a single row apiece (see above), but stacked together their
-   padding/gaps alone were still consuming a disproportionate share of a
-   screen this short, leaving very little height for the invoice itself.
-   Trims that padding specifically here — not the portrait-phone rules
-   above, which have vertical room to spare — and never shrinks a control
-   below the touch-target sizing already set above (min-height:44px on the
-   Menu/Invoice tabs is untouched; only the row's own padding around them
-   shrinks). */
-@media (max-width:960px) and (max-height:430px){
+   tall): the header, the hamburger bar and the toolbar each already fit in
+   a single row apiece (see above), but stacked together their padding/gaps
+   alone were still consuming a disproportionate share of a screen this
+   short, leaving very little height for the invoice itself. Trims that
+   padding specifically here — not the portrait-phone rules above, which
+   have vertical room to spare — and never shrinks a control below the
+   touch-target sizing already set above. */
+@media (max-width:1080px) and (max-height:430px){
   .appheader{padding-top:calc(4px + env(safe-area-inset-top));padding-bottom:4px;gap:4px}
-  /* Title and actions stay on their own two rows (unchanged — that split
-     is Requirement 1, not a width-driven fallback), but stop stacking
-     .actions-primary above .actions-secondary *within* the actions row:
-     that 2-row split exists because a narrow PORTRAIT phone doesn't have
-     the width for six labelled buttons side by side, not because it's
-     the ideal layout whenever the header is short. Even a compact phone
-     is typically 700-900px wide in landscape — comfortably enough to
-     flow all six across one row — so doing that here reclaims real
-     vertical space exactly where a short screen can least spare it
-     (verified: cuts total header+tabs+toolbar chrome from ~83% of a
-     390px-tall viewport to a usable amount, without touching the
-     portrait rules above). */
+  /* Title and actions stay on their own two rows on a narrow PORTRAIT
+     phone (the ≤640px block above), but stop stacking .actions-primary
+     above .actions-secondary *within* the actions row here: that 2-row
+     split exists because a narrow portrait phone doesn't have the width
+     for six labelled buttons side by side, not because it's the ideal
+     layout whenever the header is merely short. Even a compact phone is
+     typically 700-900px wide in landscape — comfortably enough to flow
+     all six across one row — so doing that here reclaims real vertical
+     space exactly where a short screen can least spare it. */
   .header-actions{flex-direction:row;flex-wrap:wrap;justify-content:flex-start}
   .actions-primary,.actions-secondary{width:auto;flex-wrap:nowrap}
   .actions-primary .btn,.actions-secondary .btn{flex:none;min-height:38px;padding:6px 10px}

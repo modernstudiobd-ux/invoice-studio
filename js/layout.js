@@ -41,35 +41,62 @@ sidebarResizer.addEventListener("dblclick", () => {
   localStorage.setItem("invoiceStudio.rightSidebarWidth", "280");
 });
 
-const mvEditBtn = $("mvEditBtn"), mvPreviewBtn = $("mvPreviewBtn");
-// view "edit" = the left Menu/nav sidebar, view "preview" = the actual
-// canvas (+ Design panel) — named after the mobile tab's data-view value,
-// not the *other* Edit/Preview switch further down (setCanvasMode), which
-// toggles the canvas's own content between the two. Keeping this function
-// unconditional (no phoneQuery guard) is deliberate and harmless: the
-// view-edit/view-preview classes it sets only have any visual effect
-// inside the phone-tier media query in responsive.css, so calling it on a
-// desktop-width window is a no-op there.
+// Matches the "no longer room for the 3-column desktop layout" breakpoint
+// in responsive.css exactly — the same point at which both .sidebar and
+// .right-sidebar switch from permanent columns to off-canvas drawers (see
+// the big comment at the top of that file). Read live via matchMedia
+// (rather than snapshotting window.innerWidth once) so drawer state stays
+// correct across rotation/resize/an on-screen keyboard, not just at
+// whatever width the page happened to load.
+const compactQuery = window.matchMedia("(max-width:1080px)");
+
+const mvEditBtn = $("mvEditBtn"), mvPreviewBtn = $("mvPreviewBtn"), drawerOverlay = $("drawerOverlay"), sidebarEl = $("sidebar");
+// view "edit" = the left Menu/nav sidebar is open (as an off-canvas drawer
+// below the compact breakpoint), view "preview" = it's closed — named after
+// the original mobile tab's data-view values, not the *other* Edit/Preview
+// switch further down (setCanvasMode), which toggles the canvas's own
+// content between the two. Below the compact breakpoint this drawer floats
+// above the canvas (see .sidebar.mobile-drawer in responsive.css) rather
+// than replacing it, so — unlike the old Menu/Invoice tab switch this
+// replaced — the invoice itself is never hidden or resized just because the
+// menu is open. Keeping this function unconditional (no compactQuery guard)
+// is deliberate and harmless: the view-edit class it sets only has any
+// visual effect inside the compact-width drawer rules in responsive.css, so
+// calling it at desktop width is a no-op there.
 export function setMobileView(view) {
-  appRoot.classList.toggle("view-edit", view === "edit");
-  appRoot.classList.toggle("view-preview", view === "preview");
-  mvEditBtn.classList.toggle("active", view === "edit");
-  mvPreviewBtn.classList.toggle("active", view === "preview");
-  mvEditBtn.setAttribute("aria-selected", view === "edit" ? "true" : "false");
-  mvPreviewBtn.setAttribute("aria-selected", view === "preview" ? "true" : "false");
+  const open = view === "edit";
+  appRoot.classList.toggle("view-edit", open);
+  mvEditBtn.classList.toggle("active", open);
+  mvEditBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  syncDrawerA11y();
+  syncDrawerOverlay();
 }
-mvEditBtn.addEventListener("click", () => setMobileView("edit"));
+mvEditBtn.addEventListener("click", () => setMobileView(appRoot.classList.contains("view-edit") ? "preview" : "edit"));
 mvPreviewBtn.addEventListener("click", () => setMobileView("preview"));
-// Default to the invoice itself, not the nav menu: someone opening the app
-// (or reloading mid-edit) wants to see/keep editing their invoice, not a
-// list of New Invoice/Load Invoice/Templates/Settings/Help — landing on
-// the menu first just added a guaranteed extra tap before reaching the one
-// thing the app is actually for. Matches the "Invoice" tab already marked
-// active in index.html's initial markup, so there's no first-paint flash
-// of the wrong tab before this runs.
+// Sliding a drawer off-screen with transform (see responsive.css) hides it
+// visually but leaves its contents exactly as focusable/readable-by-AT as
+// when it's open — a sighted mouse user can't reach it, but Tab and a
+// screen reader still can, landing on nav rows or Design controls that
+// appear to not exist. `inert` (well-supported in evergreen browsers)
+// removes a closed drawer from both the tab order and the accessibility
+// tree while it's off-screen, without touching the transform/animation
+// that shows or hides it. Never applied at desktop width, where each
+// panel is a permanent, always-interactive column.
+function syncDrawerA11y() {
+  sidebarEl.inert = compactQuery.matches && !appRoot.classList.contains("view-edit");
+  const rs = $("rightSidebar");
+  if (rs) rs.inert = compactQuery.matches && !appRoot.classList.contains("design-drawer-open");
+}
+syncDrawerA11y();
+// Default to the invoice itself, not the nav menu open: someone opening the
+// app (or reloading mid-edit) wants to see/keep editing their invoice, not
+// a list of New Invoice/Load Invoice/Templates/Settings/Help popped open
+// over it — landing with the menu open first just added a guaranteed extra
+// tap (or an extra thing blocking the canvas) before reaching the one thing
+// the app is actually for.
 setMobileView("preview");
 
-/* --- Mobile chrome (additive UI-only wiring; no business logic here) --- */
+/* --- Mobile/tablet chrome (additive UI-only wiring; no business logic here) --- */
 
 // On phone widths, every floating panel (Saved Invoices, Brand Templates,
 // Import Items) opens as its own centered card instead of anchored under
@@ -78,17 +105,53 @@ setMobileView("preview");
 // backdrop sits behind that card: tapping it dismisses the panel, the same
 // way tapping outside any dropdown already does on desktop.
 const panelOverlay = $("panelOverlay");
-// Matches the phone-tier CSS breakpoints in responsive.css exactly (see the
-// long comment at the top of that file for why this is two conditions, not
-// one: width alone misses phones held in landscape, which are often wider
-// than 640px while still being short).
-const phoneQuery = window.matchMedia("(max-width:640px),(max-width:960px) and (max-height:500px)");
+// Reuses compactQuery (defined above) rather than its own query: a single
+// max-width:1080px threshold already catches a phone in any orientation
+// (even the widest common phones held sideways stay well under 1080px), so
+// there's no longer a separate "wide but short" fallback needed on top of
+// it the way there was when this threshold was a narrower 640/960px — see
+// the shared breakpoint note at the top of responsive.css.
 
-// Fullscreen preview: hides all mobile chrome and gives the invoice the full viewport.
+// Shared backdrop for the two off-canvas drawers (left #sidebar menu, right
+// #rightSidebar Design panel) — shown whenever either is open below the
+// compact breakpoint, closes whichever is open on tap. A separate element
+// from #panelOverlay (used by the floating dropdown panels below) since a
+// dropdown can legitimately be opened from a control that lives inside an
+// already-open drawer — the two backdrops must not close each other.
+function syncDrawerOverlay() {
+  const anyOpen = compactQuery.matches && (appRoot.classList.contains("view-edit") || appRoot.classList.contains("design-drawer-open"));
+  drawerOverlay.classList.toggle("show", anyOpen);
+}
+function closeDrawers() {
+  if (appRoot.classList.contains("view-edit")) setMobileView("preview");
+  if (appRoot.classList.contains("design-drawer-open")) setDesignPanelOpen(false);
+}
+drawerOverlay.addEventListener("click", closeDrawers);
+// Crossing the breakpoint (e.g. rotating a tablet, or resizing a desktop
+// browser window down past it) shouldn't leave a drawer stuck "open" with
+// no visible way to close it once the layout switches back to permanent
+// columns — those columns have their own always-visible state, unrelated
+// to whatever a drawer was doing a moment ago. Also keeps .design-closed
+// (a desktop-only concept: which permanent grid column width to use) from
+// ever lingering into compact width, where it would otherwise collide with
+// design-drawer-open's own, separate open/closed tracking for the Design
+// drawer — see the matching CSS override in responsive.css for the
+// guaranteed fix if this ever got out of sync regardless.
+compactQuery.addEventListener("change", e => {
+  closeDrawers();
+  syncDrawerA11y();
+  if (e.matches) {
+    appRoot.classList.remove("design-closed");
+  } else {
+    appRoot.classList.toggle("design-closed", localStorage.getItem("invoiceStudio.designPanelOpen") === "0");
+  }
+});
+
+// Fullscreen preview: hides all mobile/tablet chrome and gives the invoice the full viewport.
 const expandPreviewBtn = $("expandPreviewBtn"), exitFullscreenBtn = $("exitFullscreenBtn");
 function setFullscreenPreview(on) {
   document.body.classList.toggle("fullscreen-preview", on);
-  if (on) setMobileView("preview");
+  if (on) closeDrawers();
   fitInvoiceCanvas();
 }
 expandPreviewBtn.addEventListener("click", () => setFullscreenPreview(true));
@@ -179,7 +242,7 @@ canvasModePreviewBtn.addEventListener("click", () => setCanvasMode("preview"));
 // real, current space, so the fix holds regardless of window size or how
 // much the tutorial content grows.
 function positionDropdownPanel(panel, toggleBtn, maxWidth = 360) {
-  if (phoneQuery.matches) {
+  if (compactQuery.matches) {
     panel.style.top = "";
     panel.style.bottom = "";
     panel.style.left = "";
@@ -228,7 +291,7 @@ function registerDropdown(toggleBtn, panel, { maxWidth = 360 } = {}) {
   function close() {
     panel.classList.remove("open");
     toggleBtn.setAttribute("aria-expanded", "false");
-    if (phoneQuery.matches && !dropdowns.some(d => d.panel !== panel && d.panel.classList.contains("open"))) {
+    if (compactQuery.matches && !dropdowns.some(d => d.panel !== panel && d.panel.classList.contains("open"))) {
       panelOverlay.classList.remove("show");
     }
   }
@@ -237,7 +300,7 @@ function registerDropdown(toggleBtn, panel, { maxWidth = 360 } = {}) {
     const nowOpen = panel.classList.toggle("open");
     toggleBtn.setAttribute("aria-expanded", nowOpen ? "true" : "false");
     if (nowOpen) positionDropdownPanel(panel, toggleBtn, maxWidth);
-    if (phoneQuery.matches) panelOverlay.classList.toggle("show", nowOpen);
+    if (compactQuery.matches) panelOverlay.classList.toggle("show", nowOpen);
     return nowOpen;
   }
   toggleBtn.addEventListener("click", e => { e.stopPropagation(); open(); });
@@ -316,11 +379,16 @@ function closeAllFloatingPanels() { dropdowns.forEach(d => d.close()); }
 if (toolbarRowEl) toolbarRowEl.addEventListener("scroll", closeAllFloatingPanels, { passive: true });
 window.addEventListener("resize", closeAllFloatingPanels);
 // Escape closes whichever floating panel is open and returns focus to its
-// trigger button — standard keyboard behavior for popovers/menus.
+// trigger button — standard keyboard behavior for popovers/menus. Falls
+// back to closing an open drawer (menu or Design panel) when no dropdown
+// panel is open, same standard behavior applied to the two off-canvas
+// drawers.
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
   const openEntry = dropdowns.find(d => d.panel.classList.contains("open"));
-  if (openEntry) { openEntry.close(); openEntry.toggleBtn.focus(); }
+  if (openEntry) { openEntry.close(); openEntry.toggleBtn.focus(); return; }
+  if (appRoot.classList.contains("view-edit")) { setMobileView("preview"); mvEditBtn.focus(); return; }
+  if (appRoot.classList.contains("design-drawer-open")) { setDesignPanelOpen(false); if (designReopenBtn) designReopenBtn.focus(); }
 });
 
 // Every floating panel above (History, Templates, Import, Logo settings,
@@ -380,12 +448,33 @@ document.querySelectorAll(".panelhead").forEach(h => {
 // canvas, and the small "Design" toggle that appears in the canvas
 // toolbar (see .design-reopen-btn in index.html/invoice.css) brings it
 // back. Purely a layout/visibility toggle — nothing it contains changes.
+//
+// Below the compact breakpoint the Design panel is a second off-canvas
+// drawer (see .right-sidebar.mobile-drawer in responsive.css), sliding in
+// from the right over the canvas rather than taking a permanent grid
+// column away from it — so it gets its own runtime-only "open" state
+// (design-drawer-open) instead of reusing design-closed/its localStorage
+// preference: those are a *desktop* setting (how wide a permanent column
+// to give the canvas), and letting a drawer pop open automatically on a
+// phone just because it happened to be open the last time this same
+// browser was at desktop width would be exactly the unwanted-surprise
+// version of "sidebar content affecting the invoice canvas" this feature
+// is supposed to avoid. The drawer always starts closed at compact widths;
+// #designReopenBtn (shown there whenever it's closed — see responsive.css)
+// is how it's opened again.
 const rightSidebar = $("rightSidebar"), designCloseBtn = $("designCloseBtn"), designReopenBtn = $("designReopenBtn");
 function setDesignPanelOpen(open) {
-  appRoot.classList.toggle("design-closed", !open);
-  localStorage.setItem("invoiceStudio.designPanelOpen", open ? "1" : "0");
+  if (compactQuery.matches) {
+    appRoot.classList.toggle("design-drawer-open", open);
+  } else {
+    appRoot.classList.remove("design-drawer-open");
+    appRoot.classList.toggle("design-closed", !open);
+    localStorage.setItem("invoiceStudio.designPanelOpen", open ? "1" : "0");
+  }
+  syncDrawerA11y();
+  syncDrawerOverlay();
   fitInvoiceCanvas();
 }
 if (designCloseBtn) designCloseBtn.addEventListener("click", () => setDesignPanelOpen(false));
 if (designReopenBtn) designReopenBtn.addEventListener("click", () => setDesignPanelOpen(true));
-setDesignPanelOpen(localStorage.getItem("invoiceStudio.designPanelOpen") !== "0");
+setDesignPanelOpen(!compactQuery.matches && localStorage.getItem("invoiceStudio.designPanelOpen") !== "0");

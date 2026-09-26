@@ -8,14 +8,15 @@ import { applyAllOptionalColors } from "./accent.js";
 import { syncCurrencyDisplay } from "./currencySearch.js";
 import { buildColumnHeaderHtml, buildAddColumnHeaderHtml } from "./columnCanvas.js";
 
-// Matches the phone-tier CSS breakpoints in responsive.css/js/layout.js's
-// own phoneQuery exactly (see the long comment at the top of responsive.css
-// for why this is two conditions, not one). Kept as a separate, self-
-// contained query here rather than importing layout.js's copy: layout.js
-// already imports fitInvoiceCanvas *from* this file, so importing back
-// from layout.js would create a circular module dependency for one
-// three-line matchMedia query.
-const mobilePhoneQuery = window.matchMedia("(max-width:640px),(max-width:960px) and (max-height:500px)");
+// Matches the compact-tier breakpoint in responsive.css/js/layout.js's own
+// compactQuery exactly (max-width:1080px — the point where both sidebars
+// become off-canvas drawers and the canvas gets the full window width to
+// itself; see the shared breakpoint note at the top of responsive.css).
+// Kept as a separate, self-contained query here rather than importing
+// layout.js's copy: layout.js already imports fitInvoiceCanvas *from* this
+// file, so importing back from layout.js would create a circular module
+// dependency for one one-line matchMedia query.
+const mobilePhoneQuery = window.matchMedia("(max-width:1080px)");
 // Floor for Edit mode's shrink-to-fit zoom on a phone — see the comment on
 // its one usage in fitInvoiceCanvas() below for why this exists and why
 // it's Edit-only. 0.68 was chosen as the practical balance: high enough

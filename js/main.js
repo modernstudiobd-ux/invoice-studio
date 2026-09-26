@@ -198,8 +198,32 @@ applyAllOptionalColors();
 renderToggles(); renderPreview();
 
 {
+  // Refit whenever the space AVAILABLE to the canvas changes, not just when
+  // the canvas's own box happens to change on its own. Those aren't the same
+  // thing: fitInvoiceCanvas() sets .canvaswrap's width to an explicit pixel
+  // value every time it runs, so once that's set, the wrap no longer tracks
+  // its parent's width via CSS (it's a fixed px, not a percentage) — a later
+  // change to the *parent's* available width (opening/closing either
+  // sidebar, dragging the Design panel resizer, switching the mobile view,
+  // an on-screen keyboard resizing the viewport, or even an ordinary window
+  // resize once the wrap's own size happens not to change first) would
+  // otherwise go completely undetected, silently leaving the canvas at a
+  // stale size — exactly the kind of overflow/clipping/wrong-scale bug this
+  // observer exists to prevent. Observing .workspace (the actual element
+  // fitInvoiceCanvas() measures as "available" space) instead of .canvaswrap
+  // itself means every one of those cases is caught, every time.
+  const workspaceEl = document.querySelector(".workspace");
   const canvasWrapEl = document.querySelector(".canvaswrap");
-  if (canvasWrapEl) {
+  if (workspaceEl) {
+    if (window.ResizeObserver) {
+      new ResizeObserver(() => fitInvoiceCanvas()).observe(workspaceEl);
+    } else {
+      window.addEventListener("resize", fitInvoiceCanvas);
+    }
+    window.addEventListener("orientationchange", () => setTimeout(fitInvoiceCanvas, 200));
+  } else if (canvasWrapEl) {
+    // Defensive fallback only — .workspace should always exist alongside
+    // .canvaswrap in this markup.
     if (window.ResizeObserver) new ResizeObserver(() => fitInvoiceCanvas()).observe(canvasWrapEl);
     else window.addEventListener("resize", fitInvoiceCanvas);
     window.addEventListener("orientationchange", () => setTimeout(fitInvoiceCanvas, 200));

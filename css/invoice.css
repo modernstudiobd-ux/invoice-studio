@@ -1,8 +1,19 @@
 /* Invoice document — the actual A4/Letter canvas: header, bill-to, items table, totals, footer */
-/* Responsive document canvas: the invoice keeps true A4 proportions (210mm x 297mm)
-   for accurate print/PDF output, while this wrapper lets it scale down as one
-   modular unit to fit any viewport width instead of forcing horizontal scrolling. */
-.canvaswrap{width:100%;max-width:var(--page-w);margin:0 auto;position:relative}
+/* Responsive document canvas: the invoice keeps true A4/Letter proportions
+   (set on #invoice itself via --page-w/--page-h, driven by the selected
+   paper size) for accurate print/PDF output, while this wrapper is sized
+   purely by the space actually available to it (fitInvoiceCanvas() in
+   js/preview.js sets an explicit width/height in px every time that space
+   changes) and scales the invoice down as one modular unit to fit any
+   viewport/container size. Deliberately no "max-width:var(--page-w)" here —
+   the wrapper's cap used to be the paper's own width, which is exactly the
+   coupling that let a paper size larger than the on-screen container (e.g.
+   Letter on a narrow phone before JS had run, or any container narrower
+   than a full page after a sidebar/panel opened) cause the container itself
+   to overflow. Paper size only ever reaches this wrapper indirectly, via
+   #invoice's own natural (unscaled) pixel size, which JS then fits to
+   whatever width/height is really available. */
+.canvaswrap{width:100%;max-width:100%;margin:0 auto;position:relative}
 /* Searchable currency combobox — a text input + filtered listbox layered
    over the real (visually hidden) #currency <select>, which stays the
    source of truth so every other module keeps reading/writing it exactly

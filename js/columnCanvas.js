@@ -202,12 +202,12 @@ function startResizeDrag(handle, startEvent) {
 /* ------------------------------ per-column popover ------------------------------ */
 
 let colSettingsKey = null;
-// Phone-width check, mirroring js/layout.js's own phoneQuery (same two
-// conditions, kept in sync with the CSS breakpoints in responsive.css) — a
-// separate local instance rather than importing layout.js's, since
-// layout.js already imports closeColSettings from this module (an import
-// back the other way would be circular).
-const colSettingsPhoneQuery = window.matchMedia("(max-width:640px),(max-width:960px) and (max-height:500px)");
+// Compact-width check, mirroring js/layout.js's own compactQuery (kept in
+// sync with the CSS breakpoint in responsive.css) — a separate local
+// instance rather than importing layout.js's, since layout.js already
+// imports closeColSettings from this module (an import back the other way
+// would be circular).
+const colSettingsPhoneQuery = window.matchMedia("(max-width:1080px)");
 
 function openColSettings(triggerBtn) {
   const key = triggerBtn.dataset.key;
